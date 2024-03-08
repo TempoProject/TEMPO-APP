@@ -41,7 +41,15 @@ import com.tempo.tempoapp.data.model.BleedingCause
 import com.tempo.tempoapp.data.model.Severity
 import com.tempo.tempoapp.data.model.bleedingSite
 import com.tempo.tempoapp.ui.AppViewModelProvider
+import com.tempo.tempoapp.ui.navigation.NavigationDestination
 import kotlinx.coroutines.launch
+
+object BleedingEventDestination : NavigationDestination {
+    override val route: String
+        get() = "bleedingEvent"
+    override val titleRes: Int
+        get() = R.string.add_new_bleeding
+}
 
 @Composable
 fun BleedingEventScreen(viewModel: BleedingEventViewModel = viewModel(factory = AppViewModelProvider.Factory)) {
@@ -245,13 +253,14 @@ fun DropdownList(
                                 )
                             )
 
-                            else  -> {
+                            else -> {
                                 println(it)
                                 onItemClick(
-                                bleedingDetails.copy(
-                                    severity = it
+                                    bleedingDetails.copy(
+                                        severity = it
+                                    )
                                 )
-                            )}
+                            }
                         }
                         showDropdown = !showDropdown
                         labelText = it
