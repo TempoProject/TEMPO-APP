@@ -6,12 +6,16 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.tempo.tempoapp.TempoApplication
 import com.tempo.tempoapp.ui.bleeding.BleedingEventViewModel
+import com.tempo.tempoapp.ui.home.HomeViewModel
 
 object AppViewModelProvider {
 
     val Factory = viewModelFactory {
         initializer {
             BleedingEventViewModel(tempoApplication().container.bleedingRepository)
+        }
+        initializer {
+            HomeViewModel(tempoApplication().container.bleedingRepository)
         }
     }
 }
