@@ -4,4 +4,6 @@
     <string name="site_string_label">Sede sanguinamento</string>
     <string name="cause_string_label">Tipo di sanguinamento</string>
     <string name="pain_scale_string_label">Scala del dolore</string>
+    <string name="no_bleeding_event">Aggiungi un evento</string>
+    <string name="add_new_bleeding">Aggiungi sanguinamento</string>
 </resources>
