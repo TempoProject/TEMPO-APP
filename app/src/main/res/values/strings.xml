@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Tempo App</string>
+    <string name="severity_string_label">Gravità del sanguinamento</string>
+    <string name="site_string_label">Sede sanguinamento</string>
+    <string name="cause_string_label">Tipo di sanguinamento</string>
+    <string name="pain_scale_string_label">Scala del dolore</string>
 </resources>
