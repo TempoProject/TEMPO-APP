@@ -71,6 +71,9 @@ dependencies {
     // Viewmodel compose
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
 
+    // Navigation
+    implementation("androidx.navigation:navigation-compose:2.7.7")
+
     //Room
     implementation("androidx.room:room-runtime:${rootProject.extra["room_version"]}")
     implementation("androidx.core:core-ktx:1.12.0")
