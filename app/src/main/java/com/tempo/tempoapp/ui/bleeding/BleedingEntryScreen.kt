@@ -218,7 +218,6 @@ fun DropdownList(
         mutableStateOf(false)
     }
 
-    //TODO
     var labelText by remember {
         mutableStateOf("")
     }
@@ -228,7 +227,19 @@ fun DropdownList(
             .clickable { showDropdown = !showDropdown }
             .border(1.dp, Color.Black, RoundedCornerShape(8.dp))
     ) {
-        TextWithIcon(text = labelText.ifBlank { stringResource(id = label) }, modifier)
+        TextWithIcon(text = labelText.ifBlank {
+            // check on the first field because if empty means that is a new event
+            if (bleedingDetails.cause.isNotEmpty())
+                when (label) {
+                    R.string.cause_string_label -> bleedingDetails.cause
+                    R.string.site_string_label -> bleedingDetails.site
+                    R.string.severity_string_label -> bleedingDetails.severity
+                    R.string.pain_scale_string_label -> bleedingDetails.painScale
+                    else -> ""
+                }
+            else
+                stringResource(id = label)
+        }, modifier)
         DropdownMenu(
             expanded = showDropdown,
             onDismissRequest = { showDropdown = !showDropdown },
