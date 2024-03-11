@@ -44,7 +44,7 @@ import com.tempo.tempoapp.ui.AppViewModelProvider
 import com.tempo.tempoapp.ui.navigation.NavigationDestination
 import kotlinx.coroutines.launch
 
-object BleedingEventDestination : NavigationDestination {
+object BleedingEntryDestination : NavigationDestination {
     override val route: String
         get() = "bleedingEvent"
     override val titleRes: Int
@@ -52,7 +52,7 @@ object BleedingEventDestination : NavigationDestination {
 }
 
 @Composable
-fun BleedingEventScreen(viewModel: BleedingEventViewModel = viewModel(factory = AppViewModelProvider.Factory)) {
+fun BleedingEntryScreen(viewModel: BleedingEntryViewModel = viewModel(factory = AppViewModelProvider.Factory)) {
     // TODO aggiungere topBar
     Scaffold { innerPadding ->
         val coroutineScope = rememberCoroutineScope()
