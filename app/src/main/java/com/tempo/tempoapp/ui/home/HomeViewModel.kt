@@ -13,7 +13,7 @@ class HomeViewModel(private val bleedingRepository: BleedingRepository) : ViewMo
     val homeUiState: StateFlow<HomeUiState> =
         bleedingRepository.getAll().map { HomeUiState(it) }.stateIn(
             scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(),
+            started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
             initialValue = HomeUiState()
         )
 
