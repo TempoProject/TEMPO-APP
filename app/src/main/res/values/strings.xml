@@ -6,4 +6,7 @@
     <string name="pain_scale_string_label">Scala del dolore</string>
     <string name="no_bleeding_event">Aggiungi un evento</string>
     <string name="add_new_bleeding">Aggiungi sanguinamento</string>
+    <string name="details">Dettagli</string>
+    <string name="date">Data</string>
+    <string name="time">Ora</string>
 </resources>
