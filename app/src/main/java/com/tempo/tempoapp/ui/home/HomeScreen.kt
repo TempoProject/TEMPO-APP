@@ -1,5 +1,6 @@
 package com.tempo.tempoapp.ui.home
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -42,7 +43,8 @@ object HomeDestination : NavigationDestination {
 fun HomeScreen(
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = viewModel(factory = AppViewModelProvider.Factory),
-    navigateToBleedingEntry: () -> Unit
+    navigateToBleedingEntry: () -> Unit,
+    navigateToBleedingUpdate: (Int) -> Unit
 ) {
     val homeUiState by viewModel.homeUiState.collectAsState()
     Scaffold(
@@ -63,14 +65,19 @@ fun HomeScreen(
         HomeBody(
             homeUiState.itemList, modifier = modifier
                 .padding(innerPadding)
-                .fillMaxSize()
+                .fillMaxSize(),
+            onItemClick = navigateToBleedingUpdate
         )
 
     }
 }
 
 @Composable
-fun HomeBody(itemList: List<BleedingEvent>, modifier: Modifier = Modifier) {
+fun HomeBody(
+    itemList: List<BleedingEvent>,
+    modifier: Modifier = Modifier,
+    onItemClick: (Int) -> Unit
+) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier
@@ -82,16 +89,29 @@ fun HomeBody(itemList: List<BleedingEvent>, modifier: Modifier = Modifier) {
                 style = MaterialTheme.typography.titleLarge
             )
         } else {
-            BleedingList(itemList, modifier = Modifier.padding(8.dp))
+            BleedingList(
+                itemList,
+                onItemClick = { onItemClick(it.id) },
+                modifier = Modifier.padding(8.dp)
+            )
         }
     }
 }
 
 @Composable
-fun BleedingList(itemList: List<BleedingEvent>, modifier: Modifier = Modifier) {
+fun BleedingList(
+    itemList: List<BleedingEvent>,
+    onItemClick: (BleedingEvent) -> Unit,
+    modifier: Modifier = Modifier
+) {
     LazyColumn(modifier = modifier) {
-        items(itemList) {
-            BleedingItem(item = it, modifier = Modifier.padding(8.dp))
+        items(itemList, key = { it.id }) {
+            BleedingItem(
+                item = it,
+                modifier = Modifier
+                    .padding(8.dp)
+                    .clickable { onItemClick(it) }
+            )
         }
     }
 }
