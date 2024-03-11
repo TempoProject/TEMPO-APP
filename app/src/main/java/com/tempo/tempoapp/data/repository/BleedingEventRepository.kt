@@ -15,4 +15,6 @@ class BleedingRepository(private val bleedingEventDao: BleedingEventDao) :
 
     override fun getAll(): Flow<List<BleedingEvent>> = bleedingEventDao.getAllBleeding()
 
+    override fun getItemFromId(id: Int): Flow<BleedingEvent> = bleedingEventDao.getEventFromId(id)
+
 }

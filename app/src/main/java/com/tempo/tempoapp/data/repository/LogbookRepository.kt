@@ -12,4 +12,6 @@ interface LogbookRepository<T> {
 
     fun getAll(): Flow<List<T>>
 
+    fun getItemFromId(id: Int): Flow<T>
+
 }
