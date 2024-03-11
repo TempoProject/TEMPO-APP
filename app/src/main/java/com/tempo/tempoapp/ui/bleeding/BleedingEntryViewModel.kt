@@ -8,6 +8,7 @@ import com.tempo.tempoapp.data.model.BleedingEvent
 import com.tempo.tempoapp.data.repository.BleedingRepository
 import java.text.SimpleDateFormat
 import java.util.Date
+import java.util.Locale
 
 class BleedingEntryViewModel(private val bleedingRepository: BleedingRepository) : ViewModel() {
 
@@ -49,27 +50,33 @@ data class BleedingEventUiState(
 )
 
 data class BleedingDetails(
+    val id: Int = 0,
     val site: String = "",
     val cause: String = "",
     val severity: String = "",
     val painScale: String = "",
     val note: String = "",
-    val date: String = SimpleDateFormat("dd-MM-yyyy").format(Date()).toString(),
-    val time: String = SimpleDateFormat("HH:mm").format(Date()),
+    val date: String = SimpleDateFormat("dd-MM-yyyy").format(Date()),
+    val time: String = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
 )
 
 fun BleedingDetails.toEntity(): BleedingEvent =
     BleedingEvent(
+        id = id,
         bleedingSite = site,
         bleedingCause = cause,
         severity = severity,
         painScale = painScale,
         note = note,
-        timestamp = SimpleDateFormat("dd-MM-yyyy HH:mm").parse(date.plus(" $time")).time
+        timestamp = SimpleDateFormat(
+            "dd-MM-yyyy HH:mm",
+            Locale.getDefault()
+        ).parse(date.plus(" $time")).time
     )
 
 fun BleedingEvent.toBleedingDetails(): BleedingDetails =
     BleedingDetails(
+        id = id,
         site = bleedingSite,
         cause = bleedingCause,
         severity = severity,
@@ -77,4 +84,9 @@ fun BleedingEvent.toBleedingDetails(): BleedingDetails =
         note = note,
         date = SimpleDateFormat("dd-MM-yyyy").format(Date(timestamp)),
         time = SimpleDateFormat("HH:mm").format(Date(timestamp)),
+    )
+
+fun BleedingEvent.toBleedingUiState(): BleedingEventUiState =
+    BleedingEventUiState(
+        bleedingDetails = this.toBleedingDetails(),
     )
