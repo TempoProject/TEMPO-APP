@@ -9,7 +9,7 @@ import com.tempo.tempoapp.data.repository.BleedingRepository
 import java.text.SimpleDateFormat
 import java.util.Date
 
-class BleedingEventViewModel(private val bleedingRepository: BleedingRepository) : ViewModel() {
+class BleedingEntryViewModel(private val bleedingRepository: BleedingRepository) : ViewModel() {
 
 
     var uiState by mutableStateOf(BleedingEventUiState())
@@ -66,4 +66,15 @@ fun BleedingDetails.toEntity(): BleedingEvent =
         painScale = painScale,
         note = note,
         timestamp = SimpleDateFormat("dd-MM-yyyy HH:mm").parse(date.plus(" $time")).time
+    )
+
+fun BleedingEvent.toBleedingDetails(): BleedingDetails =
+    BleedingDetails(
+        site = bleedingSite,
+        cause = bleedingCause,
+        severity = severity,
+        painScale = painScale,
+        note = note,
+        date = SimpleDateFormat("dd-MM-yyyy").format(Date(timestamp)),
+        time = SimpleDateFormat("HH:mm").format(Date(timestamp)),
     )
