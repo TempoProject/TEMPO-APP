@@ -43,7 +43,7 @@ data class BleedingEvent(
     @ColumnInfo(name = "timestamp")
     val timestamp: Long,
     @ColumnInfo(name = "note")
-    val note: String,
+    val note: String?,
 
     // add photo
 )
