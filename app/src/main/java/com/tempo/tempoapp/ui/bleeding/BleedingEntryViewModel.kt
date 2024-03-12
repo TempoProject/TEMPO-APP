@@ -31,7 +31,7 @@ class BleedingEntryViewModel(private val bleedingRepository: BleedingRepository)
             site.isNotBlank()
                     && cause.isNotBlank()
                     && painScale.isNotBlank()
-                    //&& severity.isNotBlank()
+                    && severity.isNotBlank()
                     && date.isNotBlank()
                     && time.isNotBlank()
 

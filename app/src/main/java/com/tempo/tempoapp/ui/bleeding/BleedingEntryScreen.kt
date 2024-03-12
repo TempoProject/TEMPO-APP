@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -21,7 +23,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TimePicker
+import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -35,6 +41,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tempo.tempoapp.R
 import com.tempo.tempoapp.data.model.BleedingCause
@@ -43,6 +50,8 @@ import com.tempo.tempoapp.data.model.bleedingSite
 import com.tempo.tempoapp.ui.AppViewModelProvider
 import com.tempo.tempoapp.ui.navigation.NavigationDestination
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
 
 object BleedingEntryDestination : NavigationDestination {
     override val route: String
@@ -110,6 +119,14 @@ fun BleedingEventInputForm(
     onItemClick: (BleedingDetails) -> Unit,
     modifier: Modifier = Modifier
 ) {
+
+    var showDatePickerDialog by remember {
+        mutableStateOf(false)
+    }
+
+    var showTimePickerDialog by remember {
+        mutableStateOf(false)
+    }
     Column(verticalArrangement = Arrangement.spacedBy(16.dp), modifier = modifier.fillMaxWidth()) {
         DropdownList(
             uiState.bleedingDetails,
@@ -140,7 +157,7 @@ fun BleedingEventInputForm(
         DropdownList(
             uiState.bleedingDetails,
             itemList = Severity.entries.map { it.name },
-            onItemClick = { },
+            onItemClick = onItemClick,
             label = R.string.severity_string_label,
             modifier = modifier
         )
@@ -151,11 +168,16 @@ fun BleedingEventInputForm(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
 
+            var date by remember {
+                mutableStateOf(uiState.bleedingDetails.date)
+            }
             OutlinedButton(
-                onClick = { /*TODO*/ }, shape = RoundedCornerShape(8.dp), modifier = Modifier
+                onClick = { showDatePickerDialog = !showDatePickerDialog },
+                shape = RoundedCornerShape(8.dp),
+                modifier = Modifier
                     .weight(2f)
             ) {
-                Text(text = uiState.bleedingDetails.date)
+                Text(text = date)
                 Spacer(modifier = Modifier.padding(1.dp))
                 Icon(
                     painter = painterResource(id = R.drawable.baseline_calendar_today_24),
@@ -174,6 +196,7 @@ fun BleedingEventInputForm(
             Spacer(modifier = Modifier.padding(2.dp))
             OutlinedButton(
                 onClick = {
+                    showTimePickerDialog = !showTimePickerDialog
                 }, shape = RoundedCornerShape(8.dp), modifier = Modifier
                     .weight(1f)
             ) {
@@ -185,6 +208,31 @@ fun BleedingEventInputForm(
                     contentDescription = null
                 )
             }
+
+            if (showDatePickerDialog)
+                DatePickerDialog(
+                    onDateSelected = { timestamp ->
+                        onItemClick(
+                            uiState.bleedingDetails.copy(
+                                date = SimpleDateFormat("dd-MM-yyyy").format(
+                                    Date(timestamp)
+                                )
+                            )
+                        )
+                        date = SimpleDateFormat("dd-MM-yyyy").format(
+                            Date(timestamp)
+                        )
+                    },
+                    onDismiss = { showDatePickerDialog = !showDatePickerDialog })
+
+            if (showTimePickerDialog)
+                TimePickerDialog(
+                    onTimeSelected = {
+                        onItemClick(
+                            uiState.bleedingDetails.copy(time = it)
+                        )
+                    },
+                    onDismiss = { showTimePickerDialog = !showTimePickerDialog })
             /*
             OutlinedTextField(
                 label = { Text(text = "Ora") },
@@ -203,6 +251,57 @@ fun BleedingEventInputForm(
             onValueChange = { onItemClick(uiState.bleedingDetails.copy(note = it)) },
             modifier = modifier.fillMaxWidth()
         )
+    }
+}
+
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+fun DatePickerDialog(onDateSelected: (Long) -> Unit, onDismiss: () -> Unit) {
+
+    val state = rememberDatePickerState()
+    DatePickerDialog(onDismissRequest = onDismiss, confirmButton = {
+        Button(onClick = {
+            state.selectedDateMillis?.let { onDateSelected(it) }
+            onDismiss()
+        }) {
+            Text(text = "OK")
+        }
+    }, dismissButton = {
+        Button(onClick = onDismiss) {
+            Text(text = "Cancel")
+        }
+    }
+    ) {
+        DatePicker(
+            state = state
+        )
+    }
+}
+
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+fun TimePickerDialog(onTimeSelected: (String) -> Unit, onDismiss: () -> Unit) {
+
+    val state = rememberTimePickerState()
+
+    Dialog(onDismissRequest = onDismiss) {
+        Surface {
+            Column {
+                TimePicker(state = state)
+                Row {
+                    Button(onClick = onDismiss) {
+                        Text(text = "Cancel")
+                    }
+                    Button(onClick = {
+                        // TODO check AM/PM
+                        onTimeSelected("${if(state.hour == 0) "00" else state.hour}:${if (state.minute == 0) "00" else state.minute}")
+                        onDismiss()
+                    }) {
+                        Text(text = "Salva")
+                    }
+                }
+            }
+        }
     }
 }
 
