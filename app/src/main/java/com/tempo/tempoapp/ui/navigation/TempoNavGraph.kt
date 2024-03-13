@@ -15,6 +15,12 @@ import com.tempo.tempoapp.ui.bleeding.BleedingEventDetailsDestination
 import com.tempo.tempoapp.ui.bleeding.BleedingEventEditDestination
 import com.tempo.tempoapp.ui.home.HomeDestination
 import com.tempo.tempoapp.ui.home.HomeScreen
+import com.tempo.tempoapp.ui.infusion.InfusionDetailsDestination
+import com.tempo.tempoapp.ui.infusion.InfusionDetailsScreen
+import com.tempo.tempoapp.ui.infusion.InfusionEditDestination
+import com.tempo.tempoapp.ui.infusion.InfusionEditScreen
+import com.tempo.tempoapp.ui.infusion.InfusionEntryDestination
+import com.tempo.tempoapp.ui.infusion.InfusionEventScreen
 
 @Composable
 fun TempoNavHost(
@@ -29,6 +35,10 @@ fun TempoNavHost(
          */
         composable(route = HomeDestination.route) {
             HomeScreen(navigateToBleedingEntry = { navController.navigate(BleedingEntryDestination.route) },
+                navigateToInfusionEntry = { navController.navigate(InfusionEntryDestination.route) },
+                navigateToInfusionUpdate = {
+                    navController.navigate("${InfusionEntryDestination.route}/${it}")
+                },
                 navigateToBleedingUpdate = {
                     navController.navigate("${BleedingEventDetailsDestination.route}/${it}")
                 })
@@ -65,6 +75,43 @@ fun TempoNavHost(
             })
         ) {
             BleedingEditScreen()
+        }
+
+        /**
+         * Add new infusion event
+         */
+        composable(route = InfusionEntryDestination.route) {
+            InfusionEventScreen()
+        }
+
+        /**
+         * Details infusion
+         */
+        composable(
+            route = InfusionDetailsDestination.routeWithArgs,
+            arguments = listOf(navArgument(InfusionDetailsDestination.itemIdArg) {
+                type = NavType.IntType
+            })
+        ) {
+            InfusionDetailsScreen(
+                navigateToInfusionEdit = {
+                    navController.navigate(
+                        "${InfusionEditDestination.route}/${it}"
+                    )
+                }
+            )
+        }
+
+        /**
+         * Edit infusion
+         */
+        composable(
+            route = InfusionEditDestination.routeWithArgs,
+            arguments = listOf(navArgument(InfusionEditDestination.itemIdArg) {
+                type = NavType.IntType
+            })
+        ) {
+            InfusionEditScreen()
         }
 
 
