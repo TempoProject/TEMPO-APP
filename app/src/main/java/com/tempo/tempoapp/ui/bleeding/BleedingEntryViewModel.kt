@@ -55,7 +55,7 @@ data class BleedingDetails(
     val cause: String = "",
     val severity: String = "",
     val painScale: String = "",
-    val note: String = "",
+    val note: String? = null,
     val date: String = SimpleDateFormat("dd-MM-yyyy").format(Date()),
     val time: String = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
 )
