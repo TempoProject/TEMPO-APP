@@ -23,7 +23,6 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -34,7 +33,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -46,6 +45,8 @@ import com.tempo.tempoapp.data.model.InfusionEvent
 import com.tempo.tempoapp.ui.AppViewModelProvider
 import com.tempo.tempoapp.ui.navigation.NavigationDestination
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
 
 
 object HomeDestination : NavigationDestination {
@@ -70,26 +71,23 @@ fun HomeScreen(
         mutableStateOf(false)
     }
 
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
     Scaffold(
-        modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             TempoAppBar(
                 title = stringResource(id = HomeDestination.titleRes),
                 canNavigateBack = false,
-                scrollBehavior = scrollBehavior
             )
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { showBottomSheet = !showBottomSheet },//navigateToBleedingEntry,
+                onClick = { showBottomSheet = !showBottomSheet },
                 shape = MaterialTheme.shapes.medium,
-                modifier = Modifier.padding(8.dp)
+                modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_large))
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
-                    contentDescription = null//stringResource(R.string.item_entry_title)
+                    contentDescription = null
                 )
             }
         },
@@ -173,7 +171,7 @@ fun HomeBody(
                 infusionEventList,
                 onInfusionItemClick = { onInfusionItemClick(it.id) },
                 onBleedingItemClick = { onBleedingItemClick(it.id) },
-                modifier = Modifier.padding(8.dp)
+                modifier = Modifier.padding(horizontal = dimensionResource(id = R.dimen.padding_small))
             )
         }
     }
@@ -190,14 +188,14 @@ fun EventsList(
     LazyColumn(modifier = modifier) {
         items(infusionEventList) {
             InfusionItem(item = it, modifier = Modifier
-                .padding(8.dp)
+                .padding(dimensionResource(id = R.dimen.padding_small))
                 .clickable { onInfusionItemClick(it) })
         }
         items(bleedingEventList) {
             BleedingItem(
                 item = it,
                 modifier = Modifier
-                    .padding(8.dp)
+                    .padding(dimensionResource(id = R.dimen.padding_small))
                     .clickable { onBleedingItemClick(it) }
             )
         }
@@ -207,13 +205,15 @@ fun EventsList(
 @Composable
 fun BleedingItem(item: BleedingEvent, modifier: Modifier) {
     Card(
+        colors = CardDefaults.cardColors(MaterialTheme.colorScheme.primary),
         modifier = modifier, elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
-            modifier = Modifier.padding(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_large)),
+            verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_small))
         ) {
             Row(
+                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
@@ -226,6 +226,12 @@ fun BleedingItem(item: BleedingEvent, modifier: Modifier) {
                     style = MaterialTheme.typography.titleMedium
                 )
             }
+            Text(
+                text = item.timestamp.toStringDate(),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.align(alignment = Alignment.End)
+            )
+
         }
     }
 }
@@ -233,25 +239,34 @@ fun BleedingItem(item: BleedingEvent, modifier: Modifier) {
 @Composable
 fun InfusionItem(item: InfusionEvent, modifier: Modifier) {
     Card(
+        colors = CardDefaults.cardColors(MaterialTheme.colorScheme.secondary),
         modifier = modifier, elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
-            modifier = Modifier.padding(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_large)),
+            verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_small))
         ) {
             Row(
+                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    text = item.infusionSite,
+                    text = item.treatment,
                     style = MaterialTheme.typography.titleLarge,
                 )
                 Spacer(Modifier.weight(1f))
                 Text(
-                    text = item.treatment,
+                    text = item.infusionSite,
                     style = MaterialTheme.typography.titleMedium
                 )
             }
+            Text(
+                text = item.timestamp.toStringDate(),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.align(alignment = Alignment.End)
+            )
         }
     }
 }
+
+private fun Long.toStringDate(): String = SimpleDateFormat("dd-MM-yyyy").format(Date(this))

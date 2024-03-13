@@ -1,11 +1,14 @@
 package com.tempo.tempoapp.ui.bleeding
 
 import androidx.annotation.StringRes
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
@@ -21,6 +24,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -61,17 +65,22 @@ fun BleedingDetailsScreen(
             )
         },
         floatingActionButton = {
-            Row {
+            Row(
+                modifier = Modifier.padding(
+                    bottom = dimensionResource(id = R.dimen.padding_large),
+                    end = dimensionResource(id = R.dimen.padding_small)
+                )
+            ) {
                 FloatingActionButton(
                     onClick = { navigateToBleedingEdit(uiState.value.id) },
                     shape = MaterialTheme.shapes.medium,
-                    modifier = Modifier.padding(8.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Edit,
                         contentDescription = null//stringResource(R.string.item_entry_title)
                     )
                 }
+                Spacer(modifier = Modifier.padding(4.dp))
                 FloatingActionButton(
                     onClick = {
                         coroutineScope.launch {
@@ -80,7 +89,6 @@ fun BleedingDetailsScreen(
                         }
                     },
                     shape = MaterialTheme.shapes.medium,
-                    modifier = Modifier.padding(8.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Delete,
@@ -92,7 +100,9 @@ fun BleedingDetailsScreen(
     ) {
         BleedingDetailsBody(
             uiState.value,
-            Modifier.padding(it)
+            Modifier
+                .padding(it)
+                .verticalScroll(rememberScrollState())
         )
     }
 
@@ -100,8 +110,14 @@ fun BleedingDetailsScreen(
 
 @Composable
 fun BleedingDetailsBody(uiState: BleedingDetailsUiState, modifier: Modifier = Modifier) {
-    Column {
-        BleedingItemDetails(uiState.bleedingDetails, modifier = Modifier.fillMaxWidth())
+    Column(
+        modifier = modifier.padding(dimensionResource(id = R.dimen.padding_medium)),
+        verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_medium))
+    ) {
+        BleedingItemDetails(
+            uiState.bleedingDetails,
+            modifier = Modifier.fillMaxWidth()
+        )
     }
 }
 
@@ -113,15 +129,62 @@ fun BleedingItemDetails(details: BleedingDetails, modifier: Modifier) {
             contentColor = MaterialTheme.colorScheme.onPrimaryContainer
         )
     ) {
-        ItemDetailsRow(labelResID = R.string.site_string_label, itemDetail = details.site)
-        ItemDetailsRow(labelResID = R.string.cause_string_label, itemDetail = details.cause)
-        ItemDetailsRow(labelResID = R.string.severity_string_label, itemDetail = details.severity)
+        ItemDetailsRow(
+            labelResID = R.string.site_string_label,
+            itemDetail = details.site,
+            modifier = Modifier.padding(
+                horizontal = dimensionResource(
+                    id = R.dimen
+                        .padding_medium
+                )
+            )
+        )
+        ItemDetailsRow(
+            labelResID = R.string.cause_string_label,
+            itemDetail = details.cause,
+            modifier = Modifier.padding(
+                horizontal = dimensionResource(
+                    id = R.dimen
+                        .padding_medium
+                )
+            )
+        )
+        ItemDetailsRow(
+            labelResID = R.string.severity_string_label,
+            itemDetail = details.severity,
+            modifier = Modifier.padding(
+                horizontal = dimensionResource(
+                    id = R.dimen
+                        .padding_medium
+                )
+            )
+        )
         ItemDetailsRow(
             labelResID = R.string.pain_scale_string_label,
-            itemDetail = details.painScale
+            itemDetail = details.painScale,
+            modifier = Modifier.padding(
+                horizontal = dimensionResource(
+                    id = R.dimen
+                        .padding_medium
+                )
+            )
         )
-        ItemDetailsRow(labelResID = R.string.date, itemDetail = details.date)
-        ItemDetailsRow(labelResID = R.string.time, itemDetail = details.time)
+        ItemDetailsRow(
+            labelResID = R.string.date, itemDetail = details.date, modifier = Modifier.padding(
+                horizontal = dimensionResource(
+                    id = R.dimen
+                        .padding_medium
+                )
+            )
+        )
+        ItemDetailsRow(
+            labelResID = R.string.time, itemDetail = details.time, modifier = Modifier.padding(
+                horizontal = dimensionResource(
+                    id = R.dimen
+                        .padding_medium
+                )
+            )
+        )
 
     }
 }

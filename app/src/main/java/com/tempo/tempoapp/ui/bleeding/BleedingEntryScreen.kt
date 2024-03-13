@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenu
@@ -24,7 +25,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberDatePickerState
@@ -42,6 +42,7 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -92,7 +93,6 @@ fun BleedingEntryScreen(
             },
             modifier = Modifier
                 .padding(innerPadding)
-                //.verticalScroll(rememberScrollState())
                 .fillMaxWidth()
         )
 
@@ -186,13 +186,14 @@ fun BleedingEventInputForm(
 
         Row(
             modifier = Modifier
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .padding(dimensionResource(id = R.dimen.padding_small)),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
 
             OutlinedButton(
                 onClick = { showDatePickerDialog = !showDatePickerDialog },
-                shape = RoundedCornerShape(8.dp),
+                shape = RoundedCornerShape(dimensionResource(id = R.dimen.padding_small)),
                 modifier = Modifier
                     .weight(2f)
             ) {
@@ -209,7 +210,9 @@ fun BleedingEventInputForm(
             OutlinedButton(
                 onClick = {
                     showTimePickerDialog = !showTimePickerDialog
-                }, shape = RoundedCornerShape(8.dp), modifier = Modifier
+                },
+                shape = RoundedCornerShape(dimensionResource(id = R.dimen.padding_small)),
+                modifier = Modifier
                     .weight(1f)
             ) {
                 Text(
@@ -251,28 +254,40 @@ fun BleedingEventInputForm(
             label = { Text(text = "Note") },
             value = uiState.bleedingDetails.note ?: "",
             onValueChange = { onItemClick(uiState.bleedingDetails.copy(note = it)) },
-            modifier = modifier.fillMaxWidth()
+            shape = RoundedCornerShape(dimensionResource(id = R.dimen.padding_small)),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(
+                    start = dimensionResource(id = R.dimen.padding_small),
+                    end = dimensionResource(id = R.dimen.padding_small)
+                )
         )
     }
 }
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
-fun DatePickerDialog(onDateSelected: (Long) -> Unit, onDismiss: () -> Unit) {
+fun DatePickerDialog(
+    onDateSelected: (Long) -> Unit,
+    onDismiss: () -> Unit,
+) {
 
     val state = rememberDatePickerState()
-    DatePickerDialog(onDismissRequest = onDismiss, confirmButton = {
-        Button(onClick = {
-            state.selectedDateMillis?.let { onDateSelected(it) }
-            onDismiss()
-        }) {
-            Text(text = "OK")
+    DatePickerDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            Button(onClick = {
+                state.selectedDateMillis?.let { onDateSelected(it) }
+                onDismiss()
+            }) {
+                Text(text = "OK")
+            }
+        },
+        dismissButton = {
+            Button(onClick = onDismiss) {
+                Text(text = "Cancel")
+            }
         }
-    }, dismissButton = {
-        Button(onClick = onDismiss) {
-            Text(text = "Cancel")
-        }
-    }
     ) {
         DatePicker(
             state = state
@@ -282,24 +297,39 @@ fun DatePickerDialog(onDateSelected: (Long) -> Unit, onDismiss: () -> Unit) {
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
-fun TimePickerDialog(onTimeSelected: (String) -> Unit, onDismiss: () -> Unit) {
+fun TimePickerDialog(
+    onTimeSelected: (String) -> Unit,
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier
+) {
 
     val state = rememberTimePickerState()
 
     Dialog(onDismissRequest = onDismiss) {
-        Surface {
-            Column {
-                TimePicker(state = state)
-                Row {
-                    Button(onClick = onDismiss) {
-                        Text(text = "Cancel")
-                    }
-                    Button(onClick = {
-                        onTimeSelected("${if (state.hour == 0) "00" else state.hour}:${if (state.minute == 0) "00" else state.minute}")
-                        onDismiss()
-                    }) {
-                        Text(text = "Salva")
-                    }
+        Card {
+            TimePicker(
+                state = state,
+                modifier = Modifier
+                    .padding(
+                        dimensionResource(id = R.dimen.padding_large)
+                    )
+                    .fillMaxWidth()
+            )
+
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(2.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                Button(onClick = onDismiss) {
+                    Text(text = "Cancel")
+                }
+                Button(onClick = {
+                    onTimeSelected("${if (state.hour == 0) "00" else state.hour}:${if (state.minute == 0) "00" else state.minute}")
+                    onDismiss()
+                }) {
+                    Text(text = "Salva")
                 }
             }
         }
@@ -325,7 +355,11 @@ fun DropdownList(
     Box(
         modifier = modifier
             .clickable { showDropdown = !showDropdown }
-            .border(1.dp, Color.Black, RoundedCornerShape(8.dp))
+            .border(
+                1.dp,
+                Color.Black,
+                RoundedCornerShape(dimensionResource(id = R.dimen.padding_small))
+            )
     ) {
         TextWithIcon(text = labelText.ifBlank {
             // check on the first field because if empty means that is a new event
@@ -352,10 +386,14 @@ fun DropdownList(
         DropdownMenu(
             expanded = showDropdown,
             onDismissRequest = { showDropdown = !showDropdown },
-            modifier = modifier,
+            offset = DpOffset(
+                x = dimensionResource(id = R.dimen.padding_small),
+                y = dimensionResource(id = R.dimen.padding_small)
+            )
         ) {
             itemList.forEach {
                 DropdownMenuItem(
+                    modifier = Modifier.fillMaxWidth(),
                     text = { Text(text = it, textAlign = TextAlign.Center) },
                     onClick = {
                         //println(it)
