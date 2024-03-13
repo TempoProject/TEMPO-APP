@@ -31,7 +31,6 @@ class BleedingEditViewModel(
 
     suspend fun update() {
         if (validateInput(uiState.bleedingDetails))
-            println("valid")
             bleedingRepository.updateItem(uiState.bleedingDetails.toEntity())
     }
 
@@ -46,7 +45,7 @@ class BleedingEditViewModel(
             site.isNotBlank()
                     && cause.isNotBlank()
                     && painScale.isNotBlank()
-                    //&& severity.isNotBlank()
+                    && severity.isNotBlank()
                     && date.isNotBlank()
                     && time.isNotBlank()
 

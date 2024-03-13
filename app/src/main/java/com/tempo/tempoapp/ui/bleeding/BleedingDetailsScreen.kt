@@ -61,9 +61,10 @@ fun BleedingDetailsScreen(
                     )
                 }
                 FloatingActionButton(
-                    onClick = { coroutineScope.launch {
-                        viewModel.deleteItem()
-                    } },
+                    onClick = {
+                        coroutineScope.launch {
+                            viewModel.deleteItem()
+                        } },
                     shape = MaterialTheme.shapes.medium,
                     modifier = Modifier.padding(8.dp)
                 ) {
@@ -74,18 +75,6 @@ fun BleedingDetailsScreen(
                 }
             }
         }
-        /*{
-            FloatingActionButton(
-                onClick = { navigateToBleedingEdit(uiState.value.id) },
-                shape = MaterialTheme.shapes.medium,
-                modifier = Modifier.padding(8.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Edit,
-                    contentDescription = null//stringResource(R.string.item_entry_title)
-                )
-            }
-        }*/
     ) {
         BleedingDetailsBody(
             uiState.value,
@@ -124,7 +113,7 @@ fun BleedingItemDetails(details: BleedingDetails, modifier: Modifier) {
 }
 
 @Composable
-private fun ItemDetailsRow(
+internal fun ItemDetailsRow(
     @StringRes labelResID: Int, itemDetail: String, modifier: Modifier = Modifier
 ) {
     Row(modifier = modifier) {
