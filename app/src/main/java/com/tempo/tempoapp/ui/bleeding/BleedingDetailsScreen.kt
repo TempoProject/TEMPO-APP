@@ -11,6 +11,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -25,6 +26,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tempo.tempoapp.R
+import com.tempo.tempoapp.TempoAppBar
 import com.tempo.tempoapp.ui.AppViewModelProvider
 import com.tempo.tempoapp.ui.navigation.NavigationDestination
 import kotlinx.coroutines.launch
@@ -39,8 +41,11 @@ object BleedingEventDetailsDestination : NavigationDestination {
     val routeWithArgs = "$route/{$itemIdArg}"
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BleedingDetailsScreen(
+    onNavigateUp: () -> Unit,
+    navigateBack: () -> Unit,
     navigateToBleedingEdit: (Int) -> Unit,
     viewModel: BleedingDetailsViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
@@ -48,6 +53,13 @@ fun BleedingDetailsScreen(
     val coroutineScope = rememberCoroutineScope()
 
     Scaffold(
+        topBar = {
+            TempoAppBar(
+                title = stringResource(id = BleedingEventDetailsDestination.titleRes),
+                canNavigateBack = true,
+                navigateUp = onNavigateUp
+            )
+        },
         floatingActionButton = {
             Row {
                 FloatingActionButton(
@@ -64,7 +76,9 @@ fun BleedingDetailsScreen(
                     onClick = {
                         coroutineScope.launch {
                             viewModel.deleteItem()
-                        } },
+                            navigateBack()
+                        }
+                    },
                     shape = MaterialTheme.shapes.medium,
                     modifier = Modifier.padding(8.dp)
                 ) {

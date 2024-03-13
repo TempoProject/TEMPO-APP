@@ -20,6 +20,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -37,6 +38,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -44,6 +46,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tempo.tempoapp.R
+import com.tempo.tempoapp.TempoAppBar
 import com.tempo.tempoapp.data.model.BleedingCause
 import com.tempo.tempoapp.data.model.Severity
 import com.tempo.tempoapp.data.model.bleedingSite
@@ -60,21 +63,37 @@ object BleedingEntryDestination : NavigationDestination {
         get() = R.string.add_new_bleeding
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BleedingEntryScreen(viewModel: BleedingEntryViewModel = viewModel(factory = AppViewModelProvider.Factory)) {
-    // TODO aggiungere topBar
-    Scaffold { innerPadding ->
-        val coroutineScope = rememberCoroutineScope()
+fun BleedingEntryScreen(
+    navigateBack: () -> Unit,
+    onNavigateUp: () -> Unit,
+    viewModel: BleedingEntryViewModel = viewModel(factory = AppViewModelProvider.Factory)
+) {
+    val coroutineScope = rememberCoroutineScope()
+
+    Scaffold(
+        topBar = {
+            TempoAppBar(
+                title = stringResource(id = BleedingEntryDestination.titleRes),
+                canNavigateBack = true,
+                navigateUp = onNavigateUp,
+            )
+        },
+    ) { innerPadding ->
         BleedingEventBody(
             uiState = viewModel.uiState,
             onItemClick = viewModel::updateUiState,
             onSave = {
                 coroutineScope.launch {
                     viewModel.onSave()
+                    navigateBack()
                 }
             },
             modifier = Modifier
                 .padding(innerPadding)
+                //.verticalScroll(rememberScrollState())
+                .fillMaxWidth()
         )
 
     }
@@ -85,16 +104,16 @@ fun BleedingEventBody(
     uiState: BleedingEventUiState,
     onItemClick: (BleedingDetails) -> Unit,
     onSave: () -> Unit,
-    modifier: Modifier = Modifier.padding(8.dp)
+    modifier: Modifier = Modifier//.padding(8.dp)
 ) {
     Column(
-        modifier = modifier.padding(8.dp),
-        verticalArrangement = Arrangement.Center,
+        modifier = modifier.padding(dimensionResource(id = R.dimen.padding_medium)),
+        verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_large))
     ) {
         BleedingEventInputForm(
             uiState,
             onItemClick,
-            modifier.padding(8.dp)
+            modifier = Modifier.fillMaxWidth()
         )
 
         Button(
@@ -103,7 +122,8 @@ fun BleedingEventBody(
                 .padding(end = 8.dp)
                 .width(150.dp),
             onClick = onSave,
-            enabled = uiState.isEntryValid
+            enabled = uiState.isEntryValid,
+            shape = MaterialTheme.shapes.small,
         ) {
             Text(text = "Salva")
         }
@@ -130,13 +150,15 @@ fun BleedingEventInputForm(
     var date by remember {
         mutableStateOf(uiState.bleedingDetails.date)
     }
-    Column(verticalArrangement = Arrangement.spacedBy(16.dp), modifier = modifier.fillMaxWidth()) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_medium))
+    ) {
         DropdownList(
             uiState.bleedingDetails,
             itemList = bleedingSite.toList(),
             onItemClick = onItemClick,
             label = R.string.site_string_label,
-            modifier = modifier
         )
 
         DropdownList(
@@ -146,7 +168,6 @@ fun BleedingEventInputForm(
             },
             onItemClick = onItemClick,
             label = R.string.cause_string_label,
-            modifier = modifier
         )
 
         DropdownList(
@@ -154,7 +175,6 @@ fun BleedingEventInputForm(
             itemList = Severity.entries.map { it.name },
             onItemClick = onItemClick,
             label = R.string.pain_scale_string_label,
-            modifier = modifier
         )
 
         DropdownList(
@@ -162,11 +182,10 @@ fun BleedingEventInputForm(
             itemList = Severity.entries.map { it.name },
             onItemClick = onItemClick,
             label = R.string.severity_string_label,
-            modifier = modifier
         )
 
         Row(
-            modifier = modifier
+            modifier = Modifier
                 .fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
@@ -291,7 +310,7 @@ fun TimePickerDialog(onTimeSelected: (String) -> Unit, onDismiss: () -> Unit) {
 fun DropdownList(
     bleedingDetails: BleedingDetails,
     itemList: List<String>,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_small)),
     onItemClick: (BleedingDetails) -> Unit,
     @StringRes label: Int,
 ) {
@@ -333,7 +352,7 @@ fun DropdownList(
         DropdownMenu(
             expanded = showDropdown,
             onDismissRequest = { showDropdown = !showDropdown },
-            modifier,
+            modifier = modifier,
         ) {
             itemList.forEach {
                 DropdownMenuItem(

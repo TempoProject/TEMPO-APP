@@ -9,6 +9,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -17,9 +18,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tempo.tempoapp.R
+import com.tempo.tempoapp.TempoAppBar
 import com.tempo.tempoapp.ui.AppViewModelProvider
 import com.tempo.tempoapp.ui.bleeding.ItemDetailsRow
 import com.tempo.tempoapp.ui.navigation.NavigationDestination
@@ -35,8 +38,11 @@ object InfusionDetailsDestination : NavigationDestination {
     val routeWithArgs = "${InfusionEntryDestination.route}/{$itemIdArg}"
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InfusionDetailsScreen(
+    onNavigateUp: () -> Unit,
+    navigateBack: () -> Unit,
     navigateToInfusionEdit: (Int) -> Unit,
     viewModel: InfusionDetailsViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
@@ -44,6 +50,13 @@ fun InfusionDetailsScreen(
     val coroutineScope = rememberCoroutineScope()
 
     Scaffold(
+        topBar = {
+            TempoAppBar(
+                title = stringResource(id = InfusionDetailsDestination.titleRes),
+                canNavigateBack = true,
+                navigateUp = onNavigateUp
+            )
+        },
         floatingActionButton = {
             Row {
                 FloatingActionButton(
@@ -60,6 +73,7 @@ fun InfusionDetailsScreen(
                     onClick = {
                         coroutineScope.launch {
                             viewModel.deleteItem()
+                            navigateBack()
                         }
                     },
                     shape = MaterialTheme.shapes.medium,

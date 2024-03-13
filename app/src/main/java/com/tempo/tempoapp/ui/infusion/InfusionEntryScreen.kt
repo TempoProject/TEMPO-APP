@@ -17,6 +17,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -38,6 +39,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tempo.tempoapp.R
+import com.tempo.tempoapp.TempoAppBar
 import com.tempo.tempoapp.data.model.bleedingSite
 import com.tempo.tempoapp.ui.AppViewModelProvider
 import com.tempo.tempoapp.ui.bleeding.DatePickerDialog
@@ -58,16 +60,28 @@ object InfusionEntryDestination : NavigationDestination {
     val routeWithArgs = "$route/{$itemIdArg}"
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun InfusionEventScreen(viewModel: InfusionEntryViewModel = viewModel(factory = AppViewModelProvider.Factory)) {
-    Scaffold {
-        val coroutineScope = rememberCoroutineScope()
+fun InfusionEventScreen(
+    navigateBack: () -> Unit,
+    onNavigateUp: () -> Unit,
+    viewModel: InfusionEntryViewModel = viewModel(factory = AppViewModelProvider.Factory)
+) {
+    val coroutineScope = rememberCoroutineScope()
+    Scaffold(topBar = {
+        TempoAppBar(
+            title = stringResource(id = InfusionEntryDestination.titleRes),
+            canNavigateBack = true,
+            navigateUp = onNavigateUp,
+        )
+    }) {
         InfusionEventBody(
             uiState = viewModel.uiState,
             onItemClick = viewModel::updateUiState,
             onSave = {
                 coroutineScope.launch {
                     viewModel.onSave()
+                    navigateBack()
                 }
             },
             Modifier.padding(it)

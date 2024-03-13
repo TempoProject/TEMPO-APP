@@ -23,6 +23,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -33,11 +34,13 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tempo.tempoapp.R
+import com.tempo.tempoapp.TempoAppBar
 import com.tempo.tempoapp.data.model.BleedingEvent
 import com.tempo.tempoapp.data.model.InfusionEvent
 import com.tempo.tempoapp.ui.AppViewModelProvider
@@ -66,7 +69,18 @@ fun HomeScreen(
     var showBottomSheet by remember {
         mutableStateOf(false)
     }
+
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+
     Scaffold(
+        modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        topBar = {
+            TempoAppBar(
+                title = stringResource(id = HomeDestination.titleRes),
+                canNavigateBack = false,
+                scrollBehavior = scrollBehavior
+            )
+        },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { showBottomSheet = !showBottomSheet },//navigateToBleedingEntry,
@@ -89,27 +103,35 @@ fun HomeScreen(
                 modifier = Modifier.fillMaxHeight(fraction = 0.3f)
             ) {
                 // Sheet content
-                OutlinedButton(onClick = {
-                    scope.launch {
-                        sheetState.hide()
-                    }.invokeOnCompletion {
-                        navigateToBleedingEntry()
-                        if (!sheetState.isVisible) {
-                            showBottomSheet = false
+                OutlinedButton(
+                    onClick = {
+                        scope.launch {
+                            sheetState.hide()
+                        }.invokeOnCompletion {
+                            navigateToBleedingEntry()
+                            if (!sheetState.isVisible) {
+                                showBottomSheet = false
 
+                            }
                         }
-                    }
-                }, modifier = Modifier.fillMaxWidth().padding(4.dp)) {
+                    }, modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(4.dp)
+                ) {
                     Text("Aggiungi infusione")
                 }
-                OutlinedButton(onClick = {
-                    scope.launch { sheetState.hide() }.invokeOnCompletion {
-                        navigateToInfusionEntry()
-                        if (!sheetState.isVisible) {
-                            showBottomSheet = false
+                OutlinedButton(
+                    onClick = {
+                        scope.launch { sheetState.hide() }.invokeOnCompletion {
+                            navigateToInfusionEntry()
+                            if (!sheetState.isVisible) {
+                                showBottomSheet = false
+                            }
                         }
-                    }
-                }, modifier = Modifier.fillMaxWidth().padding(4.dp)) {
+                    }, modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(4.dp)
+                ) {
                     Text("Aggiungi Sanguinamento")
                 }
             }
@@ -139,7 +161,7 @@ fun HomeBody(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier
     ) {
-        if (bleedingEventList.isEmpty()) {
+        if (bleedingEventList.isEmpty() && infusionEventList.isEmpty()) {
             Text(
                 text = stringResource(R.string.no_bleeding_event),
                 textAlign = TextAlign.Center,
