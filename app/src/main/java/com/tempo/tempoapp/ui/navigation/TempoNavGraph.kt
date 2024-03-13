@@ -47,7 +47,10 @@ fun TempoNavHost(
          * Add new bleeding event
          */
         composable(route = BleedingEntryDestination.route) {
-            BleedingEntryScreen()
+            BleedingEntryScreen(
+                onNavigateUp = { navController.navigateUp() },
+                navigateBack = { navController.popBackStack() },
+            )
         }
 
         /**
@@ -60,8 +63,11 @@ fun TempoNavHost(
                 type = NavType.IntType
             })
         ) {
-            BleedingDetailsScreen(navigateToBleedingEdit =
-            { navController.navigate("${BleedingEventEditDestination.route}/${it}") })
+            BleedingDetailsScreen(
+                onNavigateUp = { navController.navigateUp() },
+                navigateBack = { navController.popBackStack() },
+                navigateToBleedingEdit =
+                { navController.navigate("${BleedingEventEditDestination.route}/${it}") })
         }
 
         /**
@@ -74,14 +80,20 @@ fun TempoNavHost(
                 type = NavType.IntType
             })
         ) {
-            BleedingEditScreen()
+            BleedingEditScreen(
+                onNavigateUp = { navController.navigateUp() },
+                navigateBack = { navController.popBackStack() },
+            )
         }
 
         /**
          * Add new infusion event
          */
         composable(route = InfusionEntryDestination.route) {
-            InfusionEventScreen()
+            InfusionEventScreen(
+                onNavigateUp = { navController.navigateUp() },
+                navigateBack = { navController.popBackStack() },
+            )
         }
 
         /**
@@ -94,6 +106,8 @@ fun TempoNavHost(
             })
         ) {
             InfusionDetailsScreen(
+                onNavigateUp = { navController.navigateUp() },
+                navigateBack = { navController.popBackStack() },
                 navigateToInfusionEdit = {
                     navController.navigate(
                         "${InfusionEditDestination.route}/${it}"
@@ -111,7 +125,10 @@ fun TempoNavHost(
                 type = NavType.IntType
             })
         ) {
-            InfusionEditScreen()
+            InfusionEditScreen(
+                onNavigateUp = { navController.navigateUp() },
+                navigateBack = { navController.popBackStack() },
+            )
         }
 
 
