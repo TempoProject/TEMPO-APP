@@ -3,18 +3,27 @@ package com.tempo.tempoapp.ui.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tempo.tempoapp.data.model.BleedingEvent
+import com.tempo.tempoapp.data.model.InfusionEvent
 import com.tempo.tempoapp.data.repository.BleedingRepository
+import com.tempo.tempoapp.data.repository.InfusionRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 
-class HomeViewModel(private val bleedingRepository: BleedingRepository) : ViewModel() {
+class HomeViewModel(
+    bleedingRepository: BleedingRepository,
+    infusionRepository: InfusionRepository
+) : ViewModel() {
+
+
     val homeUiState: StateFlow<HomeUiState> =
-        bleedingRepository.getAll().map { HomeUiState(it) }.stateIn(
+        bleedingRepository.getAll().combine(infusionRepository.getAll()) { bleeding, infusion ->
+            HomeUiState(bleeding, infusion)
+        }.stateIn(
             scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
-            initialValue = HomeUiState()
+            initialValue = HomeUiState(),
+            started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS)
         )
 
     companion object {
@@ -22,4 +31,7 @@ class HomeViewModel(private val bleedingRepository: BleedingRepository) : ViewMo
     }
 }
 
-data class HomeUiState(val itemList: List<BleedingEvent> = listOf())
+data class HomeUiState(
+    val bleedingList: List<BleedingEvent> = listOf(),
+    val infusionList: List<InfusionEvent> = mutableListOf()
+)

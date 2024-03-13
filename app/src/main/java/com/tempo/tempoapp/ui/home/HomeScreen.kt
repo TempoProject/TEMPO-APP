@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tempo.tempoapp.R
 import com.tempo.tempoapp.data.model.BleedingEvent
+import com.tempo.tempoapp.data.model.InfusionEvent
 import com.tempo.tempoapp.ui.AppViewModelProvider
 import com.tempo.tempoapp.ui.navigation.NavigationDestination
 
@@ -44,7 +45,8 @@ fun HomeScreen(
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = viewModel(factory = AppViewModelProvider.Factory),
     navigateToBleedingEntry: () -> Unit,
-    navigateToBleedingUpdate: (Int) -> Unit
+    navigateToBleedingUpdate: (Int) -> Unit,
+    navigateToInfusionUpdate: (Int) -> Unit
 ) {
     val homeUiState by viewModel.homeUiState.collectAsState()
     Scaffold(
@@ -63,10 +65,12 @@ fun HomeScreen(
     ) { innerPadding ->
 
         HomeBody(
-            homeUiState.itemList, modifier = modifier
+            homeUiState.bleedingList, homeUiState.infusionList,
+            modifier = modifier
                 .padding(innerPadding)
                 .fillMaxSize(),
-            onItemClick = navigateToBleedingUpdate
+            onInfusionItemClick = navigateToInfusionUpdate,
+            onBleedingItemClick = navigateToBleedingUpdate
         )
 
     }
@@ -74,24 +78,28 @@ fun HomeScreen(
 
 @Composable
 fun HomeBody(
-    itemList: List<BleedingEvent>,
+    bleedingEventList: List<BleedingEvent>,
+    infusionEventList: List<InfusionEvent>,
     modifier: Modifier = Modifier,
-    onItemClick: (Int) -> Unit
+    onInfusionItemClick: (Int) -> Unit,
+    onBleedingItemClick: (Int) -> Unit
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier
     ) {
-        if (itemList.isEmpty()) {
+        if (bleedingEventList.isEmpty()) {
             Text(
                 text = stringResource(R.string.no_bleeding_event),
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.titleLarge
             )
         } else {
-            BleedingList(
-                itemList,
-                onItemClick = { onItemClick(it.id) },
+            EventsList(
+                bleedingEventList,
+                infusionEventList,
+                onInfusionItemClick = { onInfusionItemClick(it.id) },
+                onBleedingItemClick = { onBleedingItemClick(it.id) },
                 modifier = Modifier.padding(8.dp)
             )
         }
@@ -99,20 +107,27 @@ fun HomeBody(
 }
 
 @Composable
-fun BleedingList(
-    itemList: List<BleedingEvent>,
-    onItemClick: (BleedingEvent) -> Unit,
+fun EventsList(
+    bleedingEventList: List<BleedingEvent>,
+    infusionEventList: List<InfusionEvent>,
+    onInfusionItemClick: (InfusionEvent) -> Unit,
+    onBleedingItemClick: (BleedingEvent) -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyColumn(modifier = modifier) {
-        items(itemList, key = { it.id }) {
-            BleedingItem(
-                item = it,
-                modifier = Modifier
-                    .padding(8.dp)
-                    .clickable { onItemClick(it) }
-            )
+        items(infusionEventList) {
+            InfusionItem(item = it, modifier = Modifier
+                .padding(8.dp)
+                .clickable { onInfusionItemClick(it) })
         }
+        items(bleedingEventList) {
+        BleedingItem(
+            item = it,
+            modifier = Modifier
+                .padding(8.dp)
+                .clickable { onBleedingItemClick(it) }
+        )
+    }
     }
 }
 
@@ -135,6 +150,32 @@ fun BleedingItem(item: BleedingEvent, modifier: Modifier) {
                 Spacer(Modifier.weight(1f))
                 Text(
                     text = item.bleedingSite,
+                    style = MaterialTheme.typography.titleMedium
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun InfusionItem(item: InfusionEvent, modifier: Modifier) {
+    Card(
+        modifier = modifier, elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = item.infusionSite,
+                    style = MaterialTheme.typography.titleLarge,
+                )
+                Spacer(Modifier.weight(1f))
+                Text(
+                    text = item.treatment,
                     style = MaterialTheme.typography.titleMedium
                 )
             }
