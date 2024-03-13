@@ -55,7 +55,7 @@ import java.util.Date
 
 object BleedingEntryDestination : NavigationDestination {
     override val route: String
-        get() = "bleedingEvent"
+        get() = "bleeding_event"
     override val titleRes: Int
         get() = R.string.add_new_bleeding
 }
@@ -96,7 +96,7 @@ fun BleedingEventBody(
             onItemClick,
             modifier.padding(8.dp)
         )
-        // TODO check che tutti i valori sono corretti
+
         Button(
             modifier = Modifier
                 .align(alignment = Alignment.End)
@@ -126,6 +126,9 @@ fun BleedingEventInputForm(
 
     var showTimePickerDialog by remember {
         mutableStateOf(false)
+    }
+    var date by remember {
+        mutableStateOf(uiState.bleedingDetails.date)
     }
     Column(verticalArrangement = Arrangement.spacedBy(16.dp), modifier = modifier.fillMaxWidth()) {
         DropdownList(
@@ -168,9 +171,6 @@ fun BleedingEventInputForm(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
 
-            var date by remember {
-                mutableStateOf(uiState.bleedingDetails.date)
-            }
             OutlinedButton(
                 onClick = { showDatePickerDialog = !showDatePickerDialog },
                 shape = RoundedCornerShape(8.dp),
@@ -184,16 +184,9 @@ fun BleedingEventInputForm(
                     contentDescription = null
                 )
             }
-            /*
-            OutlinedTextField(
-                label = { Text(text = "Data") },
-                value = uiState.bleedingDetails.date,
-                onValueChange = {},
-                textStyle = MaterialTheme.typography.bodyLarge.copy(textAlign = TextAlign.Center),
 
-
-            )*/
             Spacer(modifier = Modifier.padding(2.dp))
+
             OutlinedButton(
                 onClick = {
                     showTimePickerDialog = !showTimePickerDialog
@@ -233,21 +226,11 @@ fun BleedingEventInputForm(
                         )
                     },
                     onDismiss = { showTimePickerDialog = !showTimePickerDialog })
-            /*
-            OutlinedTextField(
-                label = { Text(text = "Ora") },
-                value = uiState.bleedingDetails.time,
-                textStyle = MaterialTheme.typography.bodyLarge.copy(textAlign = TextAlign.Center),
-                keyboardActions = KeyboardActions(),
-                onValueChange = {},
-                modifier = Modifier
-                    .weight(1f)
-            )*/
         }
 
         OutlinedTextField(
             label = { Text(text = "Note") },
-            value = uiState.bleedingDetails.note,
+            value = uiState.bleedingDetails.note ?: "",
             onValueChange = { onItemClick(uiState.bleedingDetails.copy(note = it)) },
             modifier = modifier.fillMaxWidth()
         )
@@ -293,8 +276,7 @@ fun TimePickerDialog(onTimeSelected: (String) -> Unit, onDismiss: () -> Unit) {
                         Text(text = "Cancel")
                     }
                     Button(onClick = {
-                        // TODO check AM/PM
-                        onTimeSelected("${if(state.hour == 0) "00" else state.hour}:${if (state.minute == 0) "00" else state.minute}")
+                        onTimeSelected("${if (state.hour == 0) "00" else state.hour}:${if (state.minute == 0) "00" else state.minute}")
                         onDismiss()
                     }) {
                         Text(text = "Salva")
@@ -328,16 +310,25 @@ fun DropdownList(
     ) {
         TextWithIcon(text = labelText.ifBlank {
             // check on the first field because if empty means that is a new event
-            if (bleedingDetails.cause.isNotEmpty())
-                when (label) {
-                    R.string.cause_string_label -> bleedingDetails.cause
-                    R.string.site_string_label -> bleedingDetails.site
-                    R.string.severity_string_label -> bleedingDetails.severity
-                    R.string.pain_scale_string_label -> bleedingDetails.painScale
-                    else -> ""
+            when (label) {
+                R.string.cause_string_label -> bleedingDetails.cause.ifBlank {
+                    stringResource(id = label)
                 }
-            else
-                stringResource(id = label)
+
+                R.string.site_string_label -> bleedingDetails.site.ifBlank {
+                    stringResource(id = label)
+                }
+
+                R.string.severity_string_label -> bleedingDetails.severity.ifBlank {
+                    stringResource(id = label)
+                }
+
+                R.string.pain_scale_string_label -> bleedingDetails.painScale.ifBlank {
+                    stringResource(id = label)
+                }
+
+                else -> stringResource(id = label)
+            }
         }, modifier)
         DropdownMenu(
             expanded = showDropdown,
