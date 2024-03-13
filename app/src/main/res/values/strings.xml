@@ -10,4 +10,10 @@
     <string name="date">Data</string>
     <string name="time">Ora</string>
     <string name="edit">Modifica</string>
+    <string name="infusion">Infusione</string>
+    <string name="note">Note</string>
+    <string name="infusion_site">Sede infusione</string>
+    <string name="dose_units">Dose in unità</string>
+    <string name="lot_number">Numero di lotto</string>
+    <string name="treatment">Trattamento</string>
 </resources>
