@@ -14,16 +14,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberDatePickerState
@@ -37,13 +38,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tempo.tempoapp.R
+import com.tempo.tempoapp.TempoAppBar
 import com.tempo.tempoapp.data.model.BleedingCause
 import com.tempo.tempoapp.data.model.Severity
 import com.tempo.tempoapp.data.model.bleedingSite
@@ -60,21 +64,36 @@ object BleedingEntryDestination : NavigationDestination {
         get() = R.string.add_new_bleeding
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BleedingEntryScreen(viewModel: BleedingEntryViewModel = viewModel(factory = AppViewModelProvider.Factory)) {
-    // TODO aggiungere topBar
-    Scaffold { innerPadding ->
-        val coroutineScope = rememberCoroutineScope()
+fun BleedingEntryScreen(
+    navigateBack: () -> Unit,
+    onNavigateUp: () -> Unit,
+    viewModel: BleedingEntryViewModel = viewModel(factory = AppViewModelProvider.Factory)
+) {
+    val coroutineScope = rememberCoroutineScope()
+
+    Scaffold(
+        topBar = {
+            TempoAppBar(
+                title = stringResource(id = BleedingEntryDestination.titleRes),
+                canNavigateBack = true,
+                navigateUp = onNavigateUp,
+            )
+        },
+    ) { innerPadding ->
         BleedingEventBody(
             uiState = viewModel.uiState,
             onItemClick = viewModel::updateUiState,
             onSave = {
                 coroutineScope.launch {
                     viewModel.onSave()
+                    navigateBack()
                 }
             },
             modifier = Modifier
                 .padding(innerPadding)
+                .fillMaxWidth()
         )
 
     }
@@ -85,16 +104,16 @@ fun BleedingEventBody(
     uiState: BleedingEventUiState,
     onItemClick: (BleedingDetails) -> Unit,
     onSave: () -> Unit,
-    modifier: Modifier = Modifier.padding(8.dp)
+    modifier: Modifier = Modifier//.padding(8.dp)
 ) {
     Column(
-        modifier = modifier.padding(8.dp),
-        verticalArrangement = Arrangement.Center,
+        modifier = modifier.padding(dimensionResource(id = R.dimen.padding_medium)),
+        verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_large))
     ) {
         BleedingEventInputForm(
             uiState,
             onItemClick,
-            modifier.padding(8.dp)
+            modifier = Modifier.fillMaxWidth()
         )
 
         Button(
@@ -103,7 +122,8 @@ fun BleedingEventBody(
                 .padding(end = 8.dp)
                 .width(150.dp),
             onClick = onSave,
-            enabled = uiState.isEntryValid
+            enabled = uiState.isEntryValid,
+            shape = MaterialTheme.shapes.small,
         ) {
             Text(text = "Salva")
         }
@@ -130,13 +150,15 @@ fun BleedingEventInputForm(
     var date by remember {
         mutableStateOf(uiState.bleedingDetails.date)
     }
-    Column(verticalArrangement = Arrangement.spacedBy(16.dp), modifier = modifier.fillMaxWidth()) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_medium))
+    ) {
         DropdownList(
             uiState.bleedingDetails,
             itemList = bleedingSite.toList(),
             onItemClick = onItemClick,
             label = R.string.site_string_label,
-            modifier = modifier
         )
 
         DropdownList(
@@ -146,7 +168,6 @@ fun BleedingEventInputForm(
             },
             onItemClick = onItemClick,
             label = R.string.cause_string_label,
-            modifier = modifier
         )
 
         DropdownList(
@@ -154,7 +175,6 @@ fun BleedingEventInputForm(
             itemList = Severity.entries.map { it.name },
             onItemClick = onItemClick,
             label = R.string.pain_scale_string_label,
-            modifier = modifier
         )
 
         DropdownList(
@@ -162,18 +182,18 @@ fun BleedingEventInputForm(
             itemList = Severity.entries.map { it.name },
             onItemClick = onItemClick,
             label = R.string.severity_string_label,
-            modifier = modifier
         )
 
         Row(
-            modifier = modifier
-                .fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(dimensionResource(id = R.dimen.padding_small)),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
 
             OutlinedButton(
                 onClick = { showDatePickerDialog = !showDatePickerDialog },
-                shape = RoundedCornerShape(8.dp),
+                shape = RoundedCornerShape(dimensionResource(id = R.dimen.padding_small)),
                 modifier = Modifier
                     .weight(2f)
             ) {
@@ -190,7 +210,9 @@ fun BleedingEventInputForm(
             OutlinedButton(
                 onClick = {
                     showTimePickerDialog = !showTimePickerDialog
-                }, shape = RoundedCornerShape(8.dp), modifier = Modifier
+                },
+                shape = RoundedCornerShape(dimensionResource(id = R.dimen.padding_small)),
+                modifier = Modifier
                     .weight(1f)
             ) {
                 Text(
@@ -232,28 +254,40 @@ fun BleedingEventInputForm(
             label = { Text(text = "Note") },
             value = uiState.bleedingDetails.note ?: "",
             onValueChange = { onItemClick(uiState.bleedingDetails.copy(note = it)) },
-            modifier = modifier.fillMaxWidth()
+            shape = RoundedCornerShape(dimensionResource(id = R.dimen.padding_small)),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(
+                    start = dimensionResource(id = R.dimen.padding_small),
+                    end = dimensionResource(id = R.dimen.padding_small)
+                )
         )
     }
 }
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
-fun DatePickerDialog(onDateSelected: (Long) -> Unit, onDismiss: () -> Unit) {
+fun DatePickerDialog(
+    onDateSelected: (Long) -> Unit,
+    onDismiss: () -> Unit,
+) {
 
     val state = rememberDatePickerState()
-    DatePickerDialog(onDismissRequest = onDismiss, confirmButton = {
-        Button(onClick = {
-            state.selectedDateMillis?.let { onDateSelected(it) }
-            onDismiss()
-        }) {
-            Text(text = "OK")
+    DatePickerDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            Button(onClick = {
+                state.selectedDateMillis?.let { onDateSelected(it) }
+                onDismiss()
+            }) {
+                Text(text = "OK")
+            }
+        },
+        dismissButton = {
+            Button(onClick = onDismiss) {
+                Text(text = "Cancel")
+            }
         }
-    }, dismissButton = {
-        Button(onClick = onDismiss) {
-            Text(text = "Cancel")
-        }
-    }
     ) {
         DatePicker(
             state = state
@@ -263,24 +297,39 @@ fun DatePickerDialog(onDateSelected: (Long) -> Unit, onDismiss: () -> Unit) {
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
-fun TimePickerDialog(onTimeSelected: (String) -> Unit, onDismiss: () -> Unit) {
+fun TimePickerDialog(
+    onTimeSelected: (String) -> Unit,
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier
+) {
 
     val state = rememberTimePickerState()
 
     Dialog(onDismissRequest = onDismiss) {
-        Surface {
-            Column {
-                TimePicker(state = state)
-                Row {
-                    Button(onClick = onDismiss) {
-                        Text(text = "Cancel")
-                    }
-                    Button(onClick = {
-                        onTimeSelected("${if (state.hour == 0) "00" else state.hour}:${if (state.minute == 0) "00" else state.minute}")
-                        onDismiss()
-                    }) {
-                        Text(text = "Salva")
-                    }
+        Card {
+            TimePicker(
+                state = state,
+                modifier = Modifier
+                    .padding(
+                        dimensionResource(id = R.dimen.padding_large)
+                    )
+                    .fillMaxWidth()
+            )
+
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(2.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                Button(onClick = onDismiss) {
+                    Text(text = "Cancel")
+                }
+                Button(onClick = {
+                    onTimeSelected("${if (state.hour == 0) "00" else state.hour}:${if (state.minute == 0) "00" else state.minute}")
+                    onDismiss()
+                }) {
+                    Text(text = "Salva")
                 }
             }
         }
@@ -291,7 +340,7 @@ fun TimePickerDialog(onTimeSelected: (String) -> Unit, onDismiss: () -> Unit) {
 fun DropdownList(
     bleedingDetails: BleedingDetails,
     itemList: List<String>,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_small)),
     onItemClick: (BleedingDetails) -> Unit,
     @StringRes label: Int,
 ) {
@@ -306,7 +355,11 @@ fun DropdownList(
     Box(
         modifier = modifier
             .clickable { showDropdown = !showDropdown }
-            .border(1.dp, Color.Black, RoundedCornerShape(8.dp))
+            .border(
+                1.dp,
+                Color.Black,
+                RoundedCornerShape(dimensionResource(id = R.dimen.padding_small))
+            )
     ) {
         TextWithIcon(text = labelText.ifBlank {
             // check on the first field because if empty means that is a new event
@@ -333,10 +386,14 @@ fun DropdownList(
         DropdownMenu(
             expanded = showDropdown,
             onDismissRequest = { showDropdown = !showDropdown },
-            modifier,
+            offset = DpOffset(
+                x = dimensionResource(id = R.dimen.padding_small),
+                y = dimensionResource(id = R.dimen.padding_small)
+            )
         ) {
             itemList.forEach {
                 DropdownMenuItem(
+                    modifier = Modifier.fillMaxWidth(),
                     text = { Text(text = it, textAlign = TextAlign.Center) },
                     onClick = {
                         //println(it)

@@ -33,16 +33,20 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tempo.tempoapp.R
+import com.tempo.tempoapp.TempoAppBar
 import com.tempo.tempoapp.data.model.BleedingEvent
 import com.tempo.tempoapp.data.model.InfusionEvent
 import com.tempo.tempoapp.ui.AppViewModelProvider
 import com.tempo.tempoapp.ui.navigation.NavigationDestination
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
 
 
 object HomeDestination : NavigationDestination {
@@ -66,16 +70,24 @@ fun HomeScreen(
     var showBottomSheet by remember {
         mutableStateOf(false)
     }
+
+
     Scaffold(
+        topBar = {
+            TempoAppBar(
+                title = stringResource(id = HomeDestination.titleRes),
+                canNavigateBack = false,
+            )
+        },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { showBottomSheet = !showBottomSheet },//navigateToBleedingEntry,
+                onClick = { showBottomSheet = !showBottomSheet },
                 shape = MaterialTheme.shapes.medium,
-                modifier = Modifier.padding(8.dp)
+                modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_large))
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
-                    contentDescription = null//stringResource(R.string.item_entry_title)
+                    contentDescription = null
                 )
             }
         },
@@ -89,27 +101,35 @@ fun HomeScreen(
                 modifier = Modifier.fillMaxHeight(fraction = 0.3f)
             ) {
                 // Sheet content
-                OutlinedButton(onClick = {
-                    scope.launch {
-                        sheetState.hide()
-                    }.invokeOnCompletion {
-                        navigateToBleedingEntry()
-                        if (!sheetState.isVisible) {
-                            showBottomSheet = false
+                OutlinedButton(
+                    onClick = {
+                        scope.launch {
+                            sheetState.hide()
+                        }.invokeOnCompletion {
+                            navigateToBleedingEntry()
+                            if (!sheetState.isVisible) {
+                                showBottomSheet = false
 
+                            }
                         }
-                    }
-                }, modifier = Modifier.fillMaxWidth().padding(4.dp)) {
+                    }, modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(4.dp)
+                ) {
                     Text("Aggiungi infusione")
                 }
-                OutlinedButton(onClick = {
-                    scope.launch { sheetState.hide() }.invokeOnCompletion {
-                        navigateToInfusionEntry()
-                        if (!sheetState.isVisible) {
-                            showBottomSheet = false
+                OutlinedButton(
+                    onClick = {
+                        scope.launch { sheetState.hide() }.invokeOnCompletion {
+                            navigateToInfusionEntry()
+                            if (!sheetState.isVisible) {
+                                showBottomSheet = false
+                            }
                         }
-                    }
-                }, modifier = Modifier.fillMaxWidth().padding(4.dp)) {
+                    }, modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(4.dp)
+                ) {
                     Text("Aggiungi Sanguinamento")
                 }
             }
@@ -139,7 +159,7 @@ fun HomeBody(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier
     ) {
-        if (bleedingEventList.isEmpty()) {
+        if (bleedingEventList.isEmpty() && infusionEventList.isEmpty()) {
             Text(
                 text = stringResource(R.string.no_bleeding_event),
                 textAlign = TextAlign.Center,
@@ -151,7 +171,7 @@ fun HomeBody(
                 infusionEventList,
                 onInfusionItemClick = { onInfusionItemClick(it.id) },
                 onBleedingItemClick = { onBleedingItemClick(it.id) },
-                modifier = Modifier.padding(8.dp)
+                modifier = Modifier.padding(horizontal = dimensionResource(id = R.dimen.padding_small))
             )
         }
     }
@@ -168,14 +188,14 @@ fun EventsList(
     LazyColumn(modifier = modifier) {
         items(infusionEventList) {
             InfusionItem(item = it, modifier = Modifier
-                .padding(8.dp)
+                .padding(dimensionResource(id = R.dimen.padding_small))
                 .clickable { onInfusionItemClick(it) })
         }
         items(bleedingEventList) {
             BleedingItem(
                 item = it,
                 modifier = Modifier
-                    .padding(8.dp)
+                    .padding(dimensionResource(id = R.dimen.padding_small))
                     .clickable { onBleedingItemClick(it) }
             )
         }
@@ -185,13 +205,15 @@ fun EventsList(
 @Composable
 fun BleedingItem(item: BleedingEvent, modifier: Modifier) {
     Card(
+        colors = CardDefaults.cardColors(MaterialTheme.colorScheme.primary),
         modifier = modifier, elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
-            modifier = Modifier.padding(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_large)),
+            verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_small))
         ) {
             Row(
+                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
@@ -204,6 +226,12 @@ fun BleedingItem(item: BleedingEvent, modifier: Modifier) {
                     style = MaterialTheme.typography.titleMedium
                 )
             }
+            Text(
+                text = item.timestamp.toStringDate(),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.align(alignment = Alignment.End)
+            )
+
         }
     }
 }
@@ -211,25 +239,34 @@ fun BleedingItem(item: BleedingEvent, modifier: Modifier) {
 @Composable
 fun InfusionItem(item: InfusionEvent, modifier: Modifier) {
     Card(
+        colors = CardDefaults.cardColors(MaterialTheme.colorScheme.secondary),
         modifier = modifier, elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
-            modifier = Modifier.padding(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_large)),
+            verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_small))
         ) {
             Row(
+                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    text = item.infusionSite,
+                    text = item.treatment,
                     style = MaterialTheme.typography.titleLarge,
                 )
                 Spacer(Modifier.weight(1f))
                 Text(
-                    text = item.treatment,
+                    text = item.infusionSite,
                     style = MaterialTheme.typography.titleMedium
                 )
             }
+            Text(
+                text = item.timestamp.toStringDate(),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.align(alignment = Alignment.End)
+            )
         }
     }
 }
+
+private fun Long.toStringDate(): String = SimpleDateFormat("dd-MM-yyyy").format(Date(this))

@@ -1,12 +1,15 @@
 package com.tempo.tempoapp.ui.bleeding
 
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tempo.tempoapp.R
+import com.tempo.tempoapp.TempoAppBar
 import com.tempo.tempoapp.ui.AppViewModelProvider
 import com.tempo.tempoapp.ui.navigation.NavigationDestination
 import kotlinx.coroutines.launch
@@ -22,20 +25,34 @@ object BleedingEventEditDestination : NavigationDestination {
 
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BleedingEditScreen(
+    navigateBack: () -> Unit,
+    onNavigateUp: () -> Unit,
     viewModel: BleedingEditViewModel = viewModel(
         factory = AppViewModelProvider.Factory
     )
 ) {
     val uiState = viewModel.uiState
     val coroutineScope = rememberCoroutineScope()
-    Scaffold {
-        BleedingEventBody(uiState, viewModel::updateUiState, onSave = {
-            coroutineScope.launch {
-                viewModel.update()
-            }
-        },
-            modifier = Modifier.padding(it))
+    Scaffold(
+        topBar = {
+            TempoAppBar(
+                title = stringResource(id = BleedingEventEditDestination.titleRes),
+                canNavigateBack = true,
+                navigateUp = onNavigateUp
+            )
+        }
+    ) {
+        BleedingEventBody(
+            uiState, viewModel::updateUiState, onSave = {
+                coroutineScope.launch {
+                    viewModel.update()
+                    navigateBack()
+                }
+            },
+            modifier = Modifier.padding(it)
+        )
     }
 }

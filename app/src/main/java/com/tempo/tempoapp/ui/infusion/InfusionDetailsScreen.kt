@@ -1,14 +1,18 @@
 package com.tempo.tempoapp.ui.infusion
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -17,9 +21,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tempo.tempoapp.R
+import com.tempo.tempoapp.TempoAppBar
 import com.tempo.tempoapp.ui.AppViewModelProvider
 import com.tempo.tempoapp.ui.bleeding.ItemDetailsRow
 import com.tempo.tempoapp.ui.navigation.NavigationDestination
@@ -35,8 +41,11 @@ object InfusionDetailsDestination : NavigationDestination {
     val routeWithArgs = "${InfusionEntryDestination.route}/{$itemIdArg}"
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InfusionDetailsScreen(
+    onNavigateUp: () -> Unit,
+    navigateBack: () -> Unit,
     navigateToInfusionEdit: (Int) -> Unit,
     viewModel: InfusionDetailsViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
@@ -44,12 +53,23 @@ fun InfusionDetailsScreen(
     val coroutineScope = rememberCoroutineScope()
 
     Scaffold(
+        topBar = {
+            TempoAppBar(
+                title = stringResource(id = InfusionDetailsDestination.titleRes),
+                canNavigateBack = true,
+                navigateUp = onNavigateUp
+            )
+        },
         floatingActionButton = {
-            Row {
+            Row(
+                modifier = Modifier.padding(
+                    bottom = dimensionResource(id = R.dimen.padding_large),
+                    end = dimensionResource(id = R.dimen.padding_small)
+                )
+            ) {
                 FloatingActionButton(
                     onClick = { navigateToInfusionEdit(uiState.value.id) },
                     shape = MaterialTheme.shapes.medium,
-                    modifier = Modifier.padding(8.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Edit,
@@ -60,10 +80,10 @@ fun InfusionDetailsScreen(
                     onClick = {
                         coroutineScope.launch {
                             viewModel.deleteItem()
+                            navigateBack()
                         }
                     },
                     shape = MaterialTheme.shapes.medium,
-                    modifier = Modifier.padding(8.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Delete,
@@ -73,13 +93,22 @@ fun InfusionDetailsScreen(
             }
         }
     ) {
-        InfusionDetailsBody(uiState = uiState.value, modifier = Modifier.padding(it))
+        InfusionDetailsBody(
+            uiState = uiState.value, modifier = Modifier
+                .padding(it)
+                .verticalScroll(
+                    rememberScrollState()
+                )
+        )
     }
 }
 
 @Composable
 fun InfusionDetailsBody(uiState: InfusionDetailsUiState, modifier: Modifier = Modifier) {
-    Column {
+    Column(
+        modifier = modifier.padding(dimensionResource(id = R.dimen.padding_medium)),
+        verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_medium))
+    ) {
         InfusionItemDetails(
             uiState.infusionDetails,
             modifier = Modifier.fillMaxWidth()
@@ -95,15 +124,62 @@ fun InfusionItemDetails(details: InfusionDetails, modifier: Modifier) {
             contentColor = MaterialTheme.colorScheme.onPrimaryContainer
         )
     ) {
-        ItemDetailsRow(labelResID = R.string.infusion_site, itemDetail = details.infusionSite)
-        ItemDetailsRow(labelResID = R.string.treatment, itemDetail = details.treatment)
-        ItemDetailsRow(labelResID = R.string.dose_units, itemDetail = details.doseUnits)
+        ItemDetailsRow(
+            labelResID = R.string.infusion_site,
+            itemDetail = details.infusionSite,
+            modifier = Modifier.padding(
+                horizontal = dimensionResource(
+                    id = R.dimen
+                        .padding_medium
+                )
+            )
+        )
+        ItemDetailsRow(
+            labelResID = R.string.treatment,
+            itemDetail = details.treatment,
+            modifier = Modifier.padding(
+                horizontal = dimensionResource(
+                    id = R.dimen
+                        .padding_medium
+                )
+            )
+        )
+        ItemDetailsRow(
+            labelResID = R.string.dose_units,
+            itemDetail = details.doseUnits,
+            modifier = Modifier.padding(
+                horizontal = dimensionResource(
+                    id = R.dimen
+                        .padding_medium
+                )
+            )
+        )
         ItemDetailsRow(
             labelResID = R.string.lot_number,
-            itemDetail = details.lotNumber
+            itemDetail = details.lotNumber,
+            modifier = Modifier.padding(
+                horizontal = dimensionResource(
+                    id = R.dimen
+                        .padding_medium
+                )
+            )
         )
-        ItemDetailsRow(labelResID = R.string.date, itemDetail = details.date)
-        ItemDetailsRow(labelResID = R.string.time, itemDetail = details.time)
+        ItemDetailsRow(
+            labelResID = R.string.date, itemDetail = details.date, modifier = Modifier.padding(
+                horizontal = dimensionResource(
+                    id = R.dimen
+                        .padding_medium
+                )
+            )
+        )
+        ItemDetailsRow(
+            labelResID = R.string.time, itemDetail = details.time, modifier = Modifier.padding(
+                horizontal = dimensionResource(
+                    id = R.dimen
+                        .padding_medium
+                )
+            )
+        )
 
     }
 }

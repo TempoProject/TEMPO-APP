@@ -17,6 +17,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -31,13 +32,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tempo.tempoapp.R
+import com.tempo.tempoapp.TempoAppBar
 import com.tempo.tempoapp.data.model.bleedingSite
 import com.tempo.tempoapp.ui.AppViewModelProvider
 import com.tempo.tempoapp.ui.bleeding.DatePickerDialog
@@ -53,24 +58,35 @@ object InfusionEntryDestination : NavigationDestination {
         get() = "infusion_entry"
     override val titleRes: Int
         get() = R.string.infusion
-
-    const val itemIdArg = "itemId"
-    val routeWithArgs = "$route/{$itemIdArg}"
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun InfusionEventScreen(viewModel: InfusionEntryViewModel = viewModel(factory = AppViewModelProvider.Factory)) {
-    Scaffold {
-        val coroutineScope = rememberCoroutineScope()
+fun InfusionEventScreen(
+    navigateBack: () -> Unit,
+    onNavigateUp: () -> Unit,
+    viewModel: InfusionEntryViewModel = viewModel(factory = AppViewModelProvider.Factory)
+) {
+    val coroutineScope = rememberCoroutineScope()
+    Scaffold(topBar = {
+        TempoAppBar(
+            title = stringResource(id = InfusionEntryDestination.titleRes),
+            canNavigateBack = true,
+            navigateUp = onNavigateUp,
+        )
+    }) {
         InfusionEventBody(
             uiState = viewModel.uiState,
             onItemClick = viewModel::updateUiState,
             onSave = {
                 coroutineScope.launch {
                     viewModel.onSave()
+                    navigateBack()
                 }
             },
-            Modifier.padding(it)
+            Modifier
+                .padding(it)
+                .fillMaxWidth()
         )
     }
 }
@@ -84,18 +100,18 @@ fun InfusionEventBody(
 ) {
 
     Column(
-        modifier = modifier.padding(8.dp),
-        verticalArrangement = Arrangement.Center,
+        modifier = modifier.padding(dimensionResource(id = R.dimen.padding_medium)),
+        verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_large))
     ) {
         InfusionEventInputForm(
             uiState,
             onItemClick,
-            modifier.padding(8.dp)
+            modifier = Modifier.fillMaxWidth()
         )
         Button(
             modifier = Modifier
                 .align(alignment = Alignment.End)
-                .padding(end = 8.dp)
+                .padding(end = dimensionResource(id = R.dimen.padding_small))
                 .width(150.dp),
             onClick = onSave,
             enabled = uiState.isEntryValid
@@ -122,8 +138,10 @@ fun InfusionEventInputForm(
         mutableStateOf(uiState.infusionDetails.date)
     }
 
-    //println(uiState.infusionDetails)
-    Column(verticalArrangement = Arrangement.spacedBy(16.dp), modifier = modifier.fillMaxWidth()) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_medium))
+    ) {
 
         DropdownList(
             infusionDetails = uiState.infusionDetails,
@@ -142,7 +160,13 @@ fun InfusionEventInputForm(
             value = uiState.infusionDetails.doseUnits, onValueChange = {
                 onItemClick(uiState.infusionDetails.copy(doseUnits = it))
             },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Number,
+                imeAction = ImeAction.Next
+            ),
+            modifier = Modifier
+                .padding(dimensionResource(id = R.dimen.padding_small))
+                .fillMaxWidth()
         )
         OutlinedTextField(
             label = { Text(text = stringResource(id = R.string.lot_number)) },
@@ -150,16 +174,22 @@ fun InfusionEventInputForm(
             onValueChange = {
                 onItemClick(uiState.infusionDetails.copy(lotNumber = it))
             },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Number,
+                imeAction = ImeAction.Done
+            ),
+            modifier = Modifier
+                .padding(dimensionResource(id = R.dimen.padding_small))
+                .fillMaxWidth()
         )
         Row(
-            modifier = modifier
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(dimensionResource(id = R.dimen.padding_small)),
         ) {
             OutlinedButton(
                 onClick = { showDatePickerDialog = !showDatePickerDialog },
-                shape = RoundedCornerShape(8.dp),
+                shape = RoundedCornerShape(dimensionResource(id = R.dimen.padding_small)),
                 modifier = Modifier
                     .weight(2f)
             ) {
@@ -176,7 +206,9 @@ fun InfusionEventInputForm(
             OutlinedButton(
                 onClick = {
                     showTimePickerDialog = !showTimePickerDialog
-                }, shape = RoundedCornerShape(8.dp), modifier = Modifier
+                },
+                shape = RoundedCornerShape(dimensionResource(id = R.dimen.padding_small)),
+                modifier = Modifier
                     .weight(1f)
             ) {
                 Text(
@@ -218,7 +250,13 @@ fun InfusionEventInputForm(
             label = { Text(text = stringResource(id = R.string.note)) },
             value = uiState.infusionDetails.note ?: "",
             onValueChange = { onItemClick(uiState.infusionDetails.copy(note = it)) },
-            modifier = modifier.fillMaxWidth()
+            shape = RoundedCornerShape(dimensionResource(id = R.dimen.padding_small)),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(
+                    start = dimensionResource(id = R.dimen.padding_small),
+                    end = dimensionResource(id = R.dimen.padding_small)
+                )
         )
     }
 }
@@ -227,7 +265,7 @@ fun InfusionEventInputForm(
 fun DropdownList(
     infusionDetails: InfusionDetails,
     itemList: List<String>,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_small)),
     onItemClick: (InfusionDetails) -> Unit,
     @StringRes label: Int,
 ) {
@@ -242,7 +280,11 @@ fun DropdownList(
     Box(
         modifier = modifier
             .clickable { showDropdown = !showDropdown }
-            .border(1.dp, Color.Black, RoundedCornerShape(8.dp))
+            .border(
+                1.dp,
+                Color.Black,
+                RoundedCornerShape(dimensionResource(id = R.dimen.padding_small))
+            )
     ) {
         TextWithIcon(text = labelText.ifBlank {
             when (label) {
@@ -262,10 +304,14 @@ fun DropdownList(
         DropdownMenu(
             expanded = showDropdown,
             onDismissRequest = { showDropdown = !showDropdown },
-            modifier,
+            offset = DpOffset(
+                x = dimensionResource(id = R.dimen.padding_small),
+                y = dimensionResource(id = R.dimen.padding_small)
+            )
         ) {
             itemList.forEach {
                 DropdownMenuItem(
+                    modifier = Modifier.fillMaxWidth(),
                     text = { Text(text = it, textAlign = TextAlign.Center) },
                     onClick = {
                         when (label) {
