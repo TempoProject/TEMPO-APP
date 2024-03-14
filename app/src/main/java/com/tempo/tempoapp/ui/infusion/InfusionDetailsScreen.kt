@@ -3,6 +3,7 @@ package com.tempo.tempoapp.ui.infusion
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -23,6 +24,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tempo.tempoapp.R
 import com.tempo.tempoapp.TempoAppBar
@@ -76,6 +78,7 @@ fun InfusionDetailsScreen(
                         contentDescription = null//stringResource(R.string.item_entry_title)
                     )
                 }
+                Spacer(modifier = Modifier.padding(4.dp))
                 FloatingActionButton(
                     onClick = {
                         coroutineScope.launch {
