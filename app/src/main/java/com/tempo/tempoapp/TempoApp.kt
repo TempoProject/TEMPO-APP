@@ -12,11 +12,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.tempo.tempoapp.data.healthconnect.HealthConnectManager
 import com.tempo.tempoapp.ui.navigation.TempoNavHost
 
 @Composable
-fun TempoApp(navController: NavHostController = rememberNavController()) {
-    TempoNavHost(navController = navController)
+fun TempoApp(
+    navController: NavHostController = rememberNavController(),
+    healthConnectManager: HealthConnectManager,
+) {
+    TempoNavHost(navController = navController, healthConnectManager)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
