@@ -23,7 +23,10 @@ object AppViewModelProvider {
         initializer {
             HomeViewModel(
                 tempoApplication().container.bleedingRepository,
-                tempoApplication().container.infusionRepository
+                tempoApplication().container.infusionRepository,
+                tempoApplication().container.stepsRecordRepository,
+                tempoApplication().healthConnectManager,
+                tempoApplication().workManager
             )
         }
         initializer {
