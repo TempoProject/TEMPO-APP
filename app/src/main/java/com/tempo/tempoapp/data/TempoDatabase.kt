@@ -6,17 +6,20 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.tempo.tempoapp.data.dao.BleedingEventDao
 import com.tempo.tempoapp.data.dao.InfusionEventDao
+import com.tempo.tempoapp.data.dao.StepsRecordDao
 import com.tempo.tempoapp.data.model.BleedingEvent
 import com.tempo.tempoapp.data.model.InfusionEvent
+import com.tempo.tempoapp.data.model.StepsRecord
 
 @Database(
-    entities = arrayOf(BleedingEvent::class, InfusionEvent::class),
-    version = 1,
+    entities = arrayOf(BleedingEvent::class, InfusionEvent::class, StepsRecord::class),
+    version = 2,
     exportSchema = false
 )
 abstract class TempoDatabase : RoomDatabase() {
     abstract fun bleedingDao(): BleedingEventDao
     abstract fun infusionDao(): InfusionEventDao
+    abstract fun stepsDao(): StepsRecordDao
 
     companion object {
         @Volatile
@@ -28,7 +31,7 @@ abstract class TempoDatabase : RoomDatabase() {
                     context.applicationContext,
                     TempoDatabase::class.java,
                     "logbook_database"
-                ).build().also {
+                ).fallbackToDestructiveMigration().build().also {
                     INSTANCE = it
                 }
             }

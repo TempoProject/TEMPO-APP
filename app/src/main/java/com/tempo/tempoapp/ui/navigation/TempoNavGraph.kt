@@ -1,12 +1,14 @@
 package com.tempo.tempoapp.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.tempo.tempoapp.data.healthconnect.HealthConnectManager
 import com.tempo.tempoapp.ui.bleeding.BleedingDetailsScreen
 import com.tempo.tempoapp.ui.bleeding.BleedingEditScreen
 import com.tempo.tempoapp.ui.bleeding.BleedingEntryDestination
@@ -25,6 +27,7 @@ import com.tempo.tempoapp.ui.infusion.InfusionEventScreen
 @Composable
 fun TempoNavHost(
     navController: NavHostController,
+    healthConnectManager: HealthConnectManager,
     modifier: Modifier = Modifier,
 ) {
     NavHost(
@@ -34,7 +37,12 @@ fun TempoNavHost(
          * Home screen
          */
         composable(route = HomeDestination.route) {
+            val availability by healthConnectManager.availability
             HomeScreen(navigateToBleedingEntry = { navController.navigate(BleedingEntryDestination.route) },
+                availability = availability,
+                onResumeAvailabilityCheck = {
+                    healthConnectManager.checkAvailability()
+                },
                 navigateToInfusionEntry = { navController.navigate(InfusionEntryDestination.route) },
                 navigateToInfusionUpdate = {
                     navController.navigate("${InfusionEntryDestination.route}/${it}")
