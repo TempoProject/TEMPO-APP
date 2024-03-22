@@ -3,7 +3,7 @@ package com.tempo.tempoapp.workers
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.app.NotificationManager.IMPORTANCE_HIGH
+import android.app.NotificationManager.IMPORTANCE_MIN
 import android.content.Context
 import android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
 import android.os.Build.VERSION.SDK_INT
@@ -83,7 +83,7 @@ class SaveStepsRecord(appContext: Context, params: WorkerParameters) :
             //.addAction(android.R.drawable.ic_delete, cancel, intent)
             .build()
 
-        val channel = NotificationChannel(id, title, IMPORTANCE_HIGH)
+        val channel = NotificationChannel(id, title, IMPORTANCE_MIN)
         notificationManager.createNotificationChannel(channel)
         notificationManager.notify(1, notification)
         return notification
