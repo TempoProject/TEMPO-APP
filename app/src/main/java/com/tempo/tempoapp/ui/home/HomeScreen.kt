@@ -1,6 +1,7 @@
 package com.tempo.tempoapp.ui.home
 
 import android.Manifest
+import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
@@ -18,15 +19,21 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Divider
+import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -40,11 +47,13 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
@@ -93,9 +102,22 @@ fun HomeScreen(
         hasNotificationPermission = granted
     }
 
-    LaunchedEffect(Unit) {
-        launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
+    when {
+        ContextCompat.checkSelfPermission(
+            LocalContext.current,
+            Manifest.permission.POST_NOTIFICATIONS
+        ) == PackageManager.PERMISSION_GRANTED -> {
+
+        }
+
+        else ->
+            LaunchedEffect(Unit) {
+                launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+
     }
+
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
 
     val currentOnAvailabilityCheck by rememberUpdatedState(onResumeAvailabilityCheck)
     val homeUiState by viewModel.homeUiState.collectAsState()
@@ -111,7 +133,6 @@ fun HomeScreen(
                 currentOnAvailabilityCheck()
             }
         }
-
         // Add the observer to the lifecycle
         lifecycleOwner.lifecycle.addObserver(observer)
 
@@ -121,91 +142,138 @@ fun HomeScreen(
         }
     }
 
-    if (viewModel.permissionsGranted.value) {
-        Scaffold(
-            topBar = {
-                TempoAppBar(
-                    title = stringResource(id = HomeDestination.titleRes),
-                    canNavigateBack = false,
-                )
-            },
-            floatingActionButton = {
-                FloatingActionButton(
-                    onClick = { showBottomSheet = !showBottomSheet },
-                    shape = MaterialTheme.shapes.medium,
-                    modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_large))
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = null
-                    )
-                }
-            },
-        ) { innerPadding ->
-            when (availability) {
-                HealthConnectAvailability.INSTALLED -> {
-                    if (showBottomSheet) {
-                        ModalBottomSheet(
-                            onDismissRequest = {
-                                showBottomSheet = false
-                            },
-                            sheetState = sheetState,
-                            modifier = Modifier.fillMaxHeight(fraction = 0.3f)
-                        ) {
-                            // Sheet content
-                            OutlinedButton(
-                                onClick = {
-                                    navigateToBleedingEntry()
-                                    scope.launch {
-                                        sheetState.hide()
-                                    }.invokeOnCompletion {
-                                        if (!sheetState.isVisible) {
-                                            showBottomSheet = false
-                                        }
 
-                                    }
-                                }, modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(4.dp)
-                            ) {
-                                Text("Aggiungi infusione")
-                            }
-                            OutlinedButton(
-                                onClick = {
-                                    scope.launch {
-                                        sheetState.hide()
-                                        //viewModel.readStepsInterval()
-                                    }.invokeOnCompletion {
-                                        navigateToInfusionEntry()
-                                        if (!sheetState.isVisible) {
-                                            showBottomSheet = false
-                                        }
-                                    }
-                                }, modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(4.dp)
-                            ) {
-                                Text("Aggiungi Sanguinamento")
+    if (viewModel.permissionsGranted.value) {
+        ModalNavigationDrawer(
+            drawerState = drawerState, drawerContent = {
+                ModalDrawerSheet {
+                    Text(stringResource(id = R.string.app_name), modifier = Modifier.padding(16.dp))
+                    Divider()
+                    NavigationDrawerItem(
+                        label = { Text(text = stringResource(id = R.string.add_new_bleeding)) },
+                        selected = false,
+                        onClick = {
+                            scope.launch { drawerState.close() }
+                                .invokeOnCompletion { navigateToBleedingEntry() }
+                        }
+                    )
+                    NavigationDrawerItem(
+                        label = { Text(text = stringResource(id = R.string.infusion)) },
+                        selected = false,
+                        onClick = {
+                            scope.launch { drawerState.close() }.invokeOnCompletion {
+                                navigateToInfusionEntry()
                             }
                         }
-                    }
-
-                    HomeBody(
-                        homeUiState.bleedingList, homeUiState.infusionList, homeUiState.stepsList,
-                        modifier = modifier
-                            .padding(innerPadding)
-                            .fillMaxSize(),
-                        onInfusionItemClick = navigateToInfusionUpdate,
-                        onBleedingItemClick = navigateToBleedingUpdate
+                    )
+                    NavigationDrawerItem(
+                        label = { Text(text = stringResource(id = R.string.history)) },
+                        selected = false,
+                        onClick = {
+                            scope.launch { drawerState.close() }.invokeOnCompletion {
+                                // TODO
+                            }
+                        }
                     )
                 }
+            }) {
+            Scaffold(
+                topBar = {
+                    TempoAppBar(
+                        title = stringResource(id = HomeDestination.titleRes),
+                        canNavigateBack = false,
+                        navigateUp = {
+                            scope.launch {
+                                drawerState.apply {
+                                    println(isClosed)
+                                    if (isClosed)
+                                        open()
+                                    else close()
+                                }
+                            }
+                        }
+                    )
+                },
+                floatingActionButton = {
+                    FloatingActionButton(
+                        onClick = { showBottomSheet = !showBottomSheet },
+                        shape = MaterialTheme.shapes.medium,
+                        modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_large))
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = null
+                        )
+                    }
+                },
+            ) { innerPadding ->
+                when (availability) {
+                    HealthConnectAvailability.INSTALLED -> {
+                        if (showBottomSheet) {
+                            ModalBottomSheet(
+                                onDismissRequest = {
+                                    showBottomSheet = false
+                                },
+                                sheetState = sheetState,
+                                modifier = Modifier.fillMaxHeight(fraction = 0.3f)
+                            ) {
+                                // Sheet content
+                                OutlinedButton(
+                                    onClick = {
+                                        navigateToBleedingEntry()
+                                        scope.launch {
+                                            sheetState.hide()
+                                        }.invokeOnCompletion {
+                                            if (!sheetState.isVisible) {
+                                                showBottomSheet = false
+                                            }
 
-                HealthConnectAvailability.NOT_INSTALLED -> {
-                    // TODO landing page,
-                    // redirect user to play store
+                                        }
+                                    }, modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(4.dp)
+                                ) {
+                                    Text("Aggiungi infusione")
+                                }
+                                OutlinedButton(
+                                    onClick = {
+                                        scope.launch {
+                                            sheetState.hide()
+                                            //viewModel.readStepsInterval()
+                                        }.invokeOnCompletion {
+                                            navigateToInfusionEntry()
+                                            if (!sheetState.isVisible) {
+                                                showBottomSheet = false
+                                            }
+                                        }
+                                    }, modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(4.dp)
+                                ) {
+                                    Text("Aggiungi Sanguinamento")
+                                }
+                            }
+                        }
+
+                        HomeBody(
+                            homeUiState.bleedingList,
+                            homeUiState.infusionList,
+                            homeUiState.stepsList,
+                            modifier = modifier
+                                .padding(innerPadding)
+                                .fillMaxSize(),
+                            onInfusionItemClick = navigateToInfusionUpdate,
+                            onBleedingItemClick = navigateToBleedingUpdate
+                        )
+                    }
+
+                    HealthConnectAvailability.NOT_INSTALLED -> {
+                        // TODO landing page,
+                        // redirect user to play store
+                    }
+
+                    HealthConnectAvailability.NOT_SUPPORTED -> {}
                 }
-
-                HealthConnectAvailability.NOT_SUPPORTED -> {}
             }
         }
     } else {
