@@ -1,6 +1,8 @@
 package com.tempo.tempoapp.ui.home
 
+import android.Manifest
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -28,6 +30,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -81,6 +84,19 @@ fun HomeScreen(
         rememberLauncherForActivityResult(viewModel.permissionsLauncher) {
             viewModel.initialLoad()
         }
+    var hasNotificationPermission by remember {
+        mutableStateOf(false)
+    }
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        hasNotificationPermission = granted
+    }
+
+    LaunchedEffect(Unit) {
+        launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
+    }
+
     val currentOnAvailabilityCheck by rememberUpdatedState(onResumeAvailabilityCheck)
     val homeUiState by viewModel.homeUiState.collectAsState()
     val scope = rememberCoroutineScope()
