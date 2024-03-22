@@ -16,4 +16,5 @@
     <string name="dose_units">Dose in unità</string>
     <string name="lot_number">Numero di lotto</string>
     <string name="treatment">Trattamento</string>
+    <string name="history">Storico eventi</string>
 </resources>
