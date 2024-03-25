@@ -4,11 +4,9 @@ import android.Manifest
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,9 +15,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material.icons.filled.Create
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Divider
+import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -47,6 +46,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.dimensionResource
@@ -65,11 +65,12 @@ import com.tempo.tempoapp.data.model.BleedingEvent
 import com.tempo.tempoapp.data.model.InfusionEvent
 import com.tempo.tempoapp.data.model.StepsRecord
 import com.tempo.tempoapp.ui.AppViewModelProvider
+import com.tempo.tempoapp.ui.common.BleedingItem
+import com.tempo.tempoapp.ui.common.InfusionItem
+import com.tempo.tempoapp.ui.common.stepItem
 import com.tempo.tempoapp.ui.navigation.NavigationDestination
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 
 object HomeDestination : NavigationDestination {
@@ -150,31 +151,26 @@ fun HomeScreen(
                 ModalDrawerSheet {
                     Text(stringResource(id = R.string.app_name), modifier = Modifier.padding(16.dp))
                     Divider()
-                    NavigationDrawerItem(
-                        label = { Text(text = stringResource(id = R.string.add_new_bleeding)) },
-                        selected = false,
-                        onClick = {
-                            scope.launch { drawerState.close() }
-                                .invokeOnCompletion { navigateToBleedingEntry() }
-                        }
+                    NavDrawerItem(
+                        stringId = R.string.add_new_bleeding,
+                        icon = Icons.Default.Create,
+                        scope = scope,
+                        drawerState = drawerState,
+                        navigateToBleedingEntry
                     )
-                    NavigationDrawerItem(
-                        label = { Text(text = stringResource(id = R.string.infusion)) },
-                        selected = false,
-                        onClick = {
-                            scope.launch { drawerState.close() }.invokeOnCompletion {
-                                navigateToInfusionEntry()
-                            }
-                        }
+                    NavDrawerItem(
+                        stringId = R.string.infusion,
+                        icon = Icons.Default.Create,
+                        scope = scope,
+                        drawerState = drawerState,
+                        navigateToInfusionEntry
                     )
-                    NavigationDrawerItem(
-                        label = { Text(text = stringResource(id = R.string.history)) },
-                        selected = false,
-                        onClick = {
-                            scope.launch { drawerState.close() }.invokeOnCompletion {
-                                // TODO
-                            }
-                        }
+
+                    NavDrawerItem(
+                        stringId = R.string.history,
+                        icon = Icons.Default.DateRange,
+                        scope = scope,
+                        drawerState = drawerState,
                     )
                 }
             }) {
@@ -307,7 +303,6 @@ fun HomeBody(
                 style = MaterialTheme.typography.titleLarge
             )
         } else {
-            //Text(text = stepsList.count().toString())
             EventsList(
                 bleedingEventList,
                 infusionEventList,
@@ -353,107 +348,23 @@ fun EventsList(
     }
 }
 
-
 @Composable
-private fun stepItem(steps: StepsRecord, modifier: Modifier) {
-    Card(
-        colors = CardDefaults.cardColors(MaterialTheme.colorScheme.primary),
-        modifier = modifier, elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_large)),
-            verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_small))
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = steps.steps.toString(),
-                    style = MaterialTheme.typography.titleLarge,
-                )
-                Spacer(Modifier.weight(1f))
-                Text(
-                    text = steps.startTime.toStringTime(),
-                    style = MaterialTheme.typography.titleMedium
-                )
-            }
-            Text(
-                text = steps.endTime.toStringTime(),
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.align(alignment = Alignment.End)
-            )
-
+private fun NavDrawerItem(
+    @StringRes stringId: Int,
+    icon: ImageVector,
+    scope: CoroutineScope,
+    drawerState: DrawerState,
+    navDestination: () -> Unit = {}
+) {
+    NavigationDrawerItem(
+        label = { Text(text = stringResource(id = stringId)) },
+        icon = { Icon(icon, contentDescription = null) },
+        selected = false,
+        onClick = {
+            scope.launch { drawerState.close() }
+                .invokeOnCompletion {
+                    navDestination()
+                }
         }
-    }
+    )
 }
-
-@Composable
-private fun BleedingItem(item: BleedingEvent, modifier: Modifier) {
-    Card(
-        colors = CardDefaults.cardColors(MaterialTheme.colorScheme.primary),
-        modifier = modifier, elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_large)),
-            verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_small))
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = item.bleedingCause,
-                    style = MaterialTheme.typography.titleLarge,
-                )
-                Spacer(Modifier.weight(1f))
-                Text(
-                    text = item.bleedingSite,
-                    style = MaterialTheme.typography.titleMedium
-                )
-            }
-            Text(
-                text = item.timestamp.toStringDate(),
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.align(alignment = Alignment.End)
-            )
-
-        }
-    }
-}
-
-@Composable
-private fun InfusionItem(item: InfusionEvent, modifier: Modifier) {
-    Card(
-        colors = CardDefaults.cardColors(MaterialTheme.colorScheme.secondary),
-        modifier = modifier, elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_large)),
-            verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_small))
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = item.treatment,
-                    style = MaterialTheme.typography.titleLarge,
-                )
-                Spacer(Modifier.weight(1f))
-                Text(
-                    text = item.infusionSite,
-                    style = MaterialTheme.typography.titleMedium
-                )
-            }
-            Text(
-                text = item.timestamp.toStringDate(),
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.align(alignment = Alignment.End)
-            )
-        }
-    }
-}
-
-private fun Long.toStringDate(): String = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(Date(this))
-private fun Long.toStringTime(): String = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(this))
