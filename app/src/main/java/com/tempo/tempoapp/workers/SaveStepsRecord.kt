@@ -16,7 +16,9 @@ import androidx.work.ForegroundInfo
 import androidx.work.WorkerParameters
 import com.tempo.tempoapp.R
 import com.tempo.tempoapp.TempoApplication
+import com.tempo.tempoapp.data.model.toTimestamp
 import java.time.Instant
+import java.time.temporal.ChronoUnit
 
 class SaveStepsRecord(appContext: Context, params: WorkerParameters) :
     CoroutineWorker(appContext, params) {
@@ -43,8 +45,9 @@ class SaveStepsRecord(appContext: Context, params: WorkerParameters) :
                 stepsRecordRepository.insertItem(
                     com.tempo.tempoapp.data.model.StepsRecord(
                         steps = it.count,
-                        startTime = it.startTime.toString(),
-                        endTime = it.endTime.toString()
+                        date = it.startTime.toTimestamp(ChronoUnit.DAYS),
+                        startTime = it.startTime.toTimestamp(ChronoUnit.MILLIS),
+                        endTime = it.endTime.toTimestamp(ChronoUnit.MILLIS)
                     )
                 )
             }
