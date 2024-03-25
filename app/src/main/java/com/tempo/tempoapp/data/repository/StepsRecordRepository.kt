@@ -22,6 +22,14 @@ class StepsRecordRepository(private val stepsRecordDao: StepsRecordDao) :
         return stepsRecordDao.getAllSteps()
     }
 
+    fun getAllDayStepsCount(date: Long): Flow<Int> {
+        return stepsRecordDao.getAllDayStepsCount(date)
+    }
+
+    fun getAllDaySteps(date: Long): Flow<List<StepsRecord>> {
+        return stepsRecordDao.getAllDaySteps(date)
+    }
+
     override fun getItemFromId(id: Int): Flow<StepsRecord> {
         TODO("Not implemented")
     }
