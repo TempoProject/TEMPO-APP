@@ -13,7 +13,7 @@ import com.tempo.tempoapp.data.model.StepsRecord
 
 @Database(
     entities = arrayOf(BleedingEvent::class, InfusionEvent::class, StepsRecord::class),
-    version = 2,
+    version = 1,
     exportSchema = false
 )
 abstract class TempoDatabase : RoomDatabase() {
@@ -31,7 +31,7 @@ abstract class TempoDatabase : RoomDatabase() {
                     context.applicationContext,
                     TempoDatabase::class.java,
                     "logbook_database"
-                ).fallbackToDestructiveMigration().build().also {
+                ).build().also {
                     INSTANCE = it
                 }
             }
