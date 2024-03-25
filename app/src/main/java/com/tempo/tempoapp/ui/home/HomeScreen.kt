@@ -6,7 +6,8 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -51,7 +52,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
@@ -63,11 +63,10 @@ import com.tempo.tempoapp.TempoAppBar
 import com.tempo.tempoapp.data.healthconnect.HealthConnectAvailability
 import com.tempo.tempoapp.data.model.BleedingEvent
 import com.tempo.tempoapp.data.model.InfusionEvent
-import com.tempo.tempoapp.data.model.StepsRecord
 import com.tempo.tempoapp.ui.AppViewModelProvider
+import com.tempo.tempoapp.ui.ItemCount
 import com.tempo.tempoapp.ui.common.BleedingItem
 import com.tempo.tempoapp.ui.common.InfusionItem
-import com.tempo.tempoapp.ui.common.stepItem
 import com.tempo.tempoapp.ui.navigation.NavigationDestination
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -251,17 +250,42 @@ fun HomeScreen(
                                 }
                             }
                         }
-
+                        Row(
+                            Modifier
+                                .padding(innerPadding)
+                                .fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceAround,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            ItemCount(
+                                count = "sanguinamenti",
+                                iconId = R.drawable.baseline_directions_walk_24,
+                                modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_medium))
+                            )
+                            ItemCount(
+                                count = "infusioni",
+                                iconId = R.drawable.baseline_directions_walk_24,
+                                modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_medium))
+                            )
+                            ItemCount(
+                                count = homeUiState.stepsCount,
+                                iconId = R.drawable.baseline_directions_walk_24,
+                                modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_medium))
+                            )
+                        }
                         HomeBody(
                             homeUiState.bleedingList,
                             homeUiState.infusionList,
-                            homeUiState.stepsList,
+                            homeUiState.stepsCount,
+                            //homeUiState.stepsList,
                             modifier = modifier
                                 .padding(innerPadding)
                                 .fillMaxSize(),
                             onInfusionItemClick = navigateToInfusionUpdate,
                             onBleedingItemClick = navigateToBleedingUpdate
                         )
+
+
                     }
 
                     HealthConnectAvailability.NOT_INSTALLED -> {
@@ -286,41 +310,32 @@ fun HomeScreen(
 fun HomeBody(
     bleedingEventList: List<BleedingEvent>,
     infusionEventList: List<InfusionEvent>,
-    stepsList: List<StepsRecord>,
+    //stepsList: List<StepsRecord>,
+    stepsCount: Int,
     modifier: Modifier = Modifier,
     onInfusionItemClick: (Int) -> Unit,
     onBleedingItemClick: (Int) -> Unit
 ) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier
-    ) {
-
-        if (bleedingEventList.isEmpty() && infusionEventList.isEmpty()) {
-            Text(
-                text = stringResource(R.string.no_bleeding_event),
-                textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.titleLarge
-            )
-        } else {
+    /*
+        Column(modifier) {
             EventsList(
                 bleedingEventList,
                 infusionEventList,
-                stepsList,
+                //stepsList,
+                stepsCount,
                 onInfusionItemClick = { onInfusionItemClick(it.id) },
                 onBleedingItemClick = { onBleedingItemClick(it.id) },
                 modifier = Modifier.padding(horizontal = dimensionResource(id = R.dimen.padding_small))
             )
-
-        }
-    }
+        }*/
 }
 
 @Composable
 fun EventsList(
     bleedingEventList: List<BleedingEvent>,
     infusionEventList: List<InfusionEvent>,
-    stepsList: List<StepsRecord>,
+    //stepsList: List<StepsRecord>,
+    stepsCount: Int,
     onInfusionItemClick: (InfusionEvent) -> Unit,
     onBleedingItemClick: (BleedingEvent) -> Unit,
     modifier: Modifier = Modifier
@@ -339,12 +354,13 @@ fun EventsList(
                     .clickable { onBleedingItemClick(it) }
             )
         }
+        /*
         items(stepsList) {
             stepItem(
                 steps = it,
                 modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_small))
             )
-        }
+        }*/
     }
 }
 
