@@ -69,6 +69,7 @@ import com.tempo.tempoapp.ui.navigation.NavigationDestination
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
+import java.util.Locale
 
 
 object HomeDestination : NavigationDestination {
@@ -298,6 +299,7 @@ fun HomeBody(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier
     ) {
+
         if (bleedingEventList.isEmpty() && infusionEventList.isEmpty()) {
             Text(
                 text = stringResource(R.string.no_bleeding_event),
@@ -372,12 +374,12 @@ private fun stepItem(steps: StepsRecord, modifier: Modifier) {
                 )
                 Spacer(Modifier.weight(1f))
                 Text(
-                    text = steps.startTime,
+                    text = steps.startTime.toStringTime(),
                     style = MaterialTheme.typography.titleMedium
                 )
             }
             Text(
-                text = steps.endTime,
+                text = steps.endTime.toStringTime(),
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.align(alignment = Alignment.End)
             )
@@ -453,4 +455,5 @@ private fun InfusionItem(item: InfusionEvent, modifier: Modifier) {
     }
 }
 
-private fun Long.toStringDate(): String = SimpleDateFormat("dd-MM-yyyy").format(Date(this))
+private fun Long.toStringDate(): String = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(Date(this))
+private fun Long.toStringTime(): String = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(this))
