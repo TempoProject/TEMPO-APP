@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.Instant
+import java.time.temporal.ChronoUnit
 import java.util.concurrent.TimeUnit
 
 class HomeViewModel(
@@ -66,7 +67,9 @@ class HomeViewModel(
         combine(
             bleedingRepository.getAll(),
             infusionRepository.getAll(),
-            stepsRecordRepository.getAll()
+            stepsRecordRepository.getAllDayStepsCount(
+                Instant.now().truncatedTo(ChronoUnit.DAYS).toEpochMilli()
+            )
         ) { bleeding, infusion, steps ->
             HomeUiState(bleeding, infusion, steps)
         }.stateIn(
@@ -103,5 +106,6 @@ class HomeViewModel(
 data class HomeUiState(
     val bleedingList: List<BleedingEvent> = listOf(),
     val infusionList: List<InfusionEvent> = mutableListOf(),
-    val stepsList: List<com.tempo.tempoapp.data.model.StepsRecord> = mutableListOf()
+    val stepsCount: Int = 0
+    //val stepsList: List<com.tempo.tempoapp.data.model.StepsRecord> = mutableListOf()
 )
