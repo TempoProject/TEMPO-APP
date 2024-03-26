@@ -65,8 +65,12 @@ class HomeViewModel(
 
     val homeUiState: StateFlow<HomeUiState> =
         combine(
-            bleedingRepository.getAll(),
-            infusionRepository.getAll(),
+            bleedingRepository.getAllDayBleeding(
+                Instant.now().truncatedTo(ChronoUnit.DAYS).toEpochMilli()
+            ),
+            infusionRepository.getAllDayInfusion(
+                Instant.now().truncatedTo(ChronoUnit.DAYS).toEpochMilli()
+            ),
             stepsRecordRepository.getAllDayStepsCount(
                 Instant.now().truncatedTo(ChronoUnit.DAYS).toEpochMilli()
             )
