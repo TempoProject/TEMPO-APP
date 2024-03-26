@@ -6,8 +6,11 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.tempo.tempoapp.data.model.InfusionEvent
 import com.tempo.tempoapp.data.repository.InfusionRepository
+import com.tempo.tempoapp.ui.toStringDate
+import com.tempo.tempoapp.ui.toStringTime
 import java.text.SimpleDateFormat
-import java.util.Date
+import java.time.Instant
+import java.time.temporal.ChronoUnit
 import java.util.Locale
 
 class InfusionEntryViewModel(private val infusionRepository: InfusionRepository) : ViewModel() {
@@ -24,7 +27,7 @@ class InfusionEntryViewModel(private val infusionRepository: InfusionRepository)
                     infusionSite.isNotBlank() &&
                     doseUnits.isNotBlank() &&
                     lotNumber.isNotBlank() &&
-                    date.isNotBlank() &&
+                    //date.isNotBlank() &&
                     time.isNotBlank()
         }
     }
@@ -48,8 +51,8 @@ data class InfusionDetails(
     val doseUnits: String = "",
     val lotNumber: String = "",
     val note: String? = null,
-    val date: String = SimpleDateFormat("dd-MM-yyyy").format(Date()),
-    val time: String = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
+    val date: Long = Instant.now().truncatedTo(ChronoUnit.DAYS).toEpochMilli(),
+    val time: String = Instant.now().truncatedTo(ChronoUnit.MILLIS).toEpochMilli().toStringTime(),
 )
 
 fun InfusionDetails.toEntity(): InfusionEvent =
@@ -60,10 +63,11 @@ fun InfusionDetails.toEntity(): InfusionEvent =
         doseUnits = doseUnits.toInt(),
         lotNumber = lotNumber.toInt(),
         note = note,
+        date = date,
         timestamp = SimpleDateFormat(
             "dd-MM-yyyy HH:mm",
             Locale.getDefault()
-        ).parse(date.plus(" $time")).time
+        ).parse(date.toStringDate().plus(" $time")).time
     )
 
 fun InfusionEvent.toInfusionDetails(): InfusionDetails =
@@ -74,10 +78,9 @@ fun InfusionEvent.toInfusionDetails(): InfusionDetails =
         lotNumber = lotNumber.toString(),
         doseUnits = doseUnits.toString(),
         note = note,
-        date = SimpleDateFormat("dd-MM-yyyy").format(Date(timestamp)),
-        time = SimpleDateFormat("HH:mm").format(Date(timestamp)),
-
-        )
+        date = date,
+        time = timestamp.toStringTime()
+    )
 
 fun InfusionEvent.toInfusionUiState(): InfusionUiState =
     InfusionUiState(

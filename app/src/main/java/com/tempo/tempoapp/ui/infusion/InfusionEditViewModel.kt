@@ -44,7 +44,7 @@ class InfusionEditViewModel(
                     infusionSite.isNotBlank() &&
                     doseUnits.isNotBlank() &&
                     lotNumber.isNotBlank() &&
-                    date.isNotBlank() &&
+                    //date.isNotBlank() &&
                     time.isNotBlank()
         }
     }

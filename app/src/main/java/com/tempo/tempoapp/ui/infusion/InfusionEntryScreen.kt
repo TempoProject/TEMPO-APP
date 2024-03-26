@@ -49,9 +49,8 @@ import com.tempo.tempoapp.ui.bleeding.DatePickerDialog
 import com.tempo.tempoapp.ui.bleeding.TextWithIcon
 import com.tempo.tempoapp.ui.bleeding.TimePickerDialog
 import com.tempo.tempoapp.ui.navigation.NavigationDestination
+import com.tempo.tempoapp.ui.toStringDate
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.Date
 
 object InfusionEntryDestination : NavigationDestination {
     override val route: String
@@ -193,7 +192,7 @@ fun InfusionEventInputForm(
                 modifier = Modifier
                     .weight(2f)
             ) {
-                Text(text = date)
+                Text(text = date.toStringDate())
                 Spacer(modifier = Modifier.padding(1.dp))
                 Icon(
                     painter = painterResource(id = R.drawable.baseline_calendar_today_24),
@@ -225,14 +224,10 @@ fun InfusionEventInputForm(
                     onDateSelected = { timestamp ->
                         onItemClick(
                             uiState.infusionDetails.copy(
-                                date = SimpleDateFormat("dd-MM-yyyy").format(
-                                    Date(timestamp)
-                                )
+                                date = timestamp
                             )
                         )
-                        date = SimpleDateFormat("dd-MM-yyyy").format(
-                            Date(timestamp)
-                        )
+                        date = timestamp
                     },
                     onDismiss = { showDatePickerDialog = !showDatePickerDialog })
 
