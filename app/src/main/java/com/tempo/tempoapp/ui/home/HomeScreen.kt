@@ -5,16 +5,10 @@ import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Create
@@ -46,7 +40,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -62,12 +55,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tempo.tempoapp.R
 import com.tempo.tempoapp.TempoAppBar
 import com.tempo.tempoapp.data.healthconnect.HealthConnectAvailability
-import com.tempo.tempoapp.data.model.BleedingEvent
-import com.tempo.tempoapp.data.model.InfusionEvent
 import com.tempo.tempoapp.ui.AppViewModelProvider
-import com.tempo.tempoapp.ui.ItemCount
-import com.tempo.tempoapp.ui.common.BleedingItem
-import com.tempo.tempoapp.ui.common.InfusionItem
+import com.tempo.tempoapp.ui.HomeBody
 import com.tempo.tempoapp.ui.navigation.NavigationDestination
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -89,7 +78,8 @@ fun HomeScreen(
     navigateToBleedingEntry: () -> Unit,
     navigateToInfusionEntry: () -> Unit,
     navigateToBleedingUpdate: (Int) -> Unit,
-    navigateToInfusionUpdate: (Int) -> Unit
+    navigateToInfusionUpdate: (Int) -> Unit,
+    navigateToHistory: () -> Unit
 ) {
     val permissionsLauncher =
         rememberLauncherForActivityResult(viewModel.permissionsLauncher) {
@@ -171,6 +161,7 @@ fun HomeScreen(
                         icon = Icons.Default.DateRange,
                         scope = scope,
                         drawerState = drawerState,
+                        navigateToHistory
                     )
                 }
             }) {
@@ -285,84 +276,7 @@ fun HomeScreen(
 }
 
 @Composable
-fun HomeBody(
-    bleedingEventList: List<BleedingEvent>,
-    infusionEventList: List<InfusionEvent>,
-    //stepsList: List<StepsRecord>,
-    stepsCount: Int,
-    modifier: Modifier = Modifier,
-    onInfusionItemClick: (Int) -> Unit,
-    onBleedingItemClick: (Int) -> Unit
-) {
-
-    Column(modifier) {
-        Row(
-            Modifier
-                //.padding(innerPadding)
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceAround,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            ItemCount(
-                count = bleedingEventList.count(),
-                iconId = R.drawable.baseline_bloodtype_24,
-                modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_medium))
-            )
-            ItemCount(
-                count = infusionEventList.count(),
-                iconId = R.drawable.baseline_medication_24,
-                modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_medium))
-            )
-            ItemCount(
-                count = stepsCount,
-                iconId = R.drawable.baseline_directions_walk_24,
-                modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_medium))
-            )
-        }
-        EventsList(
-            bleedingEventList,
-            infusionEventList,
-            onInfusionItemClick = { onInfusionItemClick(it.id) },
-            onBleedingItemClick = { onBleedingItemClick(it.id) },
-            modifier = Modifier.padding(horizontal = dimensionResource(id = R.dimen.padding_small))
-        )
-    }
-}
-
-@Composable
-fun EventsList(
-    bleedingEventList: List<BleedingEvent>,
-    infusionEventList: List<InfusionEvent>,
-    onInfusionItemClick: (InfusionEvent) -> Unit,
-    onBleedingItemClick: (BleedingEvent) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    LazyColumn(modifier = modifier) {
-        items(infusionEventList) {
-            InfusionItem(item = it, modifier = Modifier
-                .padding(dimensionResource(id = R.dimen.padding_small))
-                .clickable { onInfusionItemClick(it) })
-        }
-        items(bleedingEventList) {
-            BleedingItem(
-                item = it,
-                modifier = Modifier
-                    .padding(dimensionResource(id = R.dimen.padding_small))
-                    .clickable { onBleedingItemClick(it) }
-            )
-        }
-        /*
-        items(stepsList) {
-            stepItem(
-                steps = it,
-                modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_small))
-            )
-        }*/
-    }
-}
-
-@Composable
-private fun NavDrawerItem(
+fun NavDrawerItem(
     @StringRes stringId: Int,
     icon: ImageVector,
     scope: CoroutineScope,
