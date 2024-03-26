@@ -40,6 +40,8 @@ data class BleedingEvent(
     val severity: String,
     @ColumnInfo(name = "pain_scale")
     val painScale: String,
+    @ColumnInfo(name = "date")
+    val date: Long,
     @ColumnInfo(name = "timestamp")
     val timestamp: Long,
     @ColumnInfo(name = "note")

@@ -6,8 +6,11 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.tempo.tempoapp.data.model.BleedingEvent
 import com.tempo.tempoapp.data.repository.BleedingRepository
+import com.tempo.tempoapp.ui.toStringDate
+import com.tempo.tempoapp.ui.toStringTime
 import java.text.SimpleDateFormat
-import java.util.Date
+import java.time.Instant
+import java.time.temporal.ChronoUnit
 import java.util.Locale
 
 class BleedingEntryViewModel(private val bleedingRepository: BleedingRepository) : ViewModel() {
@@ -32,7 +35,7 @@ class BleedingEntryViewModel(private val bleedingRepository: BleedingRepository)
                     && cause.isNotBlank()
                     && painScale.isNotBlank()
                     && severity.isNotBlank()
-                    && date.isNotBlank()
+                    //&& date.isNotBlank()
                     && time.isNotBlank()
 
         }
@@ -56,8 +59,8 @@ data class BleedingDetails(
     val severity: String = "",
     val painScale: String = "",
     val note: String? = null,
-    val date: String = SimpleDateFormat("dd-MM-yyyy").format(Date()),
-    val time: String = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date()),
+    val date: Long = Instant.now().truncatedTo(ChronoUnit.DAYS).toEpochMilli(),
+    val time: String = Instant.now().truncatedTo(ChronoUnit.MILLIS).toEpochMilli().toStringTime(),
 )
 
 fun BleedingDetails.toEntity(): BleedingEvent =
@@ -68,10 +71,11 @@ fun BleedingDetails.toEntity(): BleedingEvent =
         severity = severity,
         painScale = painScale,
         note = note,
+        date = date,
         timestamp = SimpleDateFormat(
             "dd-MM-yyyy HH:mm",
             Locale.getDefault()
-        ).parse(date.plus(" $time")).time
+        ).parse(date.toStringDate().plus(" $time")).time
     )
 
 fun BleedingEvent.toBleedingDetails(): BleedingDetails =
@@ -82,8 +86,8 @@ fun BleedingEvent.toBleedingDetails(): BleedingDetails =
         severity = severity,
         painScale = painScale,
         note = note,
-        date = SimpleDateFormat("dd-MM-yyyy").format(Date(timestamp)),
-        time = SimpleDateFormat("HH:mm").format(Date(timestamp)),
+        date = date,
+        time = timestamp.toStringTime()
     )
 
 fun BleedingEvent.toBleedingUiState(): BleedingEventUiState =
