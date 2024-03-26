@@ -7,6 +7,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -216,10 +217,10 @@ fun HomeScreen(
                                 // Sheet content
                                 OutlinedButton(
                                     onClick = {
-                                        navigateToBleedingEntry()
                                         scope.launch {
                                             sheetState.hide()
                                         }.invokeOnCompletion {
+                                            navigateToInfusionEntry()
                                             if (!sheetState.isVisible) {
                                                 showBottomSheet = false
                                             }
@@ -237,7 +238,7 @@ fun HomeScreen(
                                             sheetState.hide()
                                             //viewModel.readStepsInterval()
                                         }.invokeOnCompletion {
-                                            navigateToInfusionEntry()
+                                            navigateToBleedingEntry()
                                             if (!sheetState.isVisible) {
                                                 showBottomSheet = false
                                             }
@@ -249,29 +250,6 @@ fun HomeScreen(
                                     Text("Aggiungi Sanguinamento")
                                 }
                             }
-                        }
-                        Row(
-                            Modifier
-                                .padding(innerPadding)
-                                .fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceAround,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            ItemCount(
-                                count = "sanguinamenti",
-                                iconId = R.drawable.baseline_directions_walk_24,
-                                modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_medium))
-                            )
-                            ItemCount(
-                                count = "infusioni",
-                                iconId = R.drawable.baseline_directions_walk_24,
-                                modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_medium))
-                            )
-                            ItemCount(
-                                count = homeUiState.stepsCount,
-                                iconId = R.drawable.baseline_directions_walk_24,
-                                modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_medium))
-                            )
                         }
                         HomeBody(
                             homeUiState.bleedingList,
@@ -316,26 +294,45 @@ fun HomeBody(
     onInfusionItemClick: (Int) -> Unit,
     onBleedingItemClick: (Int) -> Unit
 ) {
-    /*
-        Column(modifier) {
-            EventsList(
-                bleedingEventList,
-                infusionEventList,
-                //stepsList,
-                stepsCount,
-                onInfusionItemClick = { onInfusionItemClick(it.id) },
-                onBleedingItemClick = { onBleedingItemClick(it.id) },
-                modifier = Modifier.padding(horizontal = dimensionResource(id = R.dimen.padding_small))
+
+    Column(modifier) {
+        Row(
+            Modifier
+                //.padding(innerPadding)
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceAround,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            ItemCount(
+                count = bleedingEventList.count(),
+                iconId = R.drawable.baseline_bloodtype_24,
+                modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_medium))
             )
-        }*/
+            ItemCount(
+                count = infusionEventList.count(),
+                iconId = R.drawable.baseline_medication_24,
+                modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_medium))
+            )
+            ItemCount(
+                count = stepsCount,
+                iconId = R.drawable.baseline_directions_walk_24,
+                modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_medium))
+            )
+        }
+        EventsList(
+            bleedingEventList,
+            infusionEventList,
+            onInfusionItemClick = { onInfusionItemClick(it.id) },
+            onBleedingItemClick = { onBleedingItemClick(it.id) },
+            modifier = Modifier.padding(horizontal = dimensionResource(id = R.dimen.padding_small))
+        )
+    }
 }
 
 @Composable
 fun EventsList(
     bleedingEventList: List<BleedingEvent>,
     infusionEventList: List<InfusionEvent>,
-    //stepsList: List<StepsRecord>,
-    stepsCount: Int,
     onInfusionItemClick: (InfusionEvent) -> Unit,
     onBleedingItemClick: (BleedingEvent) -> Unit,
     modifier: Modifier = Modifier
