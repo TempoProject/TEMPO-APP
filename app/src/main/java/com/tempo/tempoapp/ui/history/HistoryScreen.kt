@@ -18,7 +18,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
-import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tempo.tempoapp.R
 import com.tempo.tempoapp.TempoAppBar
@@ -26,7 +25,10 @@ import com.tempo.tempoapp.ui.AppViewModelProvider
 import com.tempo.tempoapp.ui.HomeBody
 import com.tempo.tempoapp.ui.bleeding.DatePickerDialog
 import com.tempo.tempoapp.ui.navigation.NavigationDestination
+import com.tempo.tempoapp.ui.toStringDate
 import kotlinx.coroutines.launch
+import java.time.Instant
+import java.time.temporal.ChronoUnit
 
 object HistoryDestination : NavigationDestination {
     override val route = "history"
@@ -50,10 +52,13 @@ fun HistoryScreen(
     var showDatePickerDialog by remember {
         mutableStateOf(false)
     }
+    var date by remember {
+        mutableStateOf(Instant.now().truncatedTo(ChronoUnit.DAYS).toEpochMilli().toStringDate())
+    }
 
     Scaffold(topBar = {
         TempoAppBar(
-            title = stringResource(id = HistoryDestination.titleRes),
+            title = date,
             canNavigateBack = true,
             navigateUp = onNavigateUp
         )
@@ -95,6 +100,7 @@ fun HistoryScreen(
                     scope.launch {
                         viewModel.updateInfusion(timestamp)
                     }
+                    date = timestamp.toStringDate()
                 },
                 onDismiss = { showDatePickerDialog = !showDatePickerDialog })
     }
