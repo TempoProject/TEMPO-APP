@@ -2,9 +2,13 @@ package com.tempo.tempoapp.ui.home
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -40,6 +44,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -118,7 +123,9 @@ fun HomeScreen(
     var showBottomSheet by remember {
         mutableStateOf(false)
     }
-
+    var drawerIsEnabled by remember {
+        mutableStateOf(false)
+    }
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
@@ -134,69 +141,73 @@ fun HomeScreen(
         }
     }
 
-
-    if (viewModel.permissionsGranted.value) {
-        ModalNavigationDrawer(
-            drawerState = drawerState, drawerContent = {
-                ModalDrawerSheet {
-                    Text(stringResource(id = R.string.app_name), modifier = Modifier.padding(16.dp))
-                    Divider()
-                    NavDrawerItem(
-                        stringId = R.string.add_new_bleeding,
-                        icon = Icons.Default.Create,
-                        scope = scope,
-                        drawerState = drawerState,
-                        navigateToBleedingEntry
-                    )
-                    NavDrawerItem(
-                        stringId = R.string.infusion,
-                        icon = Icons.Default.Create,
-                        scope = scope,
-                        drawerState = drawerState,
-                        navigateToInfusionEntry
-                    )
-
-                    NavDrawerItem(
-                        stringId = R.string.history,
-                        icon = Icons.Default.DateRange,
-                        scope = scope,
-                        drawerState = drawerState,
-                        navigateToHistory
-                    )
-                }
-            }) {
-            Scaffold(
-                topBar = {
-                    TempoAppBar(
-                        title = stringResource(id = HomeDestination.titleRes),
-                        canNavigateBack = false,
-                        navigateUp = {
+    ModalNavigationDrawer(
+        gesturesEnabled = drawerIsEnabled,
+        drawerState = drawerState, drawerContent = {
+            ModalDrawerSheet {
+                Text(stringResource(id = R.string.app_name), modifier = Modifier.padding(16.dp))
+                Divider()
+                NavDrawerItem(
+                    stringId = R.string.add_new_bleeding,
+                    icon = Icons.Default.Create,
+                    scope = scope,
+                    drawerState = drawerState,
+                    navigateToBleedingEntry
+                )
+                NavDrawerItem(
+                    stringId = R.string.infusion,
+                    icon = Icons.Default.Create,
+                    scope = scope,
+                    drawerState = drawerState,
+                    navigateToInfusionEntry
+                )
+                NavDrawerItem(
+                    stringId = R.string.history,
+                    icon = Icons.Default.DateRange,
+                    scope = scope,
+                    drawerState = drawerState,
+                    navigateToHistory
+                )
+            }
+        }) {
+        Scaffold(
+            topBar = {
+                TempoAppBar(
+                    title = stringResource(id = HomeDestination.titleRes),
+                    canNavigateBack = false,
+                    navigateUp = {
+                        if (drawerIsEnabled)
                             scope.launch {
                                 drawerState.apply {
-                                    println(isClosed)
+                                    Log.d(javaClass.simpleName, "drawer is closed? $isClosed")
                                     if (isClosed)
                                         open()
                                     else close()
                                 }
                             }
-                        }
-                    )
-                },
-                floatingActionButton = {
-                    FloatingActionButton(
-                        onClick = { showBottomSheet = !showBottomSheet },
-                        shape = MaterialTheme.shapes.medium,
-                        modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_large))
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = null
-                        )
                     }
-                },
-            ) { innerPadding ->
-                when (availability) {
-                    HealthConnectAvailability.INSTALLED -> {
+                )
+            },
+            floatingActionButton = {
+                FloatingActionButton(
+                    onClick = { showBottomSheet = !showBottomSheet },
+                    shape = MaterialTheme.shapes.medium,
+                    modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_large)),
+
+                    ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = null
+                    )
+                }
+            },
+        ) { innerPadding ->
+            println("permission? ${viewModel.permissionsGranted.value}")
+
+            when (availability) {
+                HealthConnectAvailability.INSTALLED -> {
+                    if (viewModel.permissionsGranted.value) {
+                        drawerIsEnabled = true
                         if (showBottomSheet) {
                             ModalBottomSheet(
                                 onDismissRequest = {
@@ -253,30 +264,102 @@ fun HomeScreen(
                             onInfusionItemClick = navigateToInfusionUpdate,
                             onBleedingItemClick = navigateToBleedingUpdate
                         )
-
-
+                    } else {
+                        drawerIsEnabled = false
+                        Column(
+                            modifier
+                                .fillMaxSize()
+                                .padding(innerPadding),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Box(modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_small))) {
+                                Text(
+                                    text = "Autorizza l'accesso a health connect.",
+                                )
+                            }
+                            ElevatedButton(onClick = {
+                                permissionsLauncher.launch(viewModel.permission)
+                            }) {
+                                Text(text = "autorizza")
+                            }
+                        }
                     }
+                }
 
-                    HealthConnectAvailability.NOT_INSTALLED -> {
-                        // TODO landing page,
-                        // redirect user to play store
+                HealthConnectAvailability.NOT_INSTALLED -> {
+                    // TODO landing page,
+                    // redirect user to play store
+                }
+
+                HealthConnectAvailability.NOT_SUPPORTED -> {
+                    drawerIsEnabled = true
+                    if (showBottomSheet) {
+                        ModalBottomSheet(
+                            onDismissRequest = {
+                                showBottomSheet = false
+                            },
+                            sheetState = sheetState,
+                            modifier = Modifier.fillMaxHeight(fraction = 0.3f)
+                        ) {
+                            // Sheet content
+                            OutlinedButton(
+                                onClick = {
+                                    scope.launch {
+                                        sheetState.hide()
+                                    }.invokeOnCompletion {
+                                        navigateToInfusionEntry()
+                                        if (!sheetState.isVisible) {
+                                            showBottomSheet = false
+                                        }
+
+                                    }
+                                }, modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(4.dp)
+                            ) {
+                                Text("Aggiungi infusione")
+                            }
+                            OutlinedButton(
+                                onClick = {
+                                    scope.launch {
+                                        sheetState.hide()
+                                        //viewModel.readStepsInterval()
+                                    }.invokeOnCompletion {
+                                        navigateToBleedingEntry()
+                                        if (!sheetState.isVisible) {
+                                            showBottomSheet = false
+                                        }
+                                    }
+                                }, modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(4.dp)
+                            ) {
+                                Text("Aggiungi Sanguinamento")
+                            }
+                        }
                     }
-
-                    HealthConnectAvailability.NOT_SUPPORTED -> {}
+                    HomeBody(
+                        homeUiState.bleedingList,
+                        homeUiState.infusionList,
+                        homeUiState.stepsCount,
+                        //homeUiState.stepsList,
+                        modifier = modifier
+                            .padding(innerPadding)
+                            .fillMaxSize(),
+                        onInfusionItemClick = navigateToInfusionUpdate,
+                        onBleedingItemClick = navigateToBleedingUpdate
+                    )
                 }
             }
-        }
-    } else {
-        ElevatedButton(onClick = {
-            permissionsLauncher.launch(viewModel.permission)
-        }) {
-            Text(text = "autorizza")
+
         }
     }
 }
 
+
 @Composable
-fun NavDrawerItem(
+private fun NavDrawerItem(
     @StringRes stringId: Int,
     icon: ImageVector,
     scope: CoroutineScope,
