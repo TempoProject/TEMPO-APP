@@ -1,5 +1,7 @@
 package com.tempo.tempoapp.ui.navigation
 
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -33,7 +35,9 @@ fun TempoNavHost(
     modifier: Modifier = Modifier,
 ) {
     NavHost(
-        navController = navController, startDestination = HomeDestination.route, modifier = modifier
+        navController = navController, startDestination = HomeDestination.route, modifier = modifier,
+        enterTransition = { EnterTransition.None},
+        exitTransition = { ExitTransition.None},
     ) {
         /**
          * Home screen
