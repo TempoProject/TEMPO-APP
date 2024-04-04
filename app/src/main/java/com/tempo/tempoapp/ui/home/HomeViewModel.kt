@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequest
 import androidx.work.WorkManager
+import com.tempo.tempoapp.data.healthconnect.HealthConnectAvailability
 import com.tempo.tempoapp.data.healthconnect.HealthConnectManager
 import com.tempo.tempoapp.data.model.BleedingEvent
 import com.tempo.tempoapp.data.model.InfusionEvent
@@ -42,13 +43,15 @@ class HomeViewModel(
     val permissionsLauncher = healthConnectManager.requestPermissionsActivityContract()
 
     init {
-        initialLoad()
+        if (healthConnectManager.availability.value == HealthConnectAvailability.INSTALLED)
+            initialLoad()
     }
 
     fun initialLoad() {
         viewModelScope.launch {
             permissionsGranted.value =
                 healthConnectManager.hasAllPermissions(permissions = permission)
+            println("permission granted in viewmodel? ${permissionsGranted.value}")
         }.invokeOnCompletion {
             if (permissionsGranted.value) {
                 val task =
