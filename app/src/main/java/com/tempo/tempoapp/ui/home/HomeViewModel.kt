@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequest
 import androidx.work.WorkManager
+import com.tempo.tempoapp.data.healthconnect.HealthConnectAvailability
 import com.tempo.tempoapp.data.healthconnect.HealthConnectManager
 import com.tempo.tempoapp.data.model.BleedingEvent
 import com.tempo.tempoapp.data.model.InfusionEvent
@@ -21,6 +22,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.Instant
+import java.time.temporal.ChronoUnit
 import java.util.concurrent.TimeUnit
 
 class HomeViewModel(
@@ -41,13 +43,15 @@ class HomeViewModel(
     val permissionsLauncher = healthConnectManager.requestPermissionsActivityContract()
 
     init {
-        initialLoad()
+        if (healthConnectManager.availability.value == HealthConnectAvailability.INSTALLED)
+            initialLoad()
     }
 
     fun initialLoad() {
         viewModelScope.launch {
             permissionsGranted.value =
                 healthConnectManager.hasAllPermissions(permissions = permission)
+            println("permission granted in viewmodel? ${permissionsGranted.value}")
         }.invokeOnCompletion {
             if (permissionsGranted.value) {
                 val task =
@@ -64,9 +68,15 @@ class HomeViewModel(
 
     val homeUiState: StateFlow<HomeUiState> =
         combine(
-            bleedingRepository.getAll(),
-            infusionRepository.getAll(),
-            stepsRecordRepository.getAll()
+            bleedingRepository.getAllDayBleeding(
+                Instant.now().truncatedTo(ChronoUnit.DAYS).toEpochMilli()
+            ),
+            infusionRepository.getAllDayInfusion(
+                Instant.now().truncatedTo(ChronoUnit.DAYS).toEpochMilli()
+            ),
+            stepsRecordRepository.getAllDayStepsCount(
+                Instant.now().truncatedTo(ChronoUnit.DAYS).toEpochMilli()
+            )
         ) { bleeding, infusion, steps ->
             HomeUiState(bleeding, infusion, steps)
         }.stateIn(
@@ -103,5 +113,6 @@ class HomeViewModel(
 data class HomeUiState(
     val bleedingList: List<BleedingEvent> = listOf(),
     val infusionList: List<InfusionEvent> = mutableListOf(),
-    val stepsList: List<com.tempo.tempoapp.data.model.StepsRecord> = mutableListOf()
+    val stepsCount: Int = 0
+    //val stepsList: List<com.tempo.tempoapp.data.model.StepsRecord> = mutableListOf()
 )

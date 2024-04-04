@@ -33,6 +33,7 @@ import com.tempo.tempoapp.R
 import com.tempo.tempoapp.TempoAppBar
 import com.tempo.tempoapp.ui.AppViewModelProvider
 import com.tempo.tempoapp.ui.navigation.NavigationDestination
+import com.tempo.tempoapp.ui.toStringDate
 import kotlinx.coroutines.launch
 
 object BleedingEventDetailsDestination : NavigationDestination {
@@ -170,7 +171,7 @@ fun BleedingItemDetails(details: BleedingDetails, modifier: Modifier) {
             )
         )
         ItemDetailsRow(
-            labelResID = R.string.date, itemDetail = details.date, modifier = Modifier.padding(
+            labelResID = R.string.date, itemDetail = details.date.toStringDate(), modifier = Modifier.padding(
                 horizontal = dimensionResource(
                     id = R.dimen
                         .padding_medium

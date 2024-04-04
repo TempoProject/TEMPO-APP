@@ -24,4 +24,13 @@ interface InfusionEventDao : LogbookDao<InfusionEvent> {
         """
     )
     fun getEventFromId(itemId: Int): Flow<InfusionEvent>
+
+
+    @Query(
+        """
+            SELECT *
+            FROM infusion_event WHERE date = :date 
+        """
+    )
+    fun getAllDayInfusion(date: Long): Flow<List<InfusionEvent>>
 }

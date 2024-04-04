@@ -1,32 +1,42 @@
 package com.tempo.tempoapp.ui.home
 
 import android.Manifest
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.clickable
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material.icons.filled.Create
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material3.Divider
+import androidx.compose.material3.DrawerState
+import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -40,11 +50,18 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
@@ -52,14 +69,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tempo.tempoapp.R
 import com.tempo.tempoapp.TempoAppBar
 import com.tempo.tempoapp.data.healthconnect.HealthConnectAvailability
-import com.tempo.tempoapp.data.model.BleedingEvent
-import com.tempo.tempoapp.data.model.InfusionEvent
-import com.tempo.tempoapp.data.model.StepsRecord
 import com.tempo.tempoapp.ui.AppViewModelProvider
+import com.tempo.tempoapp.ui.HomeBody
 import com.tempo.tempoapp.ui.navigation.NavigationDestination
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.Date
 
 
 object HomeDestination : NavigationDestination {
@@ -78,7 +92,8 @@ fun HomeScreen(
     navigateToBleedingEntry: () -> Unit,
     navigateToInfusionEntry: () -> Unit,
     navigateToBleedingUpdate: (Int) -> Unit,
-    navigateToInfusionUpdate: (Int) -> Unit
+    navigateToInfusionUpdate: (Int) -> Unit,
+    navigateToHistory: () -> Unit
 ) {
     val permissionsLauncher =
         rememberLauncherForActivityResult(viewModel.permissionsLauncher) {
@@ -93,9 +108,22 @@ fun HomeScreen(
         hasNotificationPermission = granted
     }
 
-    LaunchedEffect(Unit) {
-        launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
+    when {
+        ContextCompat.checkSelfPermission(
+            LocalContext.current,
+            Manifest.permission.POST_NOTIFICATIONS
+        ) == PackageManager.PERMISSION_GRANTED -> {
+
+        }
+
+        else ->
+            LaunchedEffect(Unit) {
+                launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+
     }
+
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
 
     val currentOnAvailabilityCheck by rememberUpdatedState(onResumeAvailabilityCheck)
     val homeUiState by viewModel.homeUiState.collectAsState()
@@ -104,14 +132,15 @@ fun HomeScreen(
     var showBottomSheet by remember {
         mutableStateOf(false)
     }
-
+    var drawerIsEnabled by remember {
+        mutableStateOf(false)
+    }
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
                 currentOnAvailabilityCheck()
             }
         }
-
         // Add the observer to the lifecycle
         lifecycleOwner.lifecycle.addObserver(observer)
 
@@ -121,20 +150,60 @@ fun HomeScreen(
         }
     }
 
-    if (viewModel.permissionsGranted.value) {
+    ModalNavigationDrawer(
+        gesturesEnabled = drawerIsEnabled,
+        drawerState = drawerState, drawerContent = {
+            ModalDrawerSheet {
+                Text(stringResource(id = R.string.app_name), modifier = Modifier.padding(16.dp))
+                Divider()
+                NavDrawerItem(
+                    stringId = R.string.add_new_bleeding,
+                    icon = Icons.Default.Create,
+                    scope = scope,
+                    drawerState = drawerState,
+                    navigateToBleedingEntry
+                )
+                NavDrawerItem(
+                    stringId = R.string.infusion,
+                    icon = Icons.Default.Create,
+                    scope = scope,
+                    drawerState = drawerState,
+                    navigateToInfusionEntry
+                )
+                NavDrawerItem(
+                    stringId = R.string.history,
+                    icon = Icons.Default.DateRange,
+                    scope = scope,
+                    drawerState = drawerState,
+                    navigateToHistory
+                )
+            }
+        }) {
         Scaffold(
             topBar = {
                 TempoAppBar(
                     title = stringResource(id = HomeDestination.titleRes),
                     canNavigateBack = false,
+                    navigateUp = {
+                        if (drawerIsEnabled)
+                            scope.launch {
+                                drawerState.apply {
+                                    Log.d(javaClass.simpleName, "drawer is closed? $isClosed")
+                                    if (isClosed)
+                                        open()
+                                    else close()
+                                }
+                            }
+                    }
                 )
             },
             floatingActionButton = {
                 FloatingActionButton(
                     onClick = { showBottomSheet = !showBottomSheet },
                     shape = MaterialTheme.shapes.medium,
-                    modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_large))
-                ) {
+                    modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_large)),
+
+                    ) {
                     Icon(
                         imageVector = Icons.Default.Add,
                         contentDescription = null
@@ -142,8 +211,104 @@ fun HomeScreen(
                 }
             },
         ) { innerPadding ->
+            println("permission? ${viewModel.permissionsGranted.value}")
+
             when (availability) {
                 HealthConnectAvailability.INSTALLED -> {
+                    if (viewModel.permissionsGranted.value) {
+                        drawerIsEnabled = true
+                        if (showBottomSheet) {
+                            ModalBottomSheet(
+                                onDismissRequest = {
+                                    showBottomSheet = false
+                                },
+                                sheetState = sheetState,
+                                modifier = Modifier.fillMaxHeight(fraction = 0.3f)
+                            ) {
+                                // Sheet content
+                                OutlinedButton(
+                                    onClick = {
+                                        scope.launch {
+                                            sheetState.hide()
+                                        }.invokeOnCompletion {
+                                            navigateToInfusionEntry()
+                                            if (!sheetState.isVisible) {
+                                                showBottomSheet = false
+                                            }
+
+                                        }
+                                    }, modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(4.dp)
+                                ) {
+                                    Text("Aggiungi infusione")
+                                }
+                                OutlinedButton(
+                                    onClick = {
+                                        scope.launch {
+                                            sheetState.hide()
+                                            //viewModel.readStepsInterval()
+                                        }.invokeOnCompletion {
+                                            navigateToBleedingEntry()
+                                            if (!sheetState.isVisible) {
+                                                showBottomSheet = false
+                                            }
+                                        }
+                                    }, modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(4.dp)
+                                ) {
+                                    Text("Aggiungi Sanguinamento")
+                                }
+                            }
+                        }
+                        HomeBody(
+                            homeUiState.bleedingList,
+                            homeUiState.infusionList,
+                            homeUiState.stepsCount,
+                            //homeUiState.stepsList,
+                            modifier = modifier
+                                .padding(innerPadding)
+                                .fillMaxSize(),
+                            onInfusionItemClick = navigateToInfusionUpdate,
+                            onBleedingItemClick = navigateToBleedingUpdate
+                        )
+                    } else {
+                        drawerIsEnabled = false
+                        Column(
+                            modifier
+                                .fillMaxSize()
+                                .padding(innerPadding),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Box(modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_small))) {
+                                Text(
+                                    text = "Autorizza l'accesso a health connect.",
+                                )
+                            }
+                            ElevatedButton(onClick = {
+                                permissionsLauncher.launch(viewModel.permission)
+                            }) {
+                                Text(text = "autorizza")
+                            }
+                        }
+                    }
+                }
+
+                HealthConnectAvailability.NOT_INSTALLED -> {
+                    Column(Modifier.padding(innerPadding)) {
+                        NotInstalledMessage()
+                    }
+                    Toast.makeText(
+                        LocalContext.current,
+                        "Health connect not installed",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+
+                HealthConnectAvailability.NOT_SUPPORTED -> {
+                    drawerIsEnabled = true
                     if (showBottomSheet) {
                         ModalBottomSheet(
                             onDismissRequest = {
@@ -155,10 +320,10 @@ fun HomeScreen(
                             // Sheet content
                             OutlinedButton(
                                 onClick = {
-                                    navigateToBleedingEntry()
                                     scope.launch {
                                         sheetState.hide()
                                     }.invokeOnCompletion {
+                                        navigateToInfusionEntry()
                                         if (!sheetState.isVisible) {
                                             showBottomSheet = false
                                         }
@@ -176,7 +341,7 @@ fun HomeScreen(
                                         sheetState.hide()
                                         //viewModel.readStepsInterval()
                                     }.invokeOnCompletion {
-                                        navigateToInfusionEntry()
+                                        navigateToBleedingEntry()
                                         if (!sheetState.isVisible) {
                                             showBottomSheet = false
                                         }
@@ -189,9 +354,11 @@ fun HomeScreen(
                             }
                         }
                     }
-
                     HomeBody(
-                        homeUiState.bleedingList, homeUiState.infusionList, homeUiState.stepsList,
+                        homeUiState.bleedingList,
+                        homeUiState.infusionList,
+                        homeUiState.stepsCount,
+                        //homeUiState.stepsList,
                         modifier = modifier
                             .padding(innerPadding)
                             .fillMaxSize(),
@@ -199,190 +366,69 @@ fun HomeScreen(
                         onBleedingItemClick = navigateToBleedingUpdate
                     )
                 }
+            }
 
-                HealthConnectAvailability.NOT_INSTALLED -> {
-                    // TODO landing page,
-                    // redirect user to play store
+        }
+    }
+}
+
+
+@Composable
+private fun NavDrawerItem(
+    @StringRes stringId: Int,
+    icon: ImageVector,
+    scope: CoroutineScope,
+    drawerState: DrawerState,
+    navDestination: () -> Unit = {}
+) {
+    NavigationDrawerItem(
+        label = { Text(text = stringResource(id = stringId)) },
+        icon = { Icon(icon, contentDescription = null) },
+        selected = false,
+        onClick = {
+            scope.launch { drawerState.close() }
+                .invokeOnCompletion {
+                    navDestination()
                 }
-
-                HealthConnectAvailability.NOT_SUPPORTED -> {}
-            }
         }
-    } else {
-        ElevatedButton(onClick = {
-            permissionsLauncher.launch(viewModel.permission)
-        }) {
-            Text(text = "autorizza")
-        }
-    }
+    )
 }
 
 @Composable
-fun HomeBody(
-    bleedingEventList: List<BleedingEvent>,
-    infusionEventList: List<InfusionEvent>,
-    stepsList: List<StepsRecord>,
-    modifier: Modifier = Modifier,
-    onInfusionItemClick: (Int) -> Unit,
-    onBleedingItemClick: (Int) -> Unit
-) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier
-    ) {
-        if (bleedingEventList.isEmpty() && infusionEventList.isEmpty()) {
-            Text(
-                text = stringResource(R.string.no_bleeding_event),
-                textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.titleLarge
-            )
-        } else {
-            //Text(text = stepsList.count().toString())
-            EventsList(
-                bleedingEventList,
-                infusionEventList,
-                stepsList,
-                onInfusionItemClick = { onInfusionItemClick(it.id) },
-                onBleedingItemClick = { onBleedingItemClick(it.id) },
-                modifier = Modifier.padding(horizontal = dimensionResource(id = R.dimen.padding_small))
-            )
+private fun NotInstalledMessage() {
+    // Build the URL to allow the user to install the Health Connect package
+    val tag = stringResource(R.string.not_installed_tag)
+    // Build the URL to allow the user to install the Health Connect package
+    val url = Uri.parse(stringResource(id = R.string.market_url))
+        .buildUpon()
+        .appendQueryParameter("id", stringResource(id = R.string.health_connect_package))
+        // Additional parameter to execute the onboarding flow.
+        .appendQueryParameter("url", stringResource(id = R.string.onboarding_url))
+        .build()
+    val context = LocalContext.current
 
+    val notInstalledText = stringResource(id = R.string.not_installed_description)
+    val notInstalledLinkText = stringResource(R.string.not_installed_link_text)
+
+    val unavailableText = buildAnnotatedString {
+        withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.onBackground)) {
+            append(notInstalledText)
+            append("\n\n")
+        }
+        pushStringAnnotation(tag = tag, annotation = url.toString())
+        withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.primary)) {
+            append(notInstalledLinkText)
         }
     }
-}
-
-@Composable
-fun EventsList(
-    bleedingEventList: List<BleedingEvent>,
-    infusionEventList: List<InfusionEvent>,
-    stepsList: List<StepsRecord>,
-    onInfusionItemClick: (InfusionEvent) -> Unit,
-    onBleedingItemClick: (BleedingEvent) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    LazyColumn(modifier = modifier) {
-        items(infusionEventList) {
-            InfusionItem(item = it, modifier = Modifier
-                .padding(dimensionResource(id = R.dimen.padding_small))
-                .clickable { onInfusionItemClick(it) })
-        }
-        items(bleedingEventList) {
-            BleedingItem(
-                item = it,
-                modifier = Modifier
-                    .padding(dimensionResource(id = R.dimen.padding_small))
-                    .clickable { onBleedingItemClick(it) }
-            )
-        }
-        items(stepsList) {
-            stepItem(
-                steps = it,
-                modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_small))
-            )
-        }
-    }
-}
-
-
-@Composable
-private fun stepItem(steps: StepsRecord, modifier: Modifier) {
-    Card(
-        colors = CardDefaults.cardColors(MaterialTheme.colorScheme.primary),
-        modifier = modifier, elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_large)),
-            verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_small))
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = steps.steps.toString(),
-                    style = MaterialTheme.typography.titleLarge,
-                )
-                Spacer(Modifier.weight(1f))
-                Text(
-                    text = steps.startTime,
-                    style = MaterialTheme.typography.titleMedium
+    ClickableText(
+        text = unavailableText,
+        style = TextStyle(textAlign = TextAlign.Justify)
+    ) { offset ->
+        unavailableText.getStringAnnotations(tag = tag, start = offset, end = offset)
+            .firstOrNull()?.let {
+                context.startActivity(
+                    Intent(Intent.ACTION_VIEW, Uri.parse(it.item))
                 )
             }
-            Text(
-                text = steps.endTime,
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.align(alignment = Alignment.End)
-            )
-
-        }
     }
 }
-
-@Composable
-private fun BleedingItem(item: BleedingEvent, modifier: Modifier) {
-    Card(
-        colors = CardDefaults.cardColors(MaterialTheme.colorScheme.primary),
-        modifier = modifier, elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_large)),
-            verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_small))
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = item.bleedingCause,
-                    style = MaterialTheme.typography.titleLarge,
-                )
-                Spacer(Modifier.weight(1f))
-                Text(
-                    text = item.bleedingSite,
-                    style = MaterialTheme.typography.titleMedium
-                )
-            }
-            Text(
-                text = item.timestamp.toStringDate(),
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.align(alignment = Alignment.End)
-            )
-
-        }
-    }
-}
-
-@Composable
-private fun InfusionItem(item: InfusionEvent, modifier: Modifier) {
-    Card(
-        colors = CardDefaults.cardColors(MaterialTheme.colorScheme.secondary),
-        modifier = modifier, elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_large)),
-            verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_small))
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = item.treatment,
-                    style = MaterialTheme.typography.titleLarge,
-                )
-                Spacer(Modifier.weight(1f))
-                Text(
-                    text = item.infusionSite,
-                    style = MaterialTheme.typography.titleMedium
-                )
-            }
-            Text(
-                text = item.timestamp.toStringDate(),
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.align(alignment = Alignment.End)
-            )
-        }
-    }
-}
-
-private fun Long.toStringDate(): String = SimpleDateFormat("dd-MM-yyyy").format(Date(this))

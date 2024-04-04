@@ -9,6 +9,7 @@ import com.tempo.tempoapp.TempoApplication
 import com.tempo.tempoapp.ui.bleeding.BleedingDetailsViewModel
 import com.tempo.tempoapp.ui.bleeding.BleedingEditViewModel
 import com.tempo.tempoapp.ui.bleeding.BleedingEntryViewModel
+import com.tempo.tempoapp.ui.history.HistoryViewModel
 import com.tempo.tempoapp.ui.home.HomeViewModel
 import com.tempo.tempoapp.ui.infusion.InfusionDetailsViewModel
 import com.tempo.tempoapp.ui.infusion.InfusionEditViewModel
@@ -58,6 +59,13 @@ object AppViewModelProvider {
             InfusionEditViewModel(
                 this.createSavedStateHandle(),
                 tempoApplication().container.infusionRepository
+            )
+        }
+        initializer {
+            HistoryViewModel(
+                tempoApplication().container.bleedingRepository,
+                tempoApplication().container.infusionRepository,
+                tempoApplication().container.stepsRecordRepository
             )
         }
     }

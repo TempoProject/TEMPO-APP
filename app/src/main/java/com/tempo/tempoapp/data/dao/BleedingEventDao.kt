@@ -25,4 +25,12 @@ interface BleedingEventDao : LogbookDao<BleedingEvent> {
         """
     )
     fun getEventFromId(itemId: Int): Flow<BleedingEvent>
+
+    @Query(
+        """
+            SELECT *
+            FROM bleeding_event WHERE date = :date 
+        """
+    )
+    fun getAllDayBleeding(date: Long): Flow<List<BleedingEvent>>
 }

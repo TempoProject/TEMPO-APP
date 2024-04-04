@@ -1,5 +1,7 @@
 package com.tempo.tempoapp.ui.navigation
 
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -15,6 +17,8 @@ import com.tempo.tempoapp.ui.bleeding.BleedingEntryDestination
 import com.tempo.tempoapp.ui.bleeding.BleedingEntryScreen
 import com.tempo.tempoapp.ui.bleeding.BleedingEventDetailsDestination
 import com.tempo.tempoapp.ui.bleeding.BleedingEventEditDestination
+import com.tempo.tempoapp.ui.history.HistoryDestination
+import com.tempo.tempoapp.ui.history.HistoryScreen
 import com.tempo.tempoapp.ui.home.HomeDestination
 import com.tempo.tempoapp.ui.home.HomeScreen
 import com.tempo.tempoapp.ui.infusion.InfusionDetailsDestination
@@ -31,7 +35,9 @@ fun TempoNavHost(
     modifier: Modifier = Modifier,
 ) {
     NavHost(
-        navController = navController, startDestination = HomeDestination.route, modifier = modifier
+        navController = navController, startDestination = HomeDestination.route, modifier = modifier,
+        enterTransition = { EnterTransition.None},
+        exitTransition = { ExitTransition.None},
     ) {
         /**
          * Home screen
@@ -49,6 +55,9 @@ fun TempoNavHost(
                 },
                 navigateToBleedingUpdate = {
                     navController.navigate("${BleedingEventDetailsDestination.route}/${it}")
+                },
+                navigateToHistory = {
+                    navController.navigate(HistoryDestination.route)
                 })
         }
         /**
@@ -136,6 +145,24 @@ fun TempoNavHost(
             InfusionEditScreen(
                 onNavigateUp = { navController.navigateUp() },
                 navigateBack = { navController.popBackStack() },
+            )
+        }
+
+        /**
+         * History
+         */
+
+        composable(
+            route = HistoryDestination.route
+        ) {
+            HistoryScreen(
+                navigateToInfusionUpdate = {
+                    navController.navigate("${InfusionEntryDestination.route}/${it}")
+                },
+                navigateToBleedingUpdate = {
+                    navController.navigate("${BleedingEventDetailsDestination.route}/${it}")
+                },
+                onNavigateUp = { navController.navigateUp() }
             )
         }
 

@@ -14,4 +14,21 @@ interface StepsRecordDao : LogbookDao<StepsRecord> {
     """
     )
     fun getAllSteps(): Flow<List<StepsRecord>>
+
+    @Query(
+        """
+            SELECT SUM(steps)
+            FROM steps WHERE date = :date
+        """
+    )
+    fun getAllDayStepsCount(date: Long): Flow<Int>
+
+    @Query(
+        """
+            SELECT *
+            FROM steps WHERE date = :date 
+        """
+    )
+    fun getAllDaySteps(date: Long): Flow<List<StepsRecord>>
+
 }

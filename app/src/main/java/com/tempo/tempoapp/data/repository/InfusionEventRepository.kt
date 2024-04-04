@@ -26,4 +26,8 @@ class InfusionRepository(private val infusionEventDao: InfusionEventDao) :
         return infusionEventDao.getEventFromId(id)
     }
 
+    fun getAllDayInfusion(date: Long): Flow<List<InfusionEvent>> {
+        return infusionEventDao.getAllDayInfusion(date)
+    }
+
 }

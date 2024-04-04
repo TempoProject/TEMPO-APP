@@ -53,9 +53,8 @@ import com.tempo.tempoapp.data.model.Severity
 import com.tempo.tempoapp.data.model.bleedingSite
 import com.tempo.tempoapp.ui.AppViewModelProvider
 import com.tempo.tempoapp.ui.navigation.NavigationDestination
+import com.tempo.tempoapp.ui.toStringDate
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.Date
 
 object BleedingEntryDestination : NavigationDestination {
     override val route: String
@@ -197,7 +196,7 @@ fun BleedingEventInputForm(
                 modifier = Modifier
                     .weight(2f)
             ) {
-                Text(text = date)
+                Text(text = date.toStringDate())
                 Spacer(modifier = Modifier.padding(1.dp))
                 Icon(
                     painter = painterResource(id = R.drawable.baseline_calendar_today_24),
@@ -227,22 +226,20 @@ fun BleedingEventInputForm(
             if (showDatePickerDialog)
                 DatePickerDialog(
                     onDateSelected = { timestamp ->
+                        println("date: $timestamp")
                         onItemClick(
                             uiState.bleedingDetails.copy(
-                                date = SimpleDateFormat("dd-MM-yyyy").format(
-                                    Date(timestamp)
-                                )
+                                date = timestamp//timestamp.toStringDate()
                             )
                         )
-                        date = SimpleDateFormat("dd-MM-yyyy").format(
-                            Date(timestamp)
-                        )
+                        date = timestamp//timestamp.toStringDate()
                     },
                     onDismiss = { showDatePickerDialog = !showDatePickerDialog })
 
             if (showTimePickerDialog)
                 TimePickerDialog(
                     onTimeSelected = {
+                        println("time $it")
                         onItemClick(
                             uiState.bleedingDetails.copy(time = it)
                         )

@@ -46,7 +46,7 @@ class BleedingEditViewModel(
                     && cause.isNotBlank()
                     && painScale.isNotBlank()
                     && severity.isNotBlank()
-                    && date.isNotBlank()
+                    //&& date.isNotBlank()
                     && time.isNotBlank()
 
         }

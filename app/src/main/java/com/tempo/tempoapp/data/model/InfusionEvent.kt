@@ -19,5 +19,7 @@ data class InfusionEvent(
     @ColumnInfo(name = "note")
     val note: String?,
     @ColumnInfo(name = "timestamp")
-    val timestamp: Long
+    val timestamp: Long,
+    @ColumnInfo(name = "date")
+    val date: Long,
 )
