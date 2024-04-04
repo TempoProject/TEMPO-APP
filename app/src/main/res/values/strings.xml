@@ -17,4 +17,15 @@
     <string name="lot_number">Numero di lotto</string>
     <string name="treatment">Trattamento</string>
     <string name="history">Storico eventi</string>
+
+    <string name="market_url">market://details</string>
+    <string name="health_connect_package">com.google.android.apps.healthdata</string>
+    <string name="onboarding_url">healthconnect://onboarding</string>
+    <string name="not_installed_description">
+        Health Connect è supportato da questo dispositivo ma non è attualmente installato
+    </string>
+    <string name="not_installed_link_text">
+        Per un corretto funzionamento dell"'"applicazione, installa Health Connect da Google Play.
+    </string>
+    <string name="not_installed_tag">not_installed_tag</string>
 </resources>
