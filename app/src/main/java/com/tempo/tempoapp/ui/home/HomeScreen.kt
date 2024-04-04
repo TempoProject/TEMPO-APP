@@ -1,8 +1,11 @@
 package com.tempo.tempoapp.ui.home
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
@@ -13,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Create
@@ -51,6 +55,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
@@ -288,8 +297,14 @@ fun HomeScreen(
                 }
 
                 HealthConnectAvailability.NOT_INSTALLED -> {
-                    // TODO landing page,
-                    // redirect user to play store
+                    Column(Modifier.padding(innerPadding)) {
+                        NotInstalledMessage()
+                    }
+                    Toast.makeText(
+                        LocalContext.current,
+                        "Health connect not installed",
+                        Toast.LENGTH_LONG
+                    ).show()
                 }
 
                 HealthConnectAvailability.NOT_SUPPORTED -> {
@@ -377,4 +392,43 @@ private fun NavDrawerItem(
                 }
         }
     )
+}
+
+@Composable
+private fun NotInstalledMessage() {
+    // Build the URL to allow the user to install the Health Connect package
+    val tag = stringResource(R.string.not_installed_tag)
+    // Build the URL to allow the user to install the Health Connect package
+    val url = Uri.parse(stringResource(id = R.string.market_url))
+        .buildUpon()
+        .appendQueryParameter("id", stringResource(id = R.string.health_connect_package))
+        // Additional parameter to execute the onboarding flow.
+        .appendQueryParameter("url", stringResource(id = R.string.onboarding_url))
+        .build()
+    val context = LocalContext.current
+
+    val notInstalledText = stringResource(id = R.string.not_installed_description)
+    val notInstalledLinkText = stringResource(R.string.not_installed_link_text)
+
+    val unavailableText = buildAnnotatedString {
+        withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.onBackground)) {
+            append(notInstalledText)
+            append("\n\n")
+        }
+        pushStringAnnotation(tag = tag, annotation = url.toString())
+        withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.primary)) {
+            append(notInstalledLinkText)
+        }
+    }
+    ClickableText(
+        text = unavailableText,
+        style = TextStyle(textAlign = TextAlign.Justify)
+    ) { offset ->
+        unavailableText.getStringAnnotations(tag = tag, start = offset, end = offset)
+            .firstOrNull()?.let {
+                context.startActivity(
+                    Intent(Intent.ACTION_VIEW, Uri.parse(it.item))
+                )
+            }
+    }
 }
