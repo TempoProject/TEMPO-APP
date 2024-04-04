@@ -84,6 +84,6 @@ class HistoryViewModel(
 
 data class HistoryUiState(
     val bleedingList: List<BleedingEvent> = listOf(),
-    val infusionList: List<InfusionEvent> = mutableListOf(),
+    val infusionList: List<InfusionEvent> = listOf(),
     val stepsCount: Int = 0
 )
