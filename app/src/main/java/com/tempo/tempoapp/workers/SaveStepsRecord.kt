@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
 import android.os.Build.VERSION.SDK_INT
 import android.os.Build.VERSION_CODES.Q
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.StepsRecord
@@ -22,6 +23,9 @@ import java.time.temporal.ChronoUnit
 
 class SaveStepsRecord(appContext: Context, params: WorkerParameters) :
     CoroutineWorker(appContext, params) {
+
+    private val TAG = javaClass.simpleName
+
     private val healthConnectManager =
         (appContext.applicationContext as TempoApplication).healthConnectManager
 
@@ -39,8 +43,19 @@ class SaveStepsRecord(appContext: Context, params: WorkerParameters) :
     override suspend fun doWork(): Result {
         setForeground(createForegroundInfo(""))
         if (healthConnectManager.hasAllPermissions(permission)) {
+            val instantThirtyMinutes = Instant.now().minusSeconds(1800)
+            val instantNow = Instant.now()
             val list =
-                healthConnectManager.readSteps(Instant.now().minusSeconds(1800), Instant.now())
+                healthConnectManager.readSteps(instantThirtyMinutes, instantNow)
+                    .toMutableList()
+            Log.d(TAG, "full list: $list")
+            try {
+                if (list.last().startTime == instantThirtyMinutes)
+                    list.removeLast()
+                Log.d(TAG, "list after removeLast(): $list")
+            } catch (err: NoSuchElementException) {
+                Log.e(TAG, err.message!!)
+            }
             list.forEach {
                 stepsRecordRepository.insertItem(
                     com.tempo.tempoapp.data.model.StepsRecord(
