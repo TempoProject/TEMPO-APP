@@ -4,11 +4,13 @@ import android.content.Context
 import com.tempo.tempoapp.data.repository.BleedingRepository
 import com.tempo.tempoapp.data.repository.InfusionRepository
 import com.tempo.tempoapp.data.repository.StepsRecordRepository
+import com.tempo.tempoapp.data.repository.UtilsRepository
 
 interface AppContainer {
     val bleedingRepository: BleedingRepository
     val infusionRepository: InfusionRepository
     val stepsRecordRepository: StepsRecordRepository
+    val utilsRepository: UtilsRepository
 }
 
 class AppDataContainer(private val context: Context) : AppContainer {
@@ -21,6 +23,9 @@ class AppDataContainer(private val context: Context) : AppContainer {
     }
     override val stepsRecordRepository: StepsRecordRepository by lazy {
         StepsRecordRepository(TempoDatabase.getDatabase(context).stepsDao())
+    }
+    override val utilsRepository: UtilsRepository by lazy {
+        UtilsRepository(TempoDatabase.getDatabase(context).utilsDao())
     }
 
 }
