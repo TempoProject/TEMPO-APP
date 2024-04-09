@@ -17,6 +17,7 @@ import androidx.work.ForegroundInfo
 import androidx.work.WorkerParameters
 import com.tempo.tempoapp.R
 import com.tempo.tempoapp.TempoApplication
+import com.tempo.tempoapp.data.model.Utils
 import com.tempo.tempoapp.data.model.toTimestamp
 import java.time.Instant
 import java.time.temporal.ChronoUnit
@@ -32,6 +33,9 @@ class SaveStepsRecord(appContext: Context, params: WorkerParameters) :
     private val stepsRecordRepository =
         (appContext.applicationContext as TempoApplication).container.stepsRecordRepository
 
+    private val utilsRepository =
+        (appContext.applicationContext as TempoApplication).container.utilsRepository
+
     private val permission = setOf(
         HealthPermission.getReadPermission(StepsRecord::class)
     )
@@ -41,21 +45,32 @@ class SaveStepsRecord(appContext: Context, params: WorkerParameters) :
                 NotificationManager
 
     override suspend fun doWork(): Result {
+
         setForeground(createForegroundInfo(""))
         if (healthConnectManager.hasAllPermissions(permission)) {
-            val instantThirtyMinutes = Instant.now().minusSeconds(1800)
+
+            val latestUpdate = utilsRepository.getLatestUpdate()
+            Log.d(TAG, latestUpdate.toString())
+
+            var instantStartTime = Instant.now().minusSeconds(1800)
+            Log.d(TAG, "instant default: $instantStartTime")
+            if (latestUpdate != null) {
+                instantStartTime = Instant.ofEpochMilli(latestUpdate)
+                Log.d(TAG, "instant update: $instantStartTime")
+            }
             val instantNow = Instant.now()
+
             val list =
-                healthConnectManager.readSteps(instantThirtyMinutes, instantNow)
+                healthConnectManager.readSteps(instantStartTime, instantNow)
                     .toMutableList()
             Log.d(TAG, "full list: $list")
-            try {
+            /*try {
                 if (list.last().startTime == instantThirtyMinutes)
                     list.removeLast()
                 Log.d(TAG, "list after removeLast(): $list")
             } catch (err: NoSuchElementException) {
                 Log.e(TAG, err.message!!)
-            }
+            }*/
             list.forEach {
                 stepsRecordRepository.insertItem(
                     com.tempo.tempoapp.data.model.StepsRecord(
@@ -66,6 +81,26 @@ class SaveStepsRecord(appContext: Context, params: WorkerParameters) :
                     )
                 )
             }
+            if (latestUpdate == null)
+                utilsRepository.insertItem(
+                    Utils(
+                        latestUpdate = if (list.isNotEmpty())
+                            list.last().endTime.toEpochMilli()
+                                .plus(1)
+                        else
+                            instantStartTime.toEpochMilli()
+                    )
+                )
+            else {
+                if (list.isNotEmpty())
+                    utilsRepository.updateItem(
+                        Utils(
+                            id = 1,
+                            latestUpdate = list.last().endTime.toEpochMilli().plus(1)
+                        )
+                    )
+            }
+
             return Result.success()
         }
         return Result.failure()
