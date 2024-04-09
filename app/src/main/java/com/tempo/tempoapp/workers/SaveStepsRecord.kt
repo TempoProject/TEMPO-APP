@@ -86,7 +86,6 @@ class SaveStepsRecord(appContext: Context, params: WorkerParameters) :
                     Utils(
                         latestUpdate = if (list.isNotEmpty())
                             list.last().endTime.toEpochMilli()
-                                .plus(1)
                         else
                             instantStartTime.toEpochMilli()
                     )
@@ -96,7 +95,7 @@ class SaveStepsRecord(appContext: Context, params: WorkerParameters) :
                     utilsRepository.updateItem(
                         Utils(
                             id = 1,
-                            latestUpdate = list.last().endTime.toEpochMilli().plus(1)
+                            latestUpdate = list.last().endTime.toEpochMilli()
                         )
                     )
             }
