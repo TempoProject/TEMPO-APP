@@ -28,4 +28,5 @@
         Per un corretto funzionamento dell"'"applicazione, installa Health Connect da Google Play.
     </string>
     <string name="not_installed_tag">not_installed_tag</string>
+    <string name="reminder">Promemoria</string>
 </resources>
