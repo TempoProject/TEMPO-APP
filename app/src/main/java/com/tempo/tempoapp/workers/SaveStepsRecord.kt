@@ -1,9 +1,7 @@
 package com.tempo.tempoapp.workers
 
 import android.app.Notification
-import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.app.NotificationManager.IMPORTANCE_MIN
 import android.content.Context
 import android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
 import android.os.Build.VERSION.SDK_INT
@@ -39,11 +37,9 @@ class SaveStepsRecord(appContext: Context, params: WorkerParameters) :
     private val permission = setOf(
         HealthPermission.getReadPermission(StepsRecord::class)
     )
-
     private val notificationManager =
         appContext.getSystemService(Context.NOTIFICATION_SERVICE) as
                 NotificationManager
-
     override suspend fun doWork(): Result {
 
         setForeground(createForegroundInfo(""))
@@ -122,21 +118,15 @@ class SaveStepsRecord(appContext: Context, params: WorkerParameters) :
     }
 
     private fun sendNotification(progress: String): Notification {
-        val id = applicationContext.getString(R.string.app_name)
         val title = "Passi"
-        val notification = NotificationCompat.Builder(applicationContext, id)
+        val notification = NotificationCompat.Builder(applicationContext, "Passi")
             .setContentTitle(title)
             .setTicker(title)
             .setContentText("Invio passi: $progress...")
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setOngoing(true)
-            // Add the cancel action to the notification which can
-            // be used to cancel the worker
-            //.addAction(android.R.drawable.ic_delete, cancel, intent)
             .build()
 
-        val channel = NotificationChannel(id, title, IMPORTANCE_MIN)
-        notificationManager.createNotificationChannel(channel)
         notificationManager.notify(1, notification)
         return notification
     }
