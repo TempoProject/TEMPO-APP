@@ -5,7 +5,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.work.Data
+import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.OneTimeWorkRequest
+import androidx.work.PeriodicWorkRequest
 import androidx.work.WorkManager
 import com.tempo.tempoapp.data.model.ReminderEvent
 import com.tempo.tempoapp.data.repository.ReminderRepository
@@ -13,6 +15,7 @@ import com.tempo.tempoapp.ui.toStringDate
 import com.tempo.tempoapp.ui.toStringTime
 import com.tempo.tempoapp.workers.NotificationWorker
 import java.text.SimpleDateFormat
+import java.time.Duration
 import java.time.Instant
 import java.util.Locale
 import java.util.UUID
@@ -43,22 +46,61 @@ class ReminderViewModel(
         )
     }
 
+    fun updateInterval(interval: Int) {
+        uiState = uiState.copy(
+            interval = interval.toLong()
+        )
+    }
+
+    fun updateIsPeriodic(isPeriodic: Boolean) {
+        uiState = uiState.copy(
+            isPeriodic = isPeriodic
+        )
+    }
+
+    fun updateTimeUnit(timeUnit: TimeUnit) {
+        uiState = uiState.copy(
+            timeUnit = timeUnit
+        )
+    }
+
     fun reset() {
         uiState = ReminderUiState()
     }
 
 
     suspend fun save() {
-        /*
-        TODO:
-          - fix initial delay per schedulare la notifica all'orario corretto.
-          - aggiungere un parametro per schedulare notifiche periodiche.
-         */
-        val task = OneTimeWorkRequest.Builder(NotificationWorker::class.java)
-            .setInputData(Data.Builder().putString("EVENT", uiState.event).build())
-            .setInitialDelay(1, TimeUnit.MINUTES).build()
-        workManager.enqueue(task)
-        val data = uiState.toReminderEvent(task.id)
+        val uuid = UUID.randomUUID()
+        val data = uiState.toReminderEvent(uuid)
+
+        if (uiState.isPeriodic) {
+            val task = PeriodicWorkRequest.Builder(
+                NotificationWorker::class.java,
+                uiState.interval,
+                uiState.timeUnit
+            ).setInitialDelay(Duration.between(Instant.now(), Instant.ofEpochMilli(data.timestamp)))
+                .setId(uuid)
+                .setInputData(Data.Builder().putString("EVENT", uiState.event).build())
+                .build()
+            workManager.enqueueUniquePeriodicWork(
+                uuid.toString(),
+                ExistingPeriodicWorkPolicy.UPDATE,
+                task
+            )
+        } else {
+            val task = OneTimeWorkRequest.Builder(NotificationWorker::class.java)
+                .setInputData(Data.Builder().putString("EVENT", uiState.event).build())
+                .setInitialDelay(
+                    Duration.between(
+                        Instant.now(),
+                        Instant.ofEpochMilli(data.timestamp)
+                    )
+                )
+                .setId(uuid)
+                .build()
+            workManager.enqueue(task)
+        }
+        println(uuid)
         reminderRepository.insertItem(data)
     }
 }
@@ -66,13 +108,19 @@ class ReminderViewModel(
 data class ReminderUiState(
     val event: String = "Tipo di evento",
     val date: String = Instant.now().toEpochMilli().toStringDate(),
-    val time: String = Instant.now().toEpochMilli().toStringTime()
+    val time: String = Instant.now().toEpochMilli().toStringTime(),
+    val isPeriodic: Boolean = false,
+    val interval: Long = 1,
+    val timeUnit: TimeUnit = TimeUnit.DAYS
 )
 
 fun ReminderUiState.toReminderEvent(uuid: UUID): ReminderEvent =
     ReminderEvent(
         event = event,
         uuid = uuid,
+        isPeriodic = isPeriodic,
+        period = interval,
+        timeUnit = timeUnit.name,
         timestamp = SimpleDateFormat(
             "dd-MM-yyyy HH:mm",
             Locale.getDefault()

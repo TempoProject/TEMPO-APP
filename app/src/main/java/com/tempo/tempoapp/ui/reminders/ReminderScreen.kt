@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -24,6 +25,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
@@ -41,6 +43,7 @@ import com.tempo.tempoapp.ui.bleeding.TextWithIcon
 import com.tempo.tempoapp.ui.bleeding.TimePickerDialog
 import com.tempo.tempoapp.ui.navigation.NavigationDestination
 import kotlinx.coroutines.launch
+import java.util.concurrent.TimeUnit
 
 object ReminderDestination : NavigationDestination {
     override val route: String
@@ -53,7 +56,8 @@ object ReminderDestination : NavigationDestination {
 @Composable
 fun ReminderScreen(
     viewModel: ReminderViewModel = viewModel(factory = AppViewModelProvider.Factory),
-    onNavigateUp: () -> Unit
+    onNavigateUp: () -> Unit,
+    navigateBack: () -> Unit
 ) {
     val coroutineScope = rememberCoroutineScope()
     Scaffold(
@@ -71,11 +75,15 @@ fun ReminderScreen(
             viewModel::updateEvent,
             viewModel::updateTime,
             viewModel::updateDate,
+            viewModel::updateIsPeriodic,
+            viewModel::updateInterval,
+            viewModel::updateTimeUnit,
             viewModel::reset,
             onSave = {
                 coroutineScope.launch {
                     viewModel.save()
                 }
+                navigateBack()
             }
         )
     }
@@ -88,11 +96,21 @@ private fun ReminderBody(
     updateEvent: (String) -> Unit,
     updateTime: (String) -> Unit,
     updateDate: (Long) -> Unit,
+    updateIsPeriodic: (Boolean) -> Unit,
+    updateInterval: (Int) -> Unit,
+    updateTimeUnit: (TimeUnit) -> Unit,
     reset: () -> Unit,
     onSave: () -> Unit
 ) {
 
     var showDropdown by remember {
+        mutableStateOf(false)
+    }
+    var showDropdownInterval by remember {
+        mutableStateOf(false)
+    }
+
+    var showDropdownTimeUnit by remember {
         mutableStateOf(false)
     }
     var showDatePickerDialog by remember {
@@ -194,7 +212,87 @@ private fun ReminderBody(
                     onTimeSelected = updateTime,
                     onDismiss = { showTimePickerDialog = !showTimePickerDialog })
         }
-
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .padding(dimensionResource(id = R.dimen.padding_small)),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(text = "Periodico")
+            Checkbox(
+                checked = uiState.isPeriodic,
+                onCheckedChange = { updateIsPeriodic(!uiState.isPeriodic) })
+            Box(
+                modifier = Modifier
+                    .clickable {
+                        showDropdownInterval = !showDropdownInterval && uiState.isPeriodic
+                    }
+                    .border(
+                        1.dp,
+                        Color.Black,
+                        RoundedCornerShape(dimensionResource(id = R.dimen.padding_small))
+                    )
+                    .padding(dimensionResource(id = R.dimen.padding_medium))
+            ) {
+                Text(text = uiState.interval.toString())
+                DropdownMenu(
+                    expanded = showDropdownInterval,
+                    onDismissRequest = { showDropdownInterval = !showDropdownInterval },
+                    offset = DpOffset(
+                        x = dimensionResource(id = R.dimen.padding_small),
+                        y = dimensionResource(id = R.dimen.padding_small)
+                    )
+                ) {
+                    (1..24).filter { it % 2 == 0 }.forEach { step ->
+                        DropdownMenuItem(
+                            text = { Text(text = step.toString()) },
+                            onClick = {
+                                //updateEvent(event)
+                                updateInterval(step)
+                                //saveIsEnabled = event != "Tipo di evento"
+                                showDropdownInterval = !showDropdownInterval
+                            },
+                            contentPadding = PaddingValues(8.dp)
+                        )
+                    }
+                }
+            }
+            Box(
+                modifier = Modifier
+                    .clickable {
+                        showDropdownTimeUnit = !showDropdownTimeUnit && uiState.isPeriodic
+                    }
+                    .border(
+                        1.dp,
+                        Color.Black,
+                        RoundedCornerShape(dimensionResource(id = R.dimen.padding_small))
+                    )
+                    .padding(dimensionResource(id = R.dimen.padding_medium))
+            ) {
+                TextWithIcon(text = uiState.timeUnit.name)
+                DropdownMenu(
+                    modifier = Modifier.clickable { uiState.isPeriodic },
+                    expanded = showDropdownTimeUnit,
+                    onDismissRequest = { showDropdownTimeUnit = !showDropdownTimeUnit },
+                    offset = DpOffset(
+                        x = dimensionResource(id = R.dimen.padding_small),
+                        y = dimensionResource(id = R.dimen.padding_small)
+                    )
+                ) {
+                    TimeUnit.entries.drop(5).forEach { step ->
+                        DropdownMenuItem(
+                            text = { Text(text = step.name) },
+                            onClick = {
+                                updateTimeUnit(step)
+                                //saveIsEnabled = event != "Tipo di evento"
+                                showDropdownTimeUnit = !showDropdownTimeUnit
+                            },
+                            contentPadding = PaddingValues(8.dp)
+                        )
+                    }
+                }
+            }
+        }
         /*
         TODO:
             - consentire di impostare promemoria periodici.
