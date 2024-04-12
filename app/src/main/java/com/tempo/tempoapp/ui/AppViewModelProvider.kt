@@ -14,6 +14,7 @@ import com.tempo.tempoapp.ui.home.HomeViewModel
 import com.tempo.tempoapp.ui.infusion.InfusionDetailsViewModel
 import com.tempo.tempoapp.ui.infusion.InfusionEditViewModel
 import com.tempo.tempoapp.ui.infusion.InfusionEntryViewModel
+import com.tempo.tempoapp.ui.reminders.ReminderListViewModel
 import com.tempo.tempoapp.ui.reminders.ReminderViewModel
 
 object AppViewModelProvider {
@@ -71,6 +72,13 @@ object AppViewModelProvider {
         }
         initializer {
             ReminderViewModel(
+                tempoApplication().container.reminderRepository,
+                tempoApplication().workManager
+            )
+        }
+
+        initializer {
+            ReminderListViewModel(
                 tempoApplication().container.reminderRepository,
                 tempoApplication().workManager
             )

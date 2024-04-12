@@ -28,6 +28,8 @@ import com.tempo.tempoapp.ui.infusion.InfusionEditScreen
 import com.tempo.tempoapp.ui.infusion.InfusionEntryDestination
 import com.tempo.tempoapp.ui.infusion.InfusionEventScreen
 import com.tempo.tempoapp.ui.reminders.ReminderDestination
+import com.tempo.tempoapp.ui.reminders.ReminderList
+import com.tempo.tempoapp.ui.reminders.ReminderListDestination
 import com.tempo.tempoapp.ui.reminders.ReminderScreen
 
 @Composable
@@ -63,8 +65,11 @@ fun TempoNavHost(
                 navigateToHistory = {
                     navController.navigate(HistoryDestination.route)
                 },
-                navigateToReminder = {
+                navigateToAddReminder = {
                     navController.navigate(ReminderDestination.route)
+                },
+                navigateToReminderList = {
+                    navController.navigate(ReminderListDestination.route)
                 })
         }
         /**
@@ -176,7 +181,19 @@ fun TempoNavHost(
         composable(
             route = ReminderDestination.route
         ) {
-            ReminderScreen(onNavigateUp = { navController.navigateUp() })
+            ReminderScreen(
+                onNavigateUp = { navController.navigateUp() },
+                navigateBack = { navController.popBackStack() },
+            )
+        }
+
+        composable(
+            route = ReminderListDestination.route
+        ) {
+            ReminderList(
+                onNavigateUp = { navController.navigateUp() },
+                navigateBack = { navController.popBackStack() },
+            )
         }
 
     }
