@@ -11,8 +11,6 @@ val events = setOf(
     "Refill farmaco"
 )
 
-// TODO add worker-id
-
 @Entity(tableName = "reminder")
 data class ReminderEvent(
     @PrimaryKey(autoGenerate = true)
@@ -22,5 +20,11 @@ data class ReminderEvent(
     @ColumnInfo("event")
     val event: String,
     @ColumnInfo("timestamp")
-    val timestamp: Long
+    val timestamp: Long,
+    @ColumnInfo("is_periodic")
+    val isPeriodic: Boolean,
+    @ColumnInfo("period")
+    val period: Long,
+    @ColumnInfo("time_unit")
+    val timeUnit: String
 )

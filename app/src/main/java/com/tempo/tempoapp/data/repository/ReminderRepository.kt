@@ -9,13 +9,9 @@ class ReminderRepository(private val reminderDao: ReminderDao) : LogbookReposito
 
     override suspend fun deleteItem(item: ReminderEvent) = reminderDao.delete(item)
 
-    override suspend fun updateItem(item: ReminderEvent) {
-        TODO("Not yet implemented")
-    }
+    override suspend fun updateItem(item: ReminderEvent) = reminderDao.update(item)
 
-    override fun getAll(): Flow<List<ReminderEvent>> {
-        TODO("Not yet implemented")
-    }
+    override fun getAll(): Flow<List<ReminderEvent>> = reminderDao.getAllReminder()
 
     override fun getItemFromId(id: Int): Flow<ReminderEvent> {
         TODO("Not yet implemented")
