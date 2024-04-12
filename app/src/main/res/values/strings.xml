@@ -10,7 +10,7 @@
     <string name="date">Data</string>
     <string name="time">Ora</string>
     <string name="edit">Modifica</string>
-    <string name="infusion">Infusione</string>
+    <string name="infusion">Aggiungi infusione</string>
     <string name="note">Note</string>
     <string name="infusion_site">Sede infusione</string>
     <string name="dose_units">Dose in unità</string>
@@ -28,5 +28,6 @@
         Per un corretto funzionamento dell"'"applicazione, installa Health Connect da Google Play.
     </string>
     <string name="not_installed_tag">not_installed_tag</string>
-    <string name="reminder">Promemoria</string>
+    <string name="reminder">Lista promemoria</string>
+    <string name="add_reminder">Aggiungi promemoria</string>
 </resources>
