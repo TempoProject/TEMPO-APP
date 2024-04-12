@@ -20,6 +20,7 @@ import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DrawerState
@@ -95,7 +96,8 @@ fun HomeScreen(
     navigateToBleedingUpdate: (Int) -> Unit,
     navigateToInfusionUpdate: (Int) -> Unit,
     navigateToHistory: () -> Unit,
-    navigateToReminder: () -> Unit
+    navigateToAddReminder: () -> Unit,
+    navigateToReminderList: () -> Unit
 ) {
     val permissionsLauncher =
         rememberLauncherForActivityResult(viewModel.permissionsLauncher) {
@@ -173,6 +175,13 @@ fun HomeScreen(
                     navigateToInfusionEntry
                 )
                 NavDrawerItem(
+                    stringId = R.string.add_reminder,
+                    icon = Icons.Default.Notifications,
+                    scope = scope,
+                    drawerState = drawerState,
+                    navigateToAddReminder
+                )
+                NavDrawerItem(
                     stringId = R.string.history,
                     icon = Icons.Default.DateRange,
                     scope = scope,
@@ -181,10 +190,10 @@ fun HomeScreen(
                 )
                 NavDrawerItem(
                     stringId = R.string.reminder,
-                    icon = Icons.Default.Notifications,
+                    icon = Icons.Default.List,
                     scope = scope,
                     drawerState = drawerState,
-                    navigateToReminder
+                    navigateToReminderList
                 )
             }
         }) {
@@ -275,7 +284,7 @@ fun HomeScreen(
                                             sheetState.hide()
                                             //viewModel.readStepsInterval()
                                         }.invokeOnCompletion {
-                                            navigateToReminder()
+                                            navigateToAddReminder()
                                             if (!sheetState.isVisible) {
                                                 showBottomSheet = false
                                             }
@@ -284,7 +293,7 @@ fun HomeScreen(
                                         .fillMaxWidth()
                                         .padding(4.dp)
                                 ) {
-                                    Text(stringResource(id = R.string.reminder))
+                                    Text(stringResource(id = R.string.add_reminder))
                                 }
                             }
                         }
@@ -385,7 +394,7 @@ fun HomeScreen(
                                         sheetState.hide()
                                         //viewModel.readStepsInterval()
                                     }.invokeOnCompletion {
-                                        navigateToReminder()
+                                        navigateToAddReminder()
                                         if (!sheetState.isVisible) {
                                             showBottomSheet = false
                                         }
