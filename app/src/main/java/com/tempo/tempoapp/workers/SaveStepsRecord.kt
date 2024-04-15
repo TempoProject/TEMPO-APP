@@ -119,7 +119,10 @@ class SaveStepsRecord(appContext: Context, params: WorkerParameters) :
 
     private fun sendNotification(progress: String): Notification {
         val title = "Passi"
-        val notification = NotificationCompat.Builder(applicationContext, "Passi")
+        val notification = NotificationCompat.Builder(
+            applicationContext,
+            applicationContext.getString(R.string.channel_steps)
+        )
             .setContentTitle(title)
             .setTicker(title)
             .setContentText("Invio passi: $progress...")

@@ -30,4 +30,9 @@
     <string name="not_installed_tag">not_installed_tag</string>
     <string name="reminder">Lista promemoria</string>
     <string name="add_reminder">Aggiungi promemoria</string>
+    <string name="channel_reminder">Reminder</string>
+    <string name="channel_steps">Passi</string>
+    <string name="channel_name_steps">Invio passi</string>
+    <string name="channel_name_reminder">Promemoria</string>
+
 </resources>
