@@ -16,20 +16,20 @@ class TempoApplication : Application() {
     lateinit var container: AppContainer
     lateinit var healthConnectManager: HealthConnectManager
     lateinit var workManager: WorkManager
-    lateinit var notificationManager: NotificationManager
+    private lateinit var notificationManager: NotificationManager
     override fun onCreate() {
         super.onCreate()
         notificationManager =
             getSystemService(Context.NOTIFICATION_SERVICE) as
                     NotificationManager
         val notificationChannelSendSteps = NotificationChannel(
-            "Passi",
-            "Invio passi",
+            getString(R.string.channel_steps),
+            getString(R.string.channel_name_steps),
             NotificationManager.IMPORTANCE_MIN
         )
         val notificationChannelReminder = NotificationChannel(
-            "Reminder",
-            "Promemoria",
+            getString(R.string.channel_reminder),
+            getString(R.string.channel_name_reminder),
             NotificationManager.IMPORTANCE_DEFAULT
         )
         notificationManager.createNotificationChannels(
