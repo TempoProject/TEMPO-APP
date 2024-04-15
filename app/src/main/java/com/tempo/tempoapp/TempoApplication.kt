@@ -1,6 +1,9 @@
 package com.tempo.tempoapp
 
 import android.app.Application
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.Context
 import androidx.work.WorkManager
 import com.tempo.tempoapp.data.AppContainer
 import com.tempo.tempoapp.data.AppDataContainer
@@ -13,9 +16,28 @@ class TempoApplication : Application() {
     lateinit var container: AppContainer
     lateinit var healthConnectManager: HealthConnectManager
     lateinit var workManager: WorkManager
-
+    lateinit var notificationManager: NotificationManager
     override fun onCreate() {
         super.onCreate()
+        notificationManager =
+            getSystemService(Context.NOTIFICATION_SERVICE) as
+                    NotificationManager
+        val notificationChannelSendSteps = NotificationChannel(
+            "Passi",
+            "Invio passi",
+            NotificationManager.IMPORTANCE_MIN
+        )
+        val notificationChannelReminder = NotificationChannel(
+            "Reminder",
+            "Promemoria",
+            NotificationManager.IMPORTANCE_DEFAULT
+        )
+        notificationManager.createNotificationChannels(
+            listOf(
+                notificationChannelSendSteps,
+                notificationChannelReminder
+            )
+        )
         container = AppDataContainer(this)
         healthConnectManager = HealthConnectManager(this)
         workManager = WorkManager.getInstance(this)

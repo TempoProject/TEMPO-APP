@@ -55,7 +55,7 @@ class HomeViewModel(
         }.invokeOnCompletion {
             if (permissionsGranted.value) {
                 val task =
-                    PeriodicWorkRequest.Builder(SaveStepsRecord::class.java, 15, TimeUnit.MINUTES)
+                    PeriodicWorkRequest.Builder(SaveStepsRecord::class.java, 30, TimeUnit.MINUTES)
                         .build()
                 workManager.enqueueUniquePeriodicWork(
                     "getStepsRecord",

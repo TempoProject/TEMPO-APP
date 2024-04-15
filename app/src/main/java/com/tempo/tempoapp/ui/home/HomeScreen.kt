@@ -19,8 +19,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
@@ -55,6 +56,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -93,7 +95,9 @@ fun HomeScreen(
     navigateToInfusionEntry: () -> Unit,
     navigateToBleedingUpdate: (Int) -> Unit,
     navigateToInfusionUpdate: (Int) -> Unit,
-    navigateToHistory: () -> Unit
+    navigateToHistory: () -> Unit,
+    navigateToAddReminder: () -> Unit,
+    navigateToReminderList: () -> Unit
 ) {
     val permissionsLauncher =
         rememberLauncherForActivityResult(viewModel.permissionsLauncher) {
@@ -158,17 +162,24 @@ fun HomeScreen(
                 Divider()
                 NavDrawerItem(
                     stringId = R.string.add_new_bleeding,
-                    icon = Icons.Default.Create,
+                    icon = ImageVector.vectorResource(id = R.drawable.baseline_bloodtype_24),
                     scope = scope,
                     drawerState = drawerState,
                     navigateToBleedingEntry
                 )
                 NavDrawerItem(
                     stringId = R.string.infusion,
-                    icon = Icons.Default.Create,
+                    icon = ImageVector.vectorResource(id = R.drawable.baseline_medication_24),
                     scope = scope,
                     drawerState = drawerState,
                     navigateToInfusionEntry
+                )
+                NavDrawerItem(
+                    stringId = R.string.add_reminder,
+                    icon = Icons.Default.Notifications,
+                    scope = scope,
+                    drawerState = drawerState,
+                    navigateToAddReminder
                 )
                 NavDrawerItem(
                     stringId = R.string.history,
@@ -176,6 +187,13 @@ fun HomeScreen(
                     scope = scope,
                     drawerState = drawerState,
                     navigateToHistory
+                )
+                NavDrawerItem(
+                    stringId = R.string.reminder,
+                    icon = Icons.Default.List,
+                    scope = scope,
+                    drawerState = drawerState,
+                    navigateToReminderList
                 )
             }
         }) {
@@ -259,6 +277,23 @@ fun HomeScreen(
                                         .padding(4.dp)
                                 ) {
                                     Text("Aggiungi Sanguinamento")
+                                }
+                                OutlinedButton(
+                                    onClick = {
+                                        scope.launch {
+                                            sheetState.hide()
+                                            //viewModel.readStepsInterval()
+                                        }.invokeOnCompletion {
+                                            navigateToAddReminder()
+                                            if (!sheetState.isVisible) {
+                                                showBottomSheet = false
+                                            }
+                                        }
+                                    }, modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(4.dp)
+                                ) {
+                                    Text(stringResource(id = R.string.add_reminder))
                                 }
                             }
                         }
@@ -351,6 +386,24 @@ fun HomeScreen(
                                     .padding(4.dp)
                             ) {
                                 Text("Aggiungi Sanguinamento")
+                            }
+
+                            OutlinedButton(
+                                onClick = {
+                                    scope.launch {
+                                        sheetState.hide()
+                                        //viewModel.readStepsInterval()
+                                    }.invokeOnCompletion {
+                                        navigateToAddReminder()
+                                        if (!sheetState.isVisible) {
+                                            showBottomSheet = false
+                                        }
+                                    }
+                                }, modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(4.dp)
+                            ) {
+                                Text(stringResource(id = R.string.reminder))
                             }
                         }
                     }

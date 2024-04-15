@@ -27,6 +27,10 @@ import com.tempo.tempoapp.ui.infusion.InfusionEditDestination
 import com.tempo.tempoapp.ui.infusion.InfusionEditScreen
 import com.tempo.tempoapp.ui.infusion.InfusionEntryDestination
 import com.tempo.tempoapp.ui.infusion.InfusionEventScreen
+import com.tempo.tempoapp.ui.reminders.ReminderDestination
+import com.tempo.tempoapp.ui.reminders.ReminderList
+import com.tempo.tempoapp.ui.reminders.ReminderListDestination
+import com.tempo.tempoapp.ui.reminders.ReminderScreen
 
 @Composable
 fun TempoNavHost(
@@ -35,9 +39,11 @@ fun TempoNavHost(
     modifier: Modifier = Modifier,
 ) {
     NavHost(
-        navController = navController, startDestination = HomeDestination.route, modifier = modifier,
-        enterTransition = { EnterTransition.None},
-        exitTransition = { ExitTransition.None},
+        navController = navController,
+        startDestination = HomeDestination.route,
+        modifier = modifier,
+        enterTransition = { EnterTransition.None },
+        exitTransition = { ExitTransition.None },
     ) {
         /**
          * Home screen
@@ -58,6 +64,12 @@ fun TempoNavHost(
                 },
                 navigateToHistory = {
                     navController.navigate(HistoryDestination.route)
+                },
+                navigateToAddReminder = {
+                    navController.navigate(ReminderDestination.route)
+                },
+                navigateToReminderList = {
+                    navController.navigate(ReminderListDestination.route)
                 })
         }
         /**
@@ -166,6 +178,23 @@ fun TempoNavHost(
             )
         }
 
+        composable(
+            route = ReminderDestination.route
+        ) {
+            ReminderScreen(
+                onNavigateUp = { navController.navigateUp() },
+                navigateBack = { navController.popBackStack() },
+            )
+        }
+
+        composable(
+            route = ReminderListDestination.route
+        ) {
+            ReminderList(
+                onNavigateUp = { navController.navigateUp() },
+                navigateBack = { navController.popBackStack() },
+            )
+        }
 
     }
 }
