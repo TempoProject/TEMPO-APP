@@ -84,7 +84,7 @@ class ReminderViewModel(
                 .build()
             workManager.enqueueUniquePeriodicWork(
                 uuid.toString(),
-                ExistingPeriodicWorkPolicy.UPDATE,
+                ExistingPeriodicWorkPolicy.KEEP,
                 task
             )
         } else {
