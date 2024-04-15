@@ -293,10 +293,7 @@ private fun ReminderBody(
                 }
             }
         }
-        /*
-        TODO:
-            - consentire di impostare promemoria periodici.
-         */
+
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
             OutlinedButton(onClick = {
                 saveIsEnabled = false
