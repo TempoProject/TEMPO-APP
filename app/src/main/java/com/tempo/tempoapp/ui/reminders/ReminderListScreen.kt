@@ -56,7 +56,7 @@ fun ReminderList(
     Scaffold(
         topBar = {
             TempoAppBar(
-                title = stringResource(id = R.string.reminder),
+                title = stringResource(id = ReminderListDestination.titleRes),
                 canNavigateBack = true,
                 navigateUp = onNavigateUp
             )
