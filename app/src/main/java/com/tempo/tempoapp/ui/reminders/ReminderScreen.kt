@@ -1,5 +1,12 @@
 package com.tempo.tempoapp.ui.reminders
 
+import android.content.Intent
+import android.net.Uri
+import android.os.Build
+import android.provider.Settings
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -20,6 +27,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tempo.tempoapp.R
 import com.tempo.tempoapp.TempoAppBar
+import com.tempo.tempoapp.TempoApplication
 import com.tempo.tempoapp.data.model.events
 import com.tempo.tempoapp.ui.AppViewModelProvider
 import com.tempo.tempoapp.ui.bleeding.DatePickerDialog
@@ -52,6 +61,7 @@ object ReminderDestination : NavigationDestination {
         get() = R.string.reminder
 }
 
+@RequiresApi(Build.VERSION_CODES.S)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReminderScreen(
@@ -59,6 +69,20 @@ fun ReminderScreen(
     onNavigateUp: () -> Unit,
     navigateBack: () -> Unit
 ) {
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) {}
+
+    if (!TempoApplication.instance.alarm.canScheduleExactAlarms())
+        LaunchedEffect(Unit) {
+            val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+            val uri = Uri.fromParts("package", TempoApplication.instance.packageName, null)
+            intent.setData(uri)
+            launcher.launch(intent)
+        }
+
+
     val coroutineScope = rememberCoroutineScope()
     Scaffold(
         topBar = {

@@ -73,14 +73,17 @@ object AppViewModelProvider {
         initializer {
             ReminderViewModel(
                 tempoApplication().container.reminderRepository,
-                tempoApplication().workManager
+                tempoApplication().workManager,
+                tempoApplication().alarm,
+                tempoApplication().applicationContext
             )
         }
 
         initializer {
             ReminderListViewModel(
                 tempoApplication().container.reminderRepository,
-                tempoApplication().workManager
+                tempoApplication().alarm,
+                tempoApplication().applicationContext
             )
         }
     }
