@@ -4,7 +4,6 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import java.io.Serializable
-import java.util.UUID
 
 val events = setOf(
     "Infusione",
@@ -16,8 +15,8 @@ val events = setOf(
 data class ReminderEvent(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
-    @ColumnInfo("uuid_notification")
-    val uuid: UUID,
+    @ColumnInfo("id_calendar")
+    val idCalendar: Long,
     @ColumnInfo("event")
     val event: String,
     @ColumnInfo("timestamp")
