@@ -1,35 +1,28 @@
 package com.tempo.tempoapp.ui.reminders
 
-import android.app.AlarmManager
-import android.app.PendingIntent
+import android.content.ContentResolver
+import android.content.ContentValues
 import android.content.Context
-import android.content.Intent
-import android.os.Build
-import androidx.annotation.RequiresApi
+import android.provider.CalendarContract
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import androidx.work.WorkManager
 import com.tempo.tempoapp.data.model.ReminderEvent
 import com.tempo.tempoapp.data.repository.ReminderRepository
 import com.tempo.tempoapp.ui.toStringDate
 import com.tempo.tempoapp.ui.toStringTime
-import com.tempo.tempoapp.utils.AlarmReceiver
 import java.text.SimpleDateFormat
 import java.time.Instant
-import java.time.temporal.ChronoUnit
 import java.util.Locale
-import java.util.UUID
+import java.util.TimeZone
 import java.util.concurrent.TimeUnit
 
 class ReminderViewModel(
     private val reminderRepository: ReminderRepository,
-    private val workManager: WorkManager,
-    private val alarmManager: AlarmManager,
     private val context: Context
 ) : ViewModel() {
-
     var uiState by mutableStateOf(ReminderUiState())
         private set
 
@@ -73,10 +66,13 @@ class ReminderViewModel(
     }
 
 
-    @RequiresApi(Build.VERSION_CODES.S)
     suspend fun save() {
-        val uuid = UUID.randomUUID()
-        val data = uiState.toReminderEvent(uuid)
+        //val uuid = UUID.randomUUID()
+        val data = uiState.toReminderEvent(-1)
+        val idCalendar = createEvent(context, data)
+        print(idCalendar)
+        reminderRepository.insertItem(data.copy(idCalendar = idCalendar))
+        /*
         val intent = Intent(context, AlarmReceiver::class.java)
         intent.putExtra("REMINDER", data)
 
@@ -144,6 +140,81 @@ class ReminderViewModel(
 
 
     }
+
+         */
+    }
+}
+
+private fun createEvent(
+    context: Context,
+    reminderEvent: ReminderEvent
+    /*
+    title: String,
+    description: String,
+    startTimeMillis: Long,
+    endTimeMillis: Long
+
+     */
+): Long {
+    val eventValues = ContentValues().apply {
+        put(CalendarContract.Events.TITLE, reminderEvent.event)
+        put(CalendarContract.Events.DESCRIPTION, reminderEvent.event)
+        put(CalendarContract.Events.DTSTART, reminderEvent.timestamp)
+        put(CalendarContract.Events.DTEND, reminderEvent.timestamp)
+        if (reminderEvent.isPeriodic) {
+            println(reminderEvent.timeUnit)
+            val freq = when (reminderEvent.timeUnit) {
+                "DAYS" -> "DAILY"
+                "HOURS" -> "HOURLY"
+                else -> ""
+            }
+            put(CalendarContract.Events.RRULE, "FREQ=$freq;INTERVAL=${reminderEvent.period}")
+        }
+        put(
+            CalendarContract.Events.CALENDAR_ID,
+            getCalendarId(context)
+        ) // Using the default calendar ID
+        put(CalendarContract.Events.EVENT_TIMEZONE, TimeZone.getDefault().id)
+    }
+    val contentResolver = context.contentResolver
+    val id = contentResolver.insert(CalendarContract.Events.CONTENT_URI, eventValues)
+
+    return id?.lastPathSegment?.toLong() ?: -1
+
+}
+
+private fun getCalendarId(context: Context): Long {
+    var calendarId: Long = -1
+
+    val projection = arrayOf(
+        CalendarContract.Calendars._ID,
+        CalendarContract.Calendars.NAME
+    )
+
+    val selection = "${CalendarContract.Calendars.IS_PRIMARY} = ?"
+    val selectionArgs = arrayOf("1") // "1" indicates true
+
+    val contentResolver: ContentResolver = context.contentResolver
+    val cursor = contentResolver.query(
+        CalendarContract.Calendars.CONTENT_URI,
+        projection,
+        selection,
+        selectionArgs,
+        null
+    )
+
+    cursor?.use { cursor ->
+        val idColumnIndex = cursor.getColumnIndex(CalendarContract.Calendars._ID)
+        val idColumnName = cursor.getColumnIndex(CalendarContract.Calendars.NAME)
+        while (cursor.moveToNext()) {
+            calendarId = cursor.getLong(idColumnIndex)
+            Log.d("ReminderScreen", cursor.getString(idColumnName))
+            // Since we're only interested in the first calendar found, we break the loop as soon as we find it.
+            break
+        }
+    }
+
+    return calendarId
 }
 
 data class ReminderUiState(
@@ -155,10 +226,10 @@ data class ReminderUiState(
     val timeUnit: TimeUnit = TimeUnit.DAYS
 )
 
-fun ReminderUiState.toReminderEvent(uuid: UUID): ReminderEvent =
+fun ReminderUiState.toReminderEvent(idCalendar: Long): ReminderEvent =
     ReminderEvent(
         event = event,
-        uuid = uuid,
+        idCalendar = idCalendar,
         isPeriodic = isPeriodic,
         period = interval,
         timeUnit = timeUnit.name,
