@@ -12,12 +12,12 @@ interface ReminderDao : LogbookDao<ReminderEvent> {
         """
         SELECT * 
         FROM reminder
-        WHERE is_periodic = :isPeriodic OR timestamp >= :now
+        WHERE /*is_periodic = :isPeriodic OR*/ timestamp >= :now
         ORDER BY timestamp ASC
     """
     )
     fun getAllReminder(
-        isPeriodic: Boolean = true,
+        //isPeriodic: Boolean = true,
         now: Long = Instant.now().toEpochMilli()
     ): Flow<List<ReminderEvent>>
 }

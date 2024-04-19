@@ -6,9 +6,9 @@ import kotlinx.coroutines.flow.Flow
 
 class InfusionRepository(private val infusionEventDao: InfusionEventDao) :
     LogbookRepository<InfusionEvent> {
-    override suspend fun insertItem(item: InfusionEvent) {
+    override suspend fun insertItem(item: InfusionEvent) =
         infusionEventDao.insert(item)
-    }
+
 
     override suspend fun deleteItem(item: InfusionEvent) {
         infusionEventDao.delete(item)

@@ -6,9 +6,9 @@ import kotlinx.coroutines.flow.Flow
 
 class StepsRecordRepository(private val stepsRecordDao: StepsRecordDao) :
     LogbookRepository<StepsRecord> {
-    override suspend fun insertItem(item: StepsRecord) {
+    override suspend fun insertItem(item: StepsRecord) =
         stepsRecordDao.insert(item)
-    }
+
 
     override suspend fun deleteItem(item: StepsRecord) {
         stepsRecordDao.delete(item)

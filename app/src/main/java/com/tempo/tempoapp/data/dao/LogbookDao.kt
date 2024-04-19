@@ -10,7 +10,7 @@ import androidx.room.Update
 interface LogbookDao<T> {
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
-    suspend fun insert(item: T)
+    suspend fun insert(item: T): Long
 
     @Update
     suspend fun update(item: T)
