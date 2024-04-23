@@ -12,6 +12,7 @@ import com.tempo.tempoapp.data.repository.ReminderRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.launch
+import java.time.Instant
 
 class RebootBroadcastReceiver(
     private val reminderRepository: ReminderRepository = TempoApplication.instance.container.reminderRepository,
@@ -22,7 +23,22 @@ class RebootBroadcastReceiver(
     override fun onReceive(p0: Context?, p1: Intent?) {
         if (p1?.action == "android.intent.action.BOOT_COMPLETED") {
             CoroutineScope(Main).launch {
-                reminderRepository.getAll().collect { reminders ->
+                val intent = Intent(p0!!, AlarmReceiver::class.java)
+                val instant = Instant.now().toEpochMilli()
+                intent.putExtra("instant", instant)
+                val pendingIntent = PendingIntent.getBroadcast(
+                    p0,
+                    instant.toInt(),
+                    intent,
+                    PendingIntent.FLAG_MUTABLE
+                )
+                if (alarmManager.canScheduleExactAlarms())
+                    alarmManager.setExactAndAllowWhileIdle(
+                        AlarmManager.RTC_WAKEUP,
+                        instant,
+                        pendingIntent
+                    )
+                /*reminderRepository.getAll().collect { reminders ->
                     for (reminder in reminders) {
                         val intent = Intent(p0!!, AlarmReceiver::class.java)
                         intent.putExtra("id", reminder.id)
@@ -40,8 +56,7 @@ class RebootBroadcastReceiver(
                                 pendingIntent
                             )
 
-                    }
-                }
+                    }*/
             }
         }
     }

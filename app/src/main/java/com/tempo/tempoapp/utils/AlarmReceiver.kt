@@ -2,25 +2,16 @@ package com.tempo.tempoapp.utils
 
 import android.annotation.SuppressLint
 import android.app.AlarmManager
-import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Build
-import androidx.annotation.RequiresApi
-import androidx.core.app.NotificationCompat
-import com.tempo.tempoapp.R
 import com.tempo.tempoapp.TempoApplication
-import com.tempo.tempoapp.data.model.ReminderEvent
 import com.tempo.tempoapp.data.repository.ReminderRepository
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers.IO
-import kotlinx.coroutines.launch
 import java.io.Serializable
 import java.time.Instant
 import java.time.temporal.ChronoUnit
-import kotlin.random.Random
 
 @SuppressLint("RestrictedApi")
 class AlarmReceiver(
@@ -30,9 +21,38 @@ class AlarmReceiver(
     BroadcastReceiver() {
 
 
-    @RequiresApi(Build.VERSION_CODES.S)
+    //@RequiresApi(Build.VERSION_CODES.S)
     override fun onReceive(context: Context, intent: Intent?) {
-        val notificationManager =
+        val serviceIntent = Intent(context, StepsService::class.java)
+        context.startForegroundService(serviceIntent)
+        val instant = intent?.getLongExtra("instant", Instant.now().toEpochMilli())
+        val newInstant = Instant.ofEpochMilli(instant!!).plus(30, ChronoUnit.MINUTES).toEpochMilli()
+        val intent1 = Intent(context, AlarmReceiver::class.java)
+        intent1.putExtra(
+            "instant",
+            newInstant
+        )
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            newInstant.toInt(),
+            intent1,
+            PendingIntent.FLAG_MUTABLE
+        )
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (alarmManager.canScheduleExactAlarms())
+                alarmManager.setExactAndAllowWhileIdle(
+                    AlarmManager.RTC_WAKEUP,
+                    newInstant,
+                    pendingIntent
+                )
+        } else
+            alarmManager.setExactAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP,
+                newInstant,
+                pendingIntent
+            )
+
+        /*val notificationManager =
             context.getSystemService(Context.NOTIFICATION_SERVICE) as
                     NotificationManager
 
@@ -84,6 +104,9 @@ class AlarmReceiver(
         }
 
 
+    }
+
+         */
     }
 }
 
