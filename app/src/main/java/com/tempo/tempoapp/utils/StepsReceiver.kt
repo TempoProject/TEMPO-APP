@@ -52,66 +52,11 @@ class StepsReceiver(
                 pendingIntent
             )
 
-        /*val notificationManager =
-            context.getSystemService(Context.NOTIFICATION_SERVICE) as
-                    NotificationManager
-
-
-        val event = intent?.getSerializable("REMINDER", ReminderEvent::class.java)
-        val id = intent?.getLongExtra("id", 0)
-        print("id $id")
-        println(event)
-        val title = "Reminder"
-        val notification = NotificationCompat.Builder(context, "Reminder")
-            .setContentTitle(title)
-            .setTicker(event!!.event)
-            .setContentText(event.event)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
-            .setOngoing(false)
-            .build()
-
-        notificationManager.notify(Random.Default.nextInt(), notification)
-
-        if (event.isPeriodic) {
-            val temporalUnit = when (event.timeUnit) {
-                "HOURS" -> ChronoUnit.HOURS
-                "DAYS" -> ChronoUnit.DAYS
-                else -> ChronoUnit.HOURS
-            }
-            val newEvent = event.copy(
-                id = id!!.toInt(),
-                timestamp = Instant.ofEpochMilli(event.timestamp)
-                    .plus(event.period, temporalUnit).toEpochMilli()
-            )
-            CoroutineScope(IO).launch {
-                reminderRepository.updateItem(newEvent)
-            }
-            val intent1 = Intent(context, StepsReceiver::class.java)
-            intent1.putExtra("id", id)
-            intent1.putExtra("REMINDER", newEvent)
-            val pendingIntent = PendingIntent.getBroadcast(
-                context,
-                newEvent.timestamp.toInt(),
-                intent1,
-                PendingIntent.FLAG_MUTABLE
-            )
-            if (alarmManager.canScheduleExactAlarms())
-                alarmManager.setExactAndAllowWhileIdle(
-                    AlarmManager.RTC_WAKEUP,
-                    newEvent.timestamp,
-                    pendingIntent
-                )
-        }
-
-
-    }
-
-         */
     }
 }
 
 
-@Suppress("UNCHECKED_CAST")
+@Suppress("UNCHECKED_CAST", "DEPRECATION")
 fun <T : Serializable?> Intent.getSerializable(key: String, mClass: Class<T>): T {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
         this.getSerializableExtra(key, mClass)!!
