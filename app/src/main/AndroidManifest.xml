@@ -29,9 +29,12 @@
         <service
             android:name=".utils.StepsService"
             android:enabled="true"
-            android:foregroundServiceType="dataSync"
-            android:exported="false" />
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
 
+        <receiver
+            android:name=".utils.AlarmReceiver"
+            android:enabled="true" />
         <receiver
             android:name=".utils.StepsReceiver"
             android:enabled="true" />
