@@ -29,7 +29,7 @@ class TempoApplication : Application() {
         val notificationChannelSendSteps = NotificationChannel(
             "Passi",
             "Invio passi",
-            NotificationManager.IMPORTANCE_MIN
+            NotificationManager.IMPORTANCE_NONE
         )
         val notificationChannelReminder = NotificationChannel(
             "Reminder",
