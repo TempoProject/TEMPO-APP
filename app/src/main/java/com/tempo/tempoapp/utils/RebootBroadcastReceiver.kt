@@ -32,15 +32,22 @@ class RebootBroadcastReceiver(
                     intent,
                     PendingIntent.FLAG_MUTABLE
                 )
-                if (alarmManager.canScheduleExactAlarms())
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    if (alarmManager.canScheduleExactAlarms())
+                        alarmManager.setExactAndAllowWhileIdle(
+                            AlarmManager.RTC_WAKEUP,
+                            instant,
+                            pendingIntent
+                        )
+                } else
                     alarmManager.setExactAndAllowWhileIdle(
                         AlarmManager.RTC_WAKEUP,
                         instant,
                         pendingIntent
                     )
-                /*reminderRepository.getAll().collect { reminders ->
+                reminderRepository.getAll().collect { reminders ->
                     for (reminder in reminders) {
-                        val intent = Intent(p0!!, StepsReceiver::class.java)
+                        val intent = Intent(p0, StepsReceiver::class.java)
                         intent.putExtra("id", reminder.id)
                         intent.putExtra("REMINDER", reminder)
                         val pendingIntent = PendingIntent.getBroadcast(
@@ -49,14 +56,22 @@ class RebootBroadcastReceiver(
                             intent,
                             PendingIntent.FLAG_MUTABLE
                         )
-                        if (alarmManager.canScheduleExactAlarms())
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                            if (alarmManager.canScheduleExactAlarms())
+                                alarmManager.setExactAndAllowWhileIdle(
+                                    AlarmManager.RTC_WAKEUP,
+                                    reminder.timestamp,
+                                    pendingIntent
+                                )
+                        } else
                             alarmManager.setExactAndAllowWhileIdle(
                                 AlarmManager.RTC_WAKEUP,
                                 reminder.timestamp,
                                 pendingIntent
                             )
 
-                    }*/
+                    }
+                }
             }
         }
     }
