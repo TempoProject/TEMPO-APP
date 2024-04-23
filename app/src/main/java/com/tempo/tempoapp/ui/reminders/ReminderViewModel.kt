@@ -179,6 +179,16 @@ private fun createEvent(
     val contentResolver = context.contentResolver
     val id = contentResolver.insert(CalendarContract.Events.CONTENT_URI, eventValues)
 
+    val idLong = id?.lastPathSegment?.toLong()
+
+    idLong.let {
+        val reminderValues = ContentValues().apply {
+            put(CalendarContract.Reminders.EVENT_ID, it)
+            put(CalendarContract.Reminders.MINUTES, 5)
+            put(CalendarContract.Reminders.METHOD, CalendarContract.Reminders.METHOD_ALERT)
+        }
+        contentResolver.insert(CalendarContract.Reminders.CONTENT_URI, reminderValues)
+    }
     return id?.lastPathSegment?.toLong() ?: -1
 
 }
@@ -209,7 +219,6 @@ private fun getCalendarId(context: Context): Long {
         while (cursor.moveToNext()) {
             calendarId = cursor.getLong(idColumnIndex)
             Log.d("ReminderScreen", cursor.getString(idColumnName))
-            // Since we're only interested in the first calendar found, we break the loop as soon as we find it.
             break
         }
     }

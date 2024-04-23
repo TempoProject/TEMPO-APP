@@ -1,15 +1,10 @@
 package com.tempo.tempoapp.ui.reminders
 
 import android.Manifest
-import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.Uri
-import android.os.Build
-import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -66,7 +61,7 @@ object ReminderDestination : NavigationDestination {
         get() = R.string.reminder
 }
 
-@RequiresApi(Build.VERSION_CODES.S)
+//@RequiresApi(Build.VERSION_CODES.S)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReminderScreen(
@@ -80,7 +75,9 @@ fun ReminderScreen(
     }
 
     val permission =
-        rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestMultiplePermissions()) { }
+        rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestMultiplePermissions()) {
+            hasPermission = it.values.first() && it.values.last()
+        }
     when {
         ContextCompat.checkSelfPermission(
             LocalContext.current,
@@ -103,19 +100,19 @@ fun ReminderScreen(
             }
 
     }
+    /*
+        val launcher = rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.StartActivityForResult()
+        ) {}
 
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()
-    ) {}
-
-    if (!TempoApplication.instance.alarm.canScheduleExactAlarms())
-        LaunchedEffect(Unit) {
-            val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
-            val uri = Uri.fromParts("package", TempoApplication.instance.packageName, null)
-            intent.setData(uri)
-            launcher.launch(intent)
-        }
-
+        if (!TempoApplication.instance.alarm.canScheduleExactAlarms())
+            LaunchedEffect(Unit) {
+                val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+                val uri = Uri.fromParts("package", TempoApplication.instance.packageName, null)
+                intent.setData(uri)
+                launcher.launch(intent)
+            }
+    */
 
     val coroutineScope = rememberCoroutineScope()
     Scaffold(
