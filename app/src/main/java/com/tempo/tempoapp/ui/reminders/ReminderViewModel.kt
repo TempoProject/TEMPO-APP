@@ -1,18 +1,24 @@
 package com.tempo.tempoapp.ui.reminders
 
+import android.app.AlarmManager
+import android.app.PendingIntent
 import android.content.ContentResolver
 import android.content.ContentValues
 import android.content.Context
+import android.content.Intent
+import android.os.Build
 import android.provider.CalendarContract
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import com.tempo.tempoapp.TempoApplication
 import com.tempo.tempoapp.data.model.ReminderEvent
 import com.tempo.tempoapp.data.repository.ReminderRepository
 import com.tempo.tempoapp.ui.toStringDate
 import com.tempo.tempoapp.ui.toStringTime
+import com.tempo.tempoapp.utils.AlarmReceiver
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.util.Locale
@@ -67,50 +73,15 @@ class ReminderViewModel(
 
 
     suspend fun save() {
-        //val uuid = UUID.randomUUID()
-        val data = uiState.toReminderEvent(-1)
+        var data = uiState.toReminderEvent(-1)
         val idCalendar = createEvent(context, data)
-        print(idCalendar)
+        println(idCalendar)
         reminderRepository.insertItem(data.copy(idCalendar = idCalendar))
-        /*
+        data = data.copy(idCalendar = idCalendar)
+        println(data)
         val intent = Intent(context, AlarmReceiver::class.java)
         intent.putExtra("REMINDER", data)
 
-
-        //println("istant ${Insta}")
-        println("istant plus 1hr: ${Instant.now().plus(1, ChronoUnit.HOURS)}")
-        /* if (uiState.isPeriodic) {
-             val intervalMillis = when (data.timeUnit) {
-                 TimeUnit.DAYS.name -> AlarmManager.INTERVAL_DAY
-                 TimeUnit.HOURS.name -> AlarmManager.INTERVAL_HOUR
-                 else -> {
-                     0
-                 }
-             }
-             alarmManager.setRepeating(
-                 AlarmManager.RTC_WAKEUP,
-                 data.timestamp,
-                 data.period * intervalMillis,
-                 pendingIntent
-             )
-             /*
-             val task = PeriodicWorkRequest.Builder(
-                 NotificationWorker::class.java,
-                 uiState.interval,
-                 uiState.timeUnit
-             ).setInitialDelay(Duration.between(Instant.now(), Instant.ofEpochMilli(data.timestamp)))
-                 .setId(uuid)
-                 .setInputData(Data.Builder().putString("EVENT", uiState.event).build())
-                 .build()
-             workManager.enqueueUniquePeriodicWork(
-                 uuid.toString(),
-                 ExistingPeriodicWorkPolicy.UPDATE,
-                 task
-             )*/
-         } else */
-
-        println(uuid)
-        intent.putExtra("id", reminderRepository.insertItem(data))
         val pendingIntent = PendingIntent.getBroadcast(
             context,
             data.timestamp.toInt(),
@@ -118,8 +89,15 @@ class ReminderViewModel(
             PendingIntent.FLAG_MUTABLE
         )
 
-        if (alarmManager.canScheduleExactAlarms())
-            alarmManager.setExactAndAllowWhileIdle(
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (TempoApplication.instance.alarm.canScheduleExactAlarms())
+                TempoApplication.instance.alarm.setExactAndAllowWhileIdle(
+                    AlarmManager.RTC_WAKEUP,
+                    data.timestamp,
+                    pendingIntent
+                )
+        } else
+            TempoApplication.instance.alarm.setExactAndAllowWhileIdle(
                 AlarmManager.RTC_WAKEUP,
                 data.timestamp,
                 pendingIntent
@@ -138,10 +116,6 @@ class ReminderViewModel(
                     workManager.enqueue(task)
          */
 
-
-    }
-
-         */
     }
 }
 
