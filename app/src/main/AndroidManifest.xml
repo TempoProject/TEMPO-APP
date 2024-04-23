@@ -26,6 +26,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.TempoApp"
         tools:targetApi="31">
+        <service
+            android:name=".utils.StepsService"
+            android:enabled="true"
+            android:foregroundServiceType="dataSync"
+            android:exported="false" />
+
         <receiver
             android:name=".utils.AlarmReceiver"
             android:enabled="true" />
