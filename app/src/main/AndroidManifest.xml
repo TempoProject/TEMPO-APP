@@ -33,7 +33,7 @@
             android:exported="false" />
 
         <receiver
-            android:name=".utils.AlarmReceiver"
+            android:name=".utils.StepsReceiver"
             android:enabled="true" />
         <receiver
             android:name=".utils.RebootBroadcastReceiver"

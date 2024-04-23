@@ -23,7 +23,7 @@ class RebootBroadcastReceiver(
     override fun onReceive(p0: Context?, p1: Intent?) {
         if (p1?.action == "android.intent.action.BOOT_COMPLETED") {
             CoroutineScope(Main).launch {
-                val intent = Intent(p0!!, AlarmReceiver::class.java)
+                val intent = Intent(p0!!, StepsReceiver::class.java)
                 val instant = Instant.now().toEpochMilli()
                 intent.putExtra("instant", instant)
                 val pendingIntent = PendingIntent.getBroadcast(
@@ -40,7 +40,7 @@ class RebootBroadcastReceiver(
                     )
                 /*reminderRepository.getAll().collect { reminders ->
                     for (reminder in reminders) {
-                        val intent = Intent(p0!!, AlarmReceiver::class.java)
+                        val intent = Intent(p0!!, StepsReceiver::class.java)
                         intent.putExtra("id", reminder.id)
                         intent.putExtra("REMINDER", reminder)
                         val pendingIntent = PendingIntent.getBroadcast(

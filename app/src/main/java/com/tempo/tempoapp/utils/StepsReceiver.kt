@@ -14,7 +14,7 @@ import java.time.Instant
 import java.time.temporal.ChronoUnit
 
 @SuppressLint("RestrictedApi")
-class AlarmReceiver(
+class StepsReceiver(
     private val alarmManager: AlarmManager = TempoApplication.instance.alarm,
     private val reminderRepository: ReminderRepository = TempoApplication.instance.container.reminderRepository
 ) :
@@ -27,7 +27,7 @@ class AlarmReceiver(
         context.startForegroundService(serviceIntent)
         val instant = intent?.getLongExtra("instant", Instant.now().toEpochMilli())
         val newInstant = Instant.ofEpochMilli(instant!!).plus(30, ChronoUnit.MINUTES).toEpochMilli()
-        val intent1 = Intent(context, AlarmReceiver::class.java)
+        val intent1 = Intent(context, StepsReceiver::class.java)
         intent1.putExtra(
             "instant",
             newInstant
@@ -86,7 +86,7 @@ class AlarmReceiver(
             CoroutineScope(IO).launch {
                 reminderRepository.updateItem(newEvent)
             }
-            val intent1 = Intent(context, AlarmReceiver::class.java)
+            val intent1 = Intent(context, StepsReceiver::class.java)
             intent1.putExtra("id", id)
             intent1.putExtra("REMINDER", newEvent)
             val pendingIntent = PendingIntent.getBroadcast(

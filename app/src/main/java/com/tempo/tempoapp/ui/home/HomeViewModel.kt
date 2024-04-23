@@ -18,7 +18,7 @@ import com.tempo.tempoapp.data.model.InfusionEvent
 import com.tempo.tempoapp.data.repository.BleedingRepository
 import com.tempo.tempoapp.data.repository.InfusionRepository
 import com.tempo.tempoapp.data.repository.StepsRecordRepository
-import com.tempo.tempoapp.utils.AlarmReceiver
+import com.tempo.tempoapp.utils.StepsReceiver
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -58,7 +58,7 @@ class HomeViewModel(
             if (permissionsGranted.value) {
                 val instant = Instant.now().toEpochMilli()
                 val intent =
-                    Intent(TempoApplication.instance.applicationContext, AlarmReceiver::class.java)
+                    Intent(TempoApplication.instance.applicationContext, StepsReceiver::class.java)
                 intent.putExtra("instant", instant)
                 val pendingIntent = PendingIntent.getBroadcast(
                     TempoApplication.instance.applicationContext,
