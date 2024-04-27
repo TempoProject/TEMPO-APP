@@ -121,14 +121,14 @@ fun HomeScreen(
 
 
 
-    if(android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S)
-    if (!TempoApplication.instance.alarm.canScheduleExactAlarms())
-        LaunchedEffect(Unit) {
-            val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
-            val uri = Uri.fromParts("package", TempoApplication.instance.packageName, null)
-            intent.setData(uri)
-            launcher1.launch(intent)
-        }
+    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S)
+        if (!TempoApplication.instance.alarm.canScheduleExactAlarms())
+            LaunchedEffect(Unit) {
+                val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+                val uri = Uri.fromParts("package", TempoApplication.instance.packageName, null)
+                intent.setData(uri)
+                launcher1.launch(intent)
+            }
 
     when {
         ContextCompat.checkSelfPermission(

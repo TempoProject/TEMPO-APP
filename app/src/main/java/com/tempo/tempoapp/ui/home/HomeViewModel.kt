@@ -81,16 +81,6 @@ class HomeViewModel(
                         instant,
                         pendingIntent
                     )
-                /*
-                val task =
-                    PeriodicWorkRequest.Builder(SaveStepsRecord::class.java, 30, TimeUnit.MINUTES)
-                        .build()
-                workManager.enqueueUniquePeriodicWork(
-                    "getStepsRecord",
-                    ExistingPeriodicWorkPolicy.UPDATE,
-                    task
-                )*/
-
             }
         }
     }
