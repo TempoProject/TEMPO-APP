@@ -5,10 +5,18 @@ import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import androidx.work.Constraints
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.tempo.tempoapp.data.AppContainer
 import com.tempo.tempoapp.data.AppDataContainer
 import com.tempo.tempoapp.data.healthconnect.HealthConnectManager
+import com.tempo.tempoapp.workers.SaveBleedingRecords
+import com.tempo.tempoapp.workers.SaveInfusionRecords
+import com.tempo.tempoapp.workers.SaveStepsRecords
+import java.util.concurrent.TimeUnit
 
 class TempoApplication : Application() {
     /**
@@ -46,6 +54,44 @@ class TempoApplication : Application() {
         healthConnectManager = HealthConnectManager(this)
         workManager = WorkManager.getInstance(this)
         alarm = getSystemService(ALARM_SERVICE) as AlarmManager
+
+        val constraints =
+            Constraints(requiresBatteryNotLow = true, requiredNetworkType = NetworkType.CONNECTED)
+        val stepsRecords =
+            PeriodicWorkRequestBuilder<SaveStepsRecords>(30, TimeUnit.MINUTES).setConstraints(
+                constraints
+            ).build()
+
+        val bleedingRecords =
+            PeriodicWorkRequestBuilder<SaveBleedingRecords>(30, TimeUnit.MINUTES).setConstraints(
+                constraints
+            ).build()
+
+        val infusionRecords =
+            PeriodicWorkRequestBuilder<SaveInfusionRecords>(30, TimeUnit.MINUTES).setConstraints(
+                constraints
+            ).build()
+
+
+        workManager.enqueueUniquePeriodicWork(
+            "StepsRecords",
+            ExistingPeriodicWorkPolicy.KEEP,
+            stepsRecords
+        )
+
+        workManager.enqueueUniquePeriodicWork(
+            "BleedingRecords",
+            ExistingPeriodicWorkPolicy.KEEP,
+            bleedingRecords
+        )
+
+        workManager.enqueueUniquePeriodicWork(
+            "InfusionRecords",
+            ExistingPeriodicWorkPolicy.KEEP,
+            infusionRecords
+        )
+
+
     }
 
     companion object {
