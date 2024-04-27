@@ -22,4 +22,21 @@ data class InfusionEvent(
     val timestamp: Long,
     @ColumnInfo(name = "date")
     val date: Long,
+    @ColumnInfo(name = "is_sent")
+    val isSent: Boolean = false
 )
+
+
+data class InfusionEventJson(
+    val id: Int = 0,
+    val treatment: String,
+    val infusion_site: String,
+    val dose_in_units: Int,
+    val lot_number: Int,
+    val note: String?,
+    val timestamp: Long,
+    val date: Long,
+)
+
+fun InfusionEvent.toInfusionEventJson(id: Int = 0): InfusionEventJson =
+    InfusionEventJson(id, treatment, infusionSite, doseUnits, lotNumber, note, timestamp, date)

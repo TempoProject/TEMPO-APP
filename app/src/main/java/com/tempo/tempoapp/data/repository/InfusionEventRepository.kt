@@ -30,4 +30,6 @@ class InfusionRepository(private val infusionEventDao: InfusionEventDao) :
         return infusionEventDao.getAllDayInfusion(date)
     }
 
+    suspend fun getAllInfusionToSent(isSent: Boolean) = infusionEventDao.getAll(isSent)
+
 }

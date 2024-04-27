@@ -21,4 +21,6 @@ class BleedingRepository(private val bleedingEventDao: BleedingEventDao) :
         return bleedingEventDao.getAllDayBleeding(date)
     }
 
+    suspend fun getAllBleedingToSent(isSent: Boolean) = bleedingEventDao.getAll(isSent)
+
 }

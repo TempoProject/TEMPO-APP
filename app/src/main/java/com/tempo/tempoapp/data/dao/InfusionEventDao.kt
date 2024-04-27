@@ -33,4 +33,12 @@ interface InfusionEventDao : LogbookDao<InfusionEvent> {
         """
     )
     fun getAllDayInfusion(date: Long): Flow<List<InfusionEvent>>
+
+    @Query(
+        """
+            SELECT * 
+            FROM infusion_event WHERE is_sent = :isSent
+        """
+    )
+    suspend fun getAll(isSent: Boolean): List<InfusionEvent>
 }
