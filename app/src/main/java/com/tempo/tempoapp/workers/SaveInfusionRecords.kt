@@ -1,12 +1,11 @@
 package com.tempo.tempoapp.workers
 
 import android.content.Context
-import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import com.google.firebase.installations.FirebaseInstallations
 import com.tempo.tempoapp.TempoApplication
-import com.tempo.tempoapp.data.model.toInfusionEventJson
-import com.tempo.tempoapp.utils.PostgresApi
+import kotlinx.coroutines.tasks.await
 
 class SaveInfusionRecords(appContext: Context, params: WorkerParameters) :
     CoroutineWorker(appContext, params) {
@@ -14,10 +13,22 @@ class SaveInfusionRecords(appContext: Context, params: WorkerParameters) :
     private val TAG = javaClass.simpleName
     private val infusionRepository =
         (appContext.applicationContext as TempoApplication).container.infusionRepository
+    private val databaseRef =
+        (appContext.applicationContext as TempoApplication).database
+
 
     override suspend fun doWork(): Result {
         val infusionRecords = infusionRepository.getAllInfusionToSent(isSent = false)
-        infusionRecords.forEach {
+
+        val id = FirebaseInstallations.getInstance().id.await()
+
+
+
+        infusionRecords.forEach { record ->
+
+            databaseRef.child("infusions").child(id).child(record.id.toString())
+                .setValue(record)
+            /*
             try {
                 val response =
                     PostgresApi.retrofitService.postInfusionEvent(it.toInfusionEventJson(it.id))
@@ -26,7 +37,9 @@ class SaveInfusionRecords(appContext: Context, params: WorkerParameters) :
                 Log.e(TAG, err.message!!)
                 return Result.failure()
             }
-            infusionRepository.updateItem(it.copy(isSent = true))
+
+             */
+            infusionRepository.updateItem(record.copy(isSent = true))
         }
         return Result.success()
     }

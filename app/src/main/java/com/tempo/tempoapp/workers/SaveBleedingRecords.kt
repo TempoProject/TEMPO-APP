@@ -1,12 +1,11 @@
 package com.tempo.tempoapp.workers
 
 import android.content.Context
-import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import com.google.firebase.installations.FirebaseInstallations
 import com.tempo.tempoapp.TempoApplication
-import com.tempo.tempoapp.data.model.toBleedingEventJson
-import com.tempo.tempoapp.utils.PostgresApi
+import kotlinx.coroutines.tasks.await
 
 class SaveBleedingRecords(appContext: Context, params: WorkerParameters) :
     CoroutineWorker(appContext, params) {
@@ -15,9 +14,20 @@ class SaveBleedingRecords(appContext: Context, params: WorkerParameters) :
     private val bleedingRepository =
         (appContext.applicationContext as TempoApplication).container.bleedingRepository
 
+    private val databaseRef =
+        (appContext.applicationContext as TempoApplication).database
+
+
     override suspend fun doWork(): Result {
+
+        val id = FirebaseInstallations.getInstance().id.await()
+
         val bleedingRecords = bleedingRepository.getAllBleedingToSent(isSent = false)
-        bleedingRecords.forEach {
+        bleedingRecords.forEach { record ->
+
+            databaseRef.child("bleedings").child(id).child(record.id.toString())
+                .setValue(record)
+            /*
             try {
                 Log.d(TAG, it.toBleedingEventJson(it.id).toString())
                 val response =
@@ -26,8 +36,8 @@ class SaveBleedingRecords(appContext: Context, params: WorkerParameters) :
             } catch (err: Exception) {
                 Log.e(TAG, err.message!!)
                 return Result.failure()
-            }
-            bleedingRepository.updateItem(it.copy(isSent = true))
+            }*/
+            bleedingRepository.updateItem(record.copy(isSent = true))
 
         }
         return Result.success()
