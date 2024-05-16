@@ -7,6 +7,7 @@
     <string name="no_bleeding_event">Aggiungi un evento</string>
     <string name="add_new_bleeding">Aggiungi sanguinamento</string>
     <string name="details">Dettagli</string>
+    <string name="movesense">Movesense</string>
     <string name="date">Data</string>
     <string name="time">Ora</string>
     <string name="edit">Modifica</string>
@@ -30,4 +31,5 @@
     <string name="not_installed_tag">not_installed_tag</string>
     <string name="reminder">Lista promemoria</string>
     <string name="add_reminder">Aggiungi promemoria</string>
+    <string name="scandevices">Cerca dispositivi</string>
 </resources>

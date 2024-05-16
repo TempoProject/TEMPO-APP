@@ -6,6 +6,7 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.tempo.tempoapp.TempoApplication
+import com.tempo.tempoapp.movesense.AndroidBluetoothController
 import com.tempo.tempoapp.ui.bleeding.BleedingDetailsViewModel
 import com.tempo.tempoapp.ui.bleeding.BleedingEditViewModel
 import com.tempo.tempoapp.ui.bleeding.BleedingEntryViewModel
@@ -14,6 +15,8 @@ import com.tempo.tempoapp.ui.home.HomeViewModel
 import com.tempo.tempoapp.ui.infusion.InfusionDetailsViewModel
 import com.tempo.tempoapp.ui.infusion.InfusionEditViewModel
 import com.tempo.tempoapp.ui.infusion.InfusionEntryViewModel
+import com.tempo.tempoapp.ui.movesense.MovesenseViewModel
+import com.tempo.tempoapp.ui.movesense.ScanDevicesViewModel
 import com.tempo.tempoapp.ui.reminders.ReminderListViewModel
 import com.tempo.tempoapp.ui.reminders.ReminderViewModel
 
@@ -28,6 +31,7 @@ object AppViewModelProvider {
                 tempoApplication().container.bleedingRepository,
                 tempoApplication().container.infusionRepository,
                 tempoApplication().container.stepsRecordRepository,
+                tempoApplication().container.movesenseRepository,
                 tempoApplication().healthConnectManager,
                 tempoApplication().workManager
             )
@@ -81,6 +85,17 @@ object AppViewModelProvider {
             ReminderListViewModel(
                 tempoApplication().container.reminderRepository,
                 tempoApplication().applicationContext
+            )
+        }
+        initializer {
+            ScanDevicesViewModel(
+                tempoApplication().container.movesenseRepository,
+                AndroidBluetoothController(tempoApplication().applicationContext),
+            )
+        }
+        initializer {
+            MovesenseViewModel(
+                tempoApplication().container.movesenseRepository
             )
         }
     }
