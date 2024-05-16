@@ -7,12 +7,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -39,7 +41,24 @@ fun Long.toStringDate(): String =
 fun Long.toStringTime(): String =
     SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(this))
 
-
+@Composable
+fun Loading(){
+    Column(
+        modifier = Modifier
+            .fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        CircularProgressIndicator(
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_small))
+        )
+        Text(
+            text = "Operazione in corso",
+            modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_small))
+        )
+    }
+}
 @Composable
 fun <T> ItemCount(count: T, @DrawableRes iconId: Int, modifier: Modifier = Modifier) {
     Column{

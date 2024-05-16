@@ -4,13 +4,17 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import com.tempo.tempoapp.data.dao.AccelerometerDao
 import com.tempo.tempoapp.data.dao.BleedingEventDao
 import com.tempo.tempoapp.data.dao.InfusionEventDao
+import com.tempo.tempoapp.data.dao.MovesenseDao
 import com.tempo.tempoapp.data.dao.ReminderDao
 import com.tempo.tempoapp.data.dao.StepsRecordDao
 import com.tempo.tempoapp.data.dao.UtilsDao
+import com.tempo.tempoapp.data.model.Accelerometer
 import com.tempo.tempoapp.data.model.BleedingEvent
 import com.tempo.tempoapp.data.model.InfusionEvent
+import com.tempo.tempoapp.data.model.Movesense
 import com.tempo.tempoapp.data.model.ReminderEvent
 import com.tempo.tempoapp.data.model.StepsRecord
 import com.tempo.tempoapp.data.model.Utils
@@ -21,6 +25,8 @@ import com.tempo.tempoapp.data.model.Utils
         InfusionEvent::class,
         StepsRecord::class,
         Utils::class,
+        Movesense::class,
+        Accelerometer::class,
         ReminderEvent::class
     ),
     version = 1,
@@ -31,6 +37,8 @@ abstract class TempoDatabase : RoomDatabase() {
     abstract fun infusionDao(): InfusionEventDao
     abstract fun stepsDao(): StepsRecordDao
     abstract fun utilsDao(): UtilsDao
+    abstract fun movesenseDao(): MovesenseDao
+    abstract fun accelerometerDao(): AccelerometerDao
     abstract fun reminderDao(): ReminderDao
 
     companion object {

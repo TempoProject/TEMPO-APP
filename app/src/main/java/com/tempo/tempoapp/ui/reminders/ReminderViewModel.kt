@@ -95,6 +95,7 @@ class ReminderViewModel(
                     AlarmManager.RTC_WAKEUP,
                     data.timestamp,
                     pendingIntent
+                )
         } else
             TempoApplication.instance.alarm.setExactAndAllowWhileIdle(
                 AlarmManager.RTC_WAKEUP,
@@ -114,7 +115,7 @@ class ReminderViewModel(
                         .build()
                     workManager.enqueue(task)
          */
-          
+
     }
 }
 

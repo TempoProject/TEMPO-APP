@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Notifications
@@ -99,7 +100,9 @@ fun HomeScreen(
     navigateToInfusionUpdate: (Int) -> Unit,
     navigateToHistory: () -> Unit,
     navigateToAddReminder: () -> Unit,
-    navigateToReminderList: () -> Unit
+    navigateToReminderList: () -> Unit,
+    navigateToScanDevices: () -> Unit,
+    navigateToMovesense: () -> Unit,
 ) {
     val permissionsLauncher =
         rememberLauncherForActivityResult(viewModel.permissionsLauncher) {
@@ -212,6 +215,18 @@ fun HomeScreen(
                     scope = scope,
                     drawerState = drawerState,
                     navigateToReminderList
+                )
+                NavDrawerItem(
+                    stringId = R.string.movesense,
+                    icon = Icons.Default.Build,
+                    scope = scope,
+                    drawerState = drawerState,
+                    navDestination = {
+                        if (homeUiState.movesense != null) {
+                            navigateToMovesense()
+                        } else
+                            navigateToScanDevices()
+                    }
                 )
             }
         }) {

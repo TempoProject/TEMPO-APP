@@ -10,6 +10,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.tempo.tempoapp.TempoApplication
 import com.tempo.tempoapp.data.healthconnect.HealthConnectManager
 import com.tempo.tempoapp.ui.bleeding.BleedingDetailsScreen
 import com.tempo.tempoapp.ui.bleeding.BleedingEditScreen
@@ -27,6 +28,10 @@ import com.tempo.tempoapp.ui.infusion.InfusionEditDestination
 import com.tempo.tempoapp.ui.infusion.InfusionEditScreen
 import com.tempo.tempoapp.ui.infusion.InfusionEntryDestination
 import com.tempo.tempoapp.ui.infusion.InfusionEventScreen
+import com.tempo.tempoapp.ui.movesense.MovesenseDestination
+import com.tempo.tempoapp.ui.movesense.MovesenseScreen
+import com.tempo.tempoapp.ui.movesense.ScanDeviceDestination
+import com.tempo.tempoapp.ui.movesense.ScanDevicesScreen
 import com.tempo.tempoapp.ui.reminders.ReminderDestination
 import com.tempo.tempoapp.ui.reminders.ReminderList
 import com.tempo.tempoapp.ui.reminders.ReminderListDestination
@@ -70,7 +75,14 @@ fun TempoNavHost(
                 },
                 navigateToReminderList = {
                     navController.navigate(ReminderListDestination.route)
+                },
+                navigateToScanDevices = {
+                    navController.navigate(ScanDeviceDestination.route)
+                },
+                navigateToMovesense = {
+                    navController.navigate(MovesenseDestination.route)
                 })
+
         }
         /**
          * Add new bleeding event
@@ -193,6 +205,46 @@ fun TempoNavHost(
             ReminderList(
                 onNavigateUp = { navController.navigateUp() },
                 navigateBack = { navController.popBackStack() },
+            )
+        }
+
+        composable(
+            route = ScanDeviceDestination.route
+        ) {
+            ScanDevicesScreen(
+                context = TempoApplication.instance.applicationContext,
+                navigateToMovesense = {
+                    navController.navigate(MovesenseDestination.route){
+                        popUpTo(HomeDestination.route) {
+                            inclusive = false
+                        }
+                    }
+                },
+                onNavigateUp = { navController.navigateUp() }
+            )
+        }
+
+        composable(
+            route = MovesenseDestination.route
+        )
+        {
+            MovesenseScreen(
+                context = TempoApplication.instance.applicationContext,
+                onNavigateScanDevices = {
+                    navController.popBackStack(
+                        route = ScanDeviceDestination.route,
+                        inclusive = false
+                    )
+                },
+                onNavigateBack = {
+                    navController.popBackStack(
+                        route = HomeDestination.route,
+                        inclusive = false
+                    )
+                },
+                onNavigateUp = {
+                    navController.navigateUp()
+                },
             )
         }
 
