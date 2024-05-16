@@ -1,12 +1,12 @@
 package com.tempo.tempoapp.workers
 
 import android.content.Context
-import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import com.google.firebase.installations.FirebaseInstallations
 import com.tempo.tempoapp.TempoApplication
 import com.tempo.tempoapp.data.model.toStepsRecordToJson
-import com.tempo.tempoapp.utils.PostgresApi
+import kotlinx.coroutines.tasks.await
 
 class SaveStepsRecords(appContext: Context, params: WorkerParameters) :
     CoroutineWorker(appContext, params) {
@@ -16,6 +16,9 @@ class SaveStepsRecords(appContext: Context, params: WorkerParameters) :
 
     private val stepsRecordRepository =
         (appContext.applicationContext as TempoApplication).container.stepsRecordRepository
+
+    private val databaseRef =
+        (appContext.applicationContext as TempoApplication).database
 
 
     /*
@@ -34,6 +37,7 @@ class SaveStepsRecords(appContext: Context, params: WorkerParameters) :
 
      */
     override suspend fun doWork(): Result {
+
 
         /*        setForeground(createForegroundInfo(""))
                 if (healthConnectManager.hasAllPermissions(permission)) {
@@ -99,20 +103,20 @@ class SaveStepsRecords(appContext: Context, params: WorkerParameters) :
         )
 
 
+        val id = FirebaseInstallations.getInstance().id.await()
 
-
-        stepsRecords.forEach {
-            try {
-                val response = PostgresApi.retrofitService.postSteps(it.toStepsRecordToJson(it.id))
-                Log.d(TAG, response.toString())
-            } catch (err: Exception) {
-                Log.e(TAG, err.message!!)
-                return Result.failure()
-            }
-            stepsRecordRepository.updateItem(it.copy(isSent = true))
+        stepsRecords.forEach { record ->
+            /* try {
+                 val response = PostgresApi.retrofitService.postSteps(it.toStepsRecordToJson(it.id))
+                 Log.d(TAG, response.toString())
+             } catch (err: Exception) {
+                 Log.e(TAG, err.message!!)
+                 return Result.failure()
+             }*/
+            databaseRef.child("steps").child(id).child(record.id.toString())
+                .setValue(record.toStepsRecordToJson(record.id))
+            stepsRecordRepository.updateItem(record.copy(isSent = true))
         }
-
-
 
         return Result.success()
     }

@@ -10,6 +10,9 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.NetworkType
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
+import com.google.firebase.Firebase
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.database
 import com.tempo.tempoapp.data.AppContainer
 import com.tempo.tempoapp.data.AppDataContainer
 import com.tempo.tempoapp.data.healthconnect.HealthConnectManager
@@ -26,6 +29,8 @@ class TempoApplication : Application() {
     lateinit var healthConnectManager: HealthConnectManager
     lateinit var workManager: WorkManager
     private lateinit var notificationManager: NotificationManager
+    lateinit var database: DatabaseReference
+
 
 
     lateinit var alarm: AlarmManager
@@ -56,6 +61,8 @@ class TempoApplication : Application() {
         healthConnectManager = HealthConnectManager(this)
         workManager = WorkManager.getInstance(this)
         alarm = getSystemService(ALARM_SERVICE) as AlarmManager
+        database =
+            Firebase.database("https://tempo-app-94a6c-default-rtdb.europe-west1.firebasedatabase.app/").reference
 
         val constraints =
             Constraints(requiresBatteryNotLow = true, requiredNetworkType = NetworkType.CONNECTED)
@@ -73,7 +80,6 @@ class TempoApplication : Application() {
             PeriodicWorkRequestBuilder<SaveInfusionRecords>(30, TimeUnit.MINUTES).setConstraints(
                 constraints
             ).build()
-
 
         workManager.enqueueUniquePeriodicWork(
             "StepsRecords",
