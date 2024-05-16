@@ -101,9 +101,14 @@ dependencies {
     implementation ("com.squareup.retrofit2:converter-gson:2.11.0")
     implementation("com.google.code.gson:gson:2.10.1")
 
+    // Firebase
     implementation(platform("com.google.firebase:firebase-bom:32.8.1"))
     implementation("com.google.firebase:firebase-database")
-
     implementation ("com.google.firebase:firebase-installations:17.2.0")
 
+    // RxAndroidBle (movesense)
+    implementation(files("libs/mdslib-3.15.0(1)-release.aar"))
+    implementation ("com.polidea.rxandroidble2:rxandroidble:1.10.2")
+    implementation ("io.reactivex.rxjava2:rxandroid:2.1.1")
+    implementation ("io.reactivex.rxjava2:rxjava:2.2.8")
 }
