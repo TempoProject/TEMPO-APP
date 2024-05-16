@@ -26,7 +26,7 @@ class MovesenseService : Service() {
 
     private val mds: Mds = Mds.builder().build(TempoApplication.instance.applicationContext)
 
-    private lateinit var mdsSub: MdsSubscription
+    private var mdsSub: MdsSubscription? = null
     private val serviceScope = CoroutineScope(Dispatchers.IO)
     private val notificationManager =
         TempoApplication.instance.getSystemService(Context.NOTIFICATION_SERVICE) as
@@ -42,6 +42,7 @@ class MovesenseService : Service() {
 
         }
         startForegroundService()
+        mdsSub?.unsubscribe()
         mdsSub = mds.subscribe(
             Mds.URI_EVENTLISTENER, """{"Uri": "${Mds.URI_CONNECTEDDEVICES}"}""",
             object : MdsNotificationListener {
@@ -127,7 +128,7 @@ class MovesenseService : Service() {
 
     private fun stopForegroundService() {
         Log.d(javaClass.simpleName, "unsubscribe")
-        mdsSub.unsubscribe()
+        mdsSub?.unsubscribe()
         stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()
     }
