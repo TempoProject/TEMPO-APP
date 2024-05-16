@@ -214,7 +214,11 @@ fun TempoNavHost(
             ScanDevicesScreen(
                 context = TempoApplication.instance.applicationContext,
                 navigateToMovesense = {
-                    navController.navigate(MovesenseDestination.route)
+                    navController.navigate(MovesenseDestination.route){
+                        popUpTo(HomeDestination.route) {
+                            inclusive = false
+                        }
+                    }
                 },
                 onNavigateUp = { navController.navigateUp() }
             )
