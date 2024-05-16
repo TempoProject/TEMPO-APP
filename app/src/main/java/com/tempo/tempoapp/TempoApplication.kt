@@ -6,6 +6,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import androidx.work.Constraints
+import androidx.work.Data
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.NetworkType
 import androidx.work.PeriodicWorkRequestBuilder
@@ -16,6 +17,7 @@ import com.google.firebase.database.database
 import com.tempo.tempoapp.data.AppContainer
 import com.tempo.tempoapp.data.AppDataContainer
 import com.tempo.tempoapp.data.healthconnect.HealthConnectManager
+import com.tempo.tempoapp.workers.MovesenseWorker
 import com.tempo.tempoapp.workers.SaveBleedingRecords
 import com.tempo.tempoapp.workers.SaveInfusionRecords
 import com.tempo.tempoapp.workers.SaveStepsRecords
@@ -30,8 +32,6 @@ class TempoApplication : Application() {
     lateinit var workManager: WorkManager
     private lateinit var notificationManager: NotificationManager
     lateinit var database: DatabaseReference
-
-
     lateinit var alarm: AlarmManager
     override fun onCreate() {
         super.onCreate()
@@ -49,10 +49,16 @@ class TempoApplication : Application() {
             "Promemoria",
             NotificationManager.IMPORTANCE_DEFAULT
         )
+        val notificationChannelMovesense = NotificationChannel(
+            "Movesense",
+            "Movesense",
+            NotificationManager.IMPORTANCE_DEFAULT
+        )
         notificationManager.createNotificationChannels(
             listOf(
                 notificationChannelSendSteps,
-                notificationChannelReminder
+                notificationChannelReminder,
+                notificationChannelMovesense
             )
         )
         container = AppDataContainer(this)
@@ -79,6 +85,11 @@ class TempoApplication : Application() {
                 constraints
             ).build()
 
+        val saveAccelerometer =
+            PeriodicWorkRequestBuilder<MovesenseWorker>(30, TimeUnit.MINUTES).setConstraints(
+                constraints
+            ).setInputData(Data.Builder().putInt("state", 6).build()).build()
+
         workManager.enqueueUniquePeriodicWork(
             "StepsRecords",
             ExistingPeriodicWorkPolicy.KEEP,
@@ -97,7 +108,11 @@ class TempoApplication : Application() {
             infusionRecords
         )
 
-
+        workManager.enqueueUniquePeriodicWork(
+            "AccelerometerRecords",
+            ExistingPeriodicWorkPolicy.KEEP,
+            saveAccelerometer
+        )
     }
 
     companion object {
