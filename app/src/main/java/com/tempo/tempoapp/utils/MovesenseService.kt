@@ -6,28 +6,27 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.os.IBinder
+import android.util.Log
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.PeriodicWorkRequestBuilder
-import androidx.work.WorkManager
 import com.google.gson.Gson
 import com.movesense.mds.Mds
 import com.movesense.mds.MdsException
 import com.movesense.mds.MdsNotificationListener
+import com.movesense.mds.MdsSubscription
 import com.tempo.tempoapp.R
 import com.tempo.tempoapp.TempoApplication
 import com.tempo.tempoapp.data.model.Movesense
-import com.tempo.tempoapp.workers.MovesenseSaveRecords
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
-import java.util.concurrent.TimeUnit
 
 class MovesenseService : Service() {
 
     private val mds: Mds = Mds.builder().build(TempoApplication.instance.applicationContext)
+
+    private lateinit var mdsSub: MdsSubscription
     private val serviceScope = CoroutineScope(Dispatchers.IO)
     private val notificationManager =
         TempoApplication.instance.getSystemService(Context.NOTIFICATION_SERVICE) as
@@ -43,7 +42,7 @@ class MovesenseService : Service() {
 
         }
         startForegroundService()
-        mds.subscribe(
+        mdsSub = mds.subscribe(
             Mds.URI_EVENTLISTENER, """{"Uri": "${Mds.URI_CONNECTEDDEVICES}"}""",
             object : MdsNotificationListener {
                 override fun onNotification(p0: String?) {
@@ -109,7 +108,7 @@ class MovesenseService : Service() {
 
 
     private fun startForegroundService() {
-        startForeground(1, sendNotification("Movesense collegato"))
+        startForeground(2, sendNotification("Movesense collegato"))
     }
 
     private fun sendNotification(content: String): Notification {
@@ -127,6 +126,8 @@ class MovesenseService : Service() {
     }
 
     private fun stopForegroundService() {
+        Log.d(javaClass.simpleName, "unsubscribe")
+        mdsSub.unsubscribe()
         stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()
     }
