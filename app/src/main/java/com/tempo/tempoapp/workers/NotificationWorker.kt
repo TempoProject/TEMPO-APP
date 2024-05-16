@@ -17,7 +17,10 @@ class NotificationWorker(appContext: Context, params: WorkerParameters) :
     override suspend fun doWork(): Result {
         val inputData = inputData.getString("EVENT")
         val title = "Reminder"
-        val notification = NotificationCompat.Builder(applicationContext, "Reminder")
+        val notification = NotificationCompat.Builder(
+            applicationContext,
+            applicationContext.getString(R.string.channel_reminder)
+        )
             .setContentTitle(title)
             .setTicker(title)
             .setContentText(inputData)

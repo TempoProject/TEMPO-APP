@@ -58,7 +58,7 @@ object ReminderDestination : NavigationDestination {
     override val route: String
         get() = "reminder"
     override val titleRes: Int
-        get() = R.string.reminder
+        get() = R.string.add_reminder
 }
 
 //@RequiresApi(Build.VERSION_CODES.S)
@@ -118,7 +118,7 @@ fun ReminderScreen(
     Scaffold(
         topBar = {
             TempoAppBar(
-                title = stringResource(id = R.string.reminder),
+                title = stringResource(id = ReminderDestination.titleRes),
                 canNavigateBack = true,
                 navigateUp = onNavigateUp
             )
@@ -275,6 +275,7 @@ private fun ReminderBody(
                 TimePickerDialog(
                     onTimeSelected = updateTime,
                     onDismiss = { showTimePickerDialog = !showTimePickerDialog })
+
         }
         Row(
             Modifier
@@ -321,6 +322,7 @@ private fun ReminderBody(
                     }
                 }
             }
+            Spacer(modifier = Modifier.padding(2.dp))
             Box(
                 modifier = Modifier
                     .clickable {
@@ -333,6 +335,7 @@ private fun ReminderBody(
                     )
                     .padding(dimensionResource(id = R.dimen.padding_medium))
             ) {
+
                 TextWithIcon(text = uiState.timeUnit.name)
                 DropdownMenu(
                     modifier = Modifier.clickable { uiState.isPeriodic },
@@ -343,6 +346,7 @@ private fun ReminderBody(
                         y = dimensionResource(id = R.dimen.padding_small)
                     )
                 ) {
+
                     TimeUnit.entries.drop(6).forEach { step ->
                         DropdownMenuItem(
                             text = { Text(text = step.name) },

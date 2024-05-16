@@ -19,7 +19,9 @@ class TempoApplication : Application() {
     lateinit var workManager: WorkManager
     private lateinit var notificationManager: NotificationManager
 
+
     lateinit var alarm: AlarmManager
+
     override fun onCreate() {
         super.onCreate()
         instance = this
@@ -32,8 +34,8 @@ class TempoApplication : Application() {
             NotificationManager.IMPORTANCE_NONE
         )
         val notificationChannelReminder = NotificationChannel(
-            "Reminder",
-            "Promemoria",
+            getString(R.string.channel_reminder),
+            getString(R.string.channel_name_reminder),
             NotificationManager.IMPORTANCE_DEFAULT
         )
         notificationManager.createNotificationChannels(
