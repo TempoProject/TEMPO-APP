@@ -40,6 +40,7 @@ import com.movesense.mds.MdsResponseListener
 import com.tempo.tempoapp.R
 import com.tempo.tempoapp.TempoAppBar
 import com.tempo.tempoapp.ui.AppViewModelProvider
+import com.tempo.tempoapp.ui.Loading
 import com.tempo.tempoapp.ui.navigation.NavigationDestination
 import com.tempo.tempoapp.utils.MovesenseService
 import com.tempo.tempoapp.workers.MovesenseSaveRecords
@@ -139,175 +140,221 @@ fun MovesenseScreen(
         },
 
         ) {
-        MovesenseBody(
-            state,
-            onConnect = {
-                viewModel.updateUi(isWorking = true)
-                mds.connect(state.value.movesense.address, object : MdsConnectionListener {
-                    override fun onConnect(p0: String?) {
-                        println("onConnect: $p0")
-                        //viewModel.stopScan()
-                    }
-
-                    override fun onConnectionComplete(p0: String?, p1: String?) {
-                        println("onConnectionComplete: $p0")
-                        scope.launch {
-                            viewModel.updateInfoDevice(state.value.movesense.copy(isConnected = true))
-                        }.invokeOnCompletion {
-                            context.startForegroundService(
-                                Intent(
-                                    context,
-                                    MovesenseService::class.java
-                                )
-                            )
-                            viewModel.updateUi()
+        if (state.value.isWorking)
+            Loading()
+        else
+            MovesenseBody(
+                state,
+                onConnect = {
+                    viewModel.updateUi(isWorking = true)
+                    mds.connect(state.value.movesense.address, object : MdsConnectionListener {
+                        override fun onConnect(p0: String?) {
+                            println("onConnect: $p0")
+                            //viewModel.stopScan()
                         }
 
-
-                        //viewModel.stopScan()
-                        //navigateToMovesense()
-                    }
-
-                    override fun onError(p0: MdsException?) {
-                        println("onError: $p0")
-                        viewModel.updateUi()
-                    }
-
-                    override fun onDisconnect(p0: String?) {
-                        println("onDisconnect: $p0")
-                        mds.disconnect(state.value.movesense.address)
-                        scope.launch {
-                            viewModel.updateInfoDevice(
-                                state.value.movesense.copy(
-                                    isConnected = false
-                                )
-                            )
-                        }.invokeOnCompletion { viewModel.updateUi() }
-
-                        //onNavigateUp()
-                        //viewModel.stopScan()
-                    }
-                })
-            },
-            onConfigure = {
-                /*val configure =
-                    OneTimeWorkRequestBuilder<MovesenseWorker>().addTag("configureMovesense")
-                        .build()
-                WorkManager.getInstance(context).enqueue(configure)
-*/
-
-                val startLogging = PeriodicWorkRequestBuilder<MovesenseSaveRecords>(
-                    repeatInterval = 20,
-                    TimeUnit.MINUTES
-                ).addTag("onConfigure").build()
-
-
-                WorkManager.getInstance(context).enqueueUniquePeriodicWork(
-                    "onConfigure",
-                    ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
-                    startLogging
-                )
-
-            },
-            onDisconnect = {
-                mds.put(
-                    "suunto://${
-                        state.value.movesense.name.split(" ").last()
-                    }/Mem/DataLogger/State",
-                    """{"newState": 2}""",
-                    object : MdsResponseListener {
-                        override fun onSuccess(data: String?, header: MdsHeader?) {
-                            Log.d(javaClass.simpleName, data.toString())
+                        override fun onConnectionComplete(p0: String?, p1: String?) {
+                            println("onConnectionComplete: $p0")
                             scope.launch {
-                                viewModel.updateInfoDevice(state.value.movesense.copy(isConnected = false))
+                                viewModel.updateInfoDevice(state.value.movesense.copy(isConnected = true))
+                            }.invokeOnCompletion {
+                                context.startForegroundService(
+                                    Intent(
+                                        context,
+                                        MovesenseService::class.java
+                                    )
+                                )
+                                viewModel.updateUi()
                             }
-                                .invokeOnCompletion {
-                                    //
-                                    viewModel.updateUi(isWorking = false)
-                                    WorkManager.getInstance(context).cancelUniqueWork("onConfigure")
-                                    mds.disconnect(state.value.movesense.address)
-                                    //onNavigateUp()
-                                }
 
+
+                            //viewModel.stopScan()
+                            //navigateToMovesense()
                         }
 
                         override fun onError(p0: MdsException?) {
-                            Log.e(javaClass.simpleName, p0.toString())
-                            scope.launch {
-                                viewModel.updateInfoDevice(state.value.movesense.copy(isConnected = false))
-                            }
-                                .invokeOnCompletion {
-                                    //
-                                    viewModel.updateUi(isWorking = false)
-                                    WorkManager.getInstance(context).cancelUniqueWork("onConfigure")
-                                    mds.disconnect(state.value.movesense.address)
-                                    //onNavigateUp()
-                                }
+                            println("onError: $p0")
+                            if (p0.toString().contains("BleDevice not among connected devices:"))
+                                scope.launch {
+                                    viewModel.updateInfoDevice(
+                                        state.value.movesense.copy(
+                                            isConnected = true
+                                        )
+                                    )
+                                }.invokeOnCompletion {
+                                    context.startForegroundService(
+                                        Intent(
+                                            context,
+                                            MovesenseService::class.java
+                                        )
+                                    )
+                                    viewModel.updateUi()
+                                } else
+                                viewModel.updateUi()
+                        }
 
+                        override fun onDisconnect(p0: String?) {
+                            println("onDisconnect: $p0")
+                            viewModel.updateUi(true)
+                            mds.disconnect(state.value.movesense.address)
+                            scope.launch {
+                                viewModel.updateInfoDevice(
+                                    state.value.movesense.copy(
+                                        isConnected = false
+                                    )
+                                )
+                            }.invokeOnCompletion { viewModel.updateUi() }
+
+                            //onNavigateUp()
+                            //viewModel.stopScan()
                         }
                     })
-            },
-            onFlush = {
-                val flushData = OneTimeWorkRequestBuilder<MovesenseWorker>()
-                    .setInputData(Data.Builder().putInt("state", 4).build())
-                    .addTag("onFlush")
-                    .build()
-                WorkManager.getInstance(context).enqueue(flushData)
-            },
-            onDelete = {
-                val delete =
-                    OneTimeWorkRequestBuilder<MovesenseWorker>()
-                        .setInputData(Data.Builder().putInt("state", 5).build())
-                        .addTag("onDelete")
+                },
+                onConfigure = {
+                    /*val configure =
+                        OneTimeWorkRequestBuilder<MovesenseWorker>().addTag("configureMovesense")
+                            .build()
+                    WorkManager.getInstance(context).enqueue(configure)
+    */
+
+                    val startLogging = PeriodicWorkRequestBuilder<MovesenseSaveRecords>(
+                        repeatInterval = 20,
+                        TimeUnit.MINUTES
+                    ).addTag("onConfigure").build()
+
+
+                    WorkManager.getInstance(context).enqueueUniquePeriodicWork(
+                        "onConfigure",
+                        ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
+                        startLogging
+                    )
+
+                },
+                onDisconnect = {
+                    mds.put(
+                        "suunto://${
+                            state.value.movesense.name.split(" ").last()
+                        }/Mem/DataLogger/State",
+                        """{"newState": 2}""",
+                        object : MdsResponseListener {
+                            override fun onSuccess(data: String?, header: MdsHeader?) {
+                                Log.d(javaClass.simpleName, data.toString())
+                                scope.launch {
+                                    viewModel.updateInfoDevice(
+                                        state.value.movesense.copy(
+                                            isConnected = false
+                                        )
+                                    )
+                                }
+                                    .invokeOnCompletion {
+                                        context.stopService(
+                                            Intent(
+                                                context,
+                                                MovesenseService::class.java
+                                            )
+                                        )
+
+                                        viewModel.updateUi(isWorking = false)
+                                        WorkManager.getInstance(context)
+                                            .cancelUniqueWork("onConfigure")
+                                        mds.disconnect(state.value.movesense.address)
+                                        //onNavigateUp()
+                                    }
+
+                            }
+
+                            override fun onError(p0: MdsException?) {
+                                Log.e(javaClass.simpleName, p0.toString())
+                                scope.launch {
+                                    viewModel.updateInfoDevice(
+                                        state.value.movesense.copy(
+                                            isConnected = false
+                                        )
+                                    )
+                                }
+                                    .invokeOnCompletion {
+
+                                        context.stopService(
+                                            Intent(
+                                                context,
+                                                MovesenseService::class.java
+                                            )
+                                        )
+                                        viewModel.updateUi(isWorking = false)
+                                        WorkManager.getInstance(context)
+                                            .cancelUniqueWork("onConfigure")
+                                        mds.disconnect(state.value.movesense.address)
+                                        //onNavigateUp()
+                                    }
+
+                            }
+                        })
+                },
+                onFlush = {
+                    val flushData = OneTimeWorkRequestBuilder<MovesenseWorker>()
+                        .setInputData(Data.Builder().putInt("state", 4).build())
+                        .addTag("onFlush")
                         .build()
-                WorkManager.getInstance(context).enqueue(delete)
-            },
-            onForget = {
-                viewModel.updateUi(isWorking = true)
-                mds.put(
-                    "suunto://${
-                        state.value.movesense.name.split(" ").last()
-                    }/Mem/DataLogger/State",
-                    """{"newState": 2}""",
-                    object : MdsResponseListener {
-                        override fun onSuccess(data: String?, header: MdsHeader?) {
-                            context.stopService(
-                                Intent(
-                                    context,
-                                    MovesenseService::class.java
-                                )
-                            )
-                            scope.launch {
-                                mds.disconnect(state.value.movesense.address)
-                                viewModel.deleteInfoDevice(state.value.movesense)
-                            }
-                                .invokeOnCompletion {
-                                    viewModel.updateUi(isWorking = false)
-                                    onNavigateBack()
+                    WorkManager.getInstance(context).enqueue(flushData)
+                },
+                onDelete = {
+                    val delete =
+                        OneTimeWorkRequestBuilder<MovesenseWorker>()
+                            .setInputData(Data.Builder().putInt("state", 5).build())
+                            .addTag("onDelete")
+                            .build()
+                    WorkManager.getInstance(context).enqueue(delete)
+                },
+                onForget = {
+                    viewModel.updateUi(isWorking = true)
+                    mds.put(
+                        "suunto://${
+                            state.value.movesense.name.split(" ").last()
+                        }/Mem/DataLogger/State",
+                        """{"newState": 2}""",
+                        object : MdsResponseListener {
+                            override fun onSuccess(data: String?, header: MdsHeader?) {
+                                scope.launch {
+                                    mds.disconnect(state.value.movesense.address)
+                                    viewModel.deleteInfoDevice(state.value.movesense)
                                 }
-                        }
-
-                        override fun onError(p0: MdsException?) {
-                            context.stopService(
-                                Intent(
-                                    context,
-                                    MovesenseService::class.java
-                                )
-                            )
-                            scope.launch {
-                                mds.disconnect(state.value.movesense.address)
-                                viewModel.deleteInfoDevice(state.value.movesense)
+                                    .invokeOnCompletion {
+                                        context.stopService(
+                                            Intent(
+                                                context,
+                                                MovesenseService::class.java
+                                            )
+                                        )
+                                        WorkManager.getInstance(context)
+                                            .cancelUniqueWork("onConfigure")
+                                        viewModel.updateUi(isWorking = false)
+                                        onNavigateBack()
+                                    }
                             }
-                                .invokeOnCompletion {
-                                    viewModel.updateUi(isWorking = false)
-                                    onNavigateBack()
+
+                            override fun onError(p0: MdsException?) {
+                                scope.launch {
+                                    mds.disconnect(state.value.movesense.address)
+                                    viewModel.deleteInfoDevice(state.value.movesense)
                                 }
-                        }
-                    })
+                                    .invokeOnCompletion {
+                                        context.stopService(
+                                            Intent(
+                                                context,
+                                                MovesenseService::class.java
+                                            )
+                                        )
+                                        WorkManager.getInstance(context)
+                                            .cancelUniqueWork("onConfigure")
+                                        viewModel.updateUi(isWorking = false)
+                                        onNavigateBack()
+                                    }
+                            }
+                        })
 
 
-            }, Modifier.padding(it)
-        )
+                }, Modifier.padding(it)
+            )
     }
 }
 

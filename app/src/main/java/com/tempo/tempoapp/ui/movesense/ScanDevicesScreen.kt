@@ -44,7 +44,9 @@ import com.tempo.tempoapp.TempoAppBar
 import com.tempo.tempoapp.data.model.Movesense
 import com.tempo.tempoapp.movesense.BluetoothDeviceInfo
 import com.tempo.tempoapp.ui.AppViewModelProvider
+import com.tempo.tempoapp.ui.Loading
 import com.tempo.tempoapp.ui.navigation.NavigationDestination
+import com.tempo.tempoapp.utils.MovesenseService
 import kotlinx.coroutines.launch
 
 
@@ -127,16 +129,7 @@ fun ScanDevicesScreen(
                             Manifest.permission.BLUETOOTH_CONNECT
                         )
                     )
-                } else
-                    launcher.launch(
-                        arrayOf(
-                            Manifest.permission.BLUETOOTH,
-                            Manifest.permission.ACCESS_COARSE_LOCATION,
-                            Manifest.permission.ACCESS_FINE_LOCATION,
-                            Manifest.permission.ACCESS_BACKGROUND_LOCATION
-
-                        )
-                    )
+                }
             }
         }
     }
@@ -152,85 +145,96 @@ fun ScanDevicesScreen(
         },
 
         ) {
-        DeviceScreen(
-            state = state.value,
-            startScan = {
-                if (viewModel.hasPermission())
-                    viewModel.startScan()
-                else
-                    Toast.makeText(context, "Consentire accesso nearby devices", Toast.LENGTH_LONG)
-                        .show()
-                /*else {
-                LaunchedEffect(Unit) {
-                    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-                    println(TempoApplication.instance.packageName)
-                    val uri = Uri.parse("package:${context.packageName}")
-                    intent.setData(uri)
-                    openSettings.launch(intent)
-                }
-            }*/
-            },
-            stopScan = viewModel::stopScan,
-            onClick = { device ->
-                viewModel.updateUi(true)
-                mds.connect(device.address, object : MdsConnectionListener {
-                    override fun onConnect(p0: String?) {
-                        println("onConnect: $p0")
-                        viewModel.stopScan()
+        if (state.value.isScanning)
+            Loading()
+        else
+            DeviceScreen(
+                state = state.value,
+                startScan = {
+                    if (viewModel.hasPermission())
+                        viewModel.startScan()
+                    else
+                        Toast.makeText(
+                            context,
+                            "Consentire accesso nearby devices",
+                            Toast.LENGTH_LONG
+                        )
+                            .show()
+                    /*else {
+                    LaunchedEffect(Unit) {
+                        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                        println(TempoApplication.instance.packageName)
+                        val uri = Uri.parse("package:${context.packageName}")
+                        intent.setData(uri)
+                        openSettings.launch(intent)
                     }
-
-                    override fun onConnectionComplete(p0: String?, p1: String?) {
-                        println("onConnectionComplete: $p0")
-                        viewModel.stopScan()
-                        // avvierebbe più servizi.
-                        /*context.startForegroundService(
-                            Intent(
-                                context,
-                                MovesenseService::class.java
-                            )
-                        )*/
-                        scope.launch {
-                            viewModel.saveDevice(
-                                Movesense(
-                                    device.address,
-                                    device.name ?: "Movesense",
-                                    isConnected = true
-                                )
-                            )
-                        }.invokeOnCompletion {
-                            viewModel.updateUi()
-                            navigateToMovesense()
+                }*/
+                },
+                stopScan = viewModel::stopScan,
+                onClick = { device ->
+                    viewModel.updateUi(true)
+                    mds.connect(device.address, object : MdsConnectionListener {
+                        override fun onConnect(p0: String?) {
+                            println("onConnect: $p0")
+                            viewModel.stopScan()
                         }
 
-                    }
-
-                    override fun onError(p0: MdsException?) {
-                        println("onError: $p0")
-                        viewModel.updateUi()
-                        viewModel.stopScan()
-                    }
-
-                    override fun onDisconnect(p0: String?) {
-                        println("onDisconnect: $p0")
-                        viewModel.stopScan()
-                        scope.launch {
-                            viewModel.saveDevice(
-                                Movesense(
-                                    device.address,
-                                    device.name ?: "Movesense",
-                                    isConnected = false
+                        override fun onConnectionComplete(p0: String?, p1: String?) {
+                            println("onConnectionComplete: $p0")
+                            viewModel.stopScan()
+                            context.startForegroundService(
+                                Intent(
+                                    context,
+                                    MovesenseService::class.java
                                 )
                             )
-                        }.invokeOnCompletion {
-                            viewModel.updateUi()
+                            scope.launch {
+                                viewModel.saveDevice(
+                                    Movesense(
+                                        device.address,
+                                        device.name ?: "Movesense",
+                                        isConnected = true
+                                    )
+                                )
+                            }.invokeOnCompletion { err ->
+                                try {
+                                    viewModel.updateUi()
+                                    navigateToMovesense()
+                                } catch (e: Exception) {
+                                    println(err.toString())
+                                }
+
+                            }
+
                         }
 
-                    }
-                })
+                        override fun onError(p0: MdsException?) {
+                            println("onError: $p0")
+                            viewModel.updateUi()
+                            viewModel.stopScan()
+                        }
 
-            },
-            Modifier.padding(it)
-        )
+                        override fun onDisconnect(p0: String?) {
+                            println("onDisconnect: $p0")
+                            viewModel.stopScan()
+                            scope.launch {
+                                viewModel.saveDevice(
+                                    Movesense(
+                                        device.address,
+                                        device.name ?: "Movesense",
+                                        isConnected = false
+                                    )
+                                )
+                            }.invokeOnCompletion {
+                                viewModel.updateUi()
+                            }
+
+                        }
+                    })
+
+                },
+                Modifier.padding(it)
+            )
     }
 }
 
