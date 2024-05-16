@@ -15,8 +15,10 @@ import com.tempo.tempoapp.data.healthconnect.HealthConnectAvailability
 import com.tempo.tempoapp.data.healthconnect.HealthConnectManager
 import com.tempo.tempoapp.data.model.BleedingEvent
 import com.tempo.tempoapp.data.model.InfusionEvent
+import com.tempo.tempoapp.data.model.Movesense
 import com.tempo.tempoapp.data.repository.BleedingRepository
 import com.tempo.tempoapp.data.repository.InfusionRepository
+import com.tempo.tempoapp.data.repository.MovesenseRepository
 import com.tempo.tempoapp.data.repository.StepsRecordRepository
 import com.tempo.tempoapp.utils.StepsReceiver
 import kotlinx.coroutines.flow.SharingStarted
@@ -31,6 +33,7 @@ class HomeViewModel(
     bleedingRepository: BleedingRepository,
     infusionRepository: InfusionRepository,
     stepsRecordRepository: StepsRecordRepository,
+    movesenseRepository: MovesenseRepository,
     private val healthConnectManager: HealthConnectManager,
     private val workManager: WorkManager
 ) : ViewModel() {
@@ -95,9 +98,11 @@ class HomeViewModel(
             ),
             stepsRecordRepository.getAllDayStepsCount(
                 Instant.now().truncatedTo(ChronoUnit.DAYS).toEpochMilli()
-            )
-        ) { bleeding, infusion, steps ->
-            HomeUiState(bleeding, infusion, steps)
+            ),
+            movesenseRepository.getDevice()
+        ) { bleeding, infusion, steps, movesense ->
+            println(movesense)
+            HomeUiState(bleeding, infusion, steps, movesense)
         }.stateIn(
             scope = viewModelScope,
             initialValue = HomeUiState(),
@@ -132,6 +137,6 @@ class HomeViewModel(
 data class HomeUiState(
     val bleedingList: List<BleedingEvent> = listOf(),
     val infusionList: List<InfusionEvent> = mutableListOf(),
-    val stepsCount: Int = 0
-    //val stepsList: List<com.tempo.tempoapp.data.model.StepsRecord> = mutableListOf()
+    val stepsCount: Int = 0,
+    val movesense: Movesense? = null
 )
