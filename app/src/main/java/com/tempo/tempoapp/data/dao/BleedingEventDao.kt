@@ -33,4 +33,12 @@ interface BleedingEventDao : LogbookDao<BleedingEvent> {
         """
     )
     fun getAllDayBleeding(date: Long): Flow<List<BleedingEvent>>
+
+    @Query(
+        """
+            SELECT * 
+            FROM bleeding_event WHERE is_sent = :isSent
+        """
+    )
+    suspend fun getAll(isSent: Boolean): List<BleedingEvent>
 }

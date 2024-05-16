@@ -26,9 +26,9 @@ interface StepsRecordDao : LogbookDao<StepsRecord> {
     @Query(
         """
             SELECT *
-            FROM steps WHERE date = :date 
+            FROM steps WHERE is_sent = :isSent
         """
     )
-    fun getAllDaySteps(date: Long): Flow<List<StepsRecord>>
+    suspend fun getAllDaySteps(isSent: Boolean): List<StepsRecord>
 
 }

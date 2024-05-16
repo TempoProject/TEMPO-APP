@@ -26,8 +26,8 @@ class StepsRecordRepository(private val stepsRecordDao: StepsRecordDao) :
         return stepsRecordDao.getAllDayStepsCount(date)
     }
 
-    fun getAllDaySteps(date: Long): Flow<List<StepsRecord>> {
-        return stepsRecordDao.getAllDaySteps(date)
+    suspend fun getAllDaySteps(isSent: Boolean): List<StepsRecord> {
+        return stepsRecordDao.getAllDaySteps(isSent)
     }
 
     override fun getItemFromId(id: Int): Flow<StepsRecord> {

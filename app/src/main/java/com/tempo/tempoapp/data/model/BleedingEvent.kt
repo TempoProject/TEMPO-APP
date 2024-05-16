@@ -46,6 +46,22 @@ data class BleedingEvent(
     val timestamp: Long,
     @ColumnInfo(name = "note")
     val note: String?,
-
-    // add photo
+    @ColumnInfo(name = "is_sent")
+    val isSent: Boolean = false
 )
+
+
+data class BleedingEventJson(
+    val id: Int,
+    val bleeding_site: String,
+    val cause: String,
+    val severity: String,
+    val pain_scale: String,
+    val date: Long,
+    val timestamp: Long,
+    val note: String?,
+)
+
+fun BleedingEvent.toBleedingEventJson(id: Int = 0): BleedingEventJson =
+    BleedingEventJson(id, bleedingSite, bleedingCause, severity, painScale, date, timestamp, note)
+

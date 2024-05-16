@@ -18,6 +18,19 @@ data class StepsRecord(
     val startTime: Long,
     @ColumnInfo(name = "endTime")
     val endTime: Long,
+    @ColumnInfo(name = "is_sent")
+    val isSent: Boolean = false
 )
+
+data class StepsRecordToJson(
+    val id: Int = 0,
+    val steps: Long,
+    val date: Long,
+    val startTime: Long,
+    val endTime: Long,
+)
+
+fun StepsRecord.toStepsRecordToJson(id: Int = 0): StepsRecordToJson =
+    StepsRecordToJson(id, steps, date, startTime, endTime)
 
 fun Instant.toTimestamp(unit: ChronoUnit) = this.truncatedTo(unit).toEpochMilli()

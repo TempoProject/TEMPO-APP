@@ -24,7 +24,7 @@ import com.tempo.tempoapp.data.model.Utils
         ReminderEvent::class
     ),
     version = 1,
-    exportSchema = false
+    exportSchema = true
 )
 abstract class TempoDatabase : RoomDatabase() {
     abstract fun bleedingDao(): BleedingEventDao
