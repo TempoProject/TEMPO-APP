@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.Flow
 
 class ReminderRepository(private val reminderDao: ReminderDao) : LogbookRepository<ReminderEvent> {
     override suspend fun insertItem(item: ReminderEvent) = reminderDao.insert(item)
-
+    
     override suspend fun deleteItem(item: ReminderEvent) = reminderDao.delete(item)
 
     override suspend fun updateItem(item: ReminderEvent) = reminderDao.update(item)

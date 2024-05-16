@@ -3,7 +3,7 @@ package com.tempo.tempoapp.data.model
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import java.util.UUID
+import java.io.Serializable
 
 val events = setOf(
     "Infusione",
@@ -15,8 +15,8 @@ val events = setOf(
 data class ReminderEvent(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
-    @ColumnInfo("uuid_notification")
-    val uuid: UUID,
+    @ColumnInfo("id_calendar")
+    val idCalendar: Long,
     @ColumnInfo("event")
     val event: String,
     @ColumnInfo("timestamp")
@@ -27,4 +27,4 @@ data class ReminderEvent(
     val period: Long,
     @ColumnInfo("time_unit")
     val timeUnit: String
-)
+) : Serializable

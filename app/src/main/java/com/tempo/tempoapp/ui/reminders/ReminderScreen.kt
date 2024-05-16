@@ -1,5 +1,10 @@
 package com.tempo.tempoapp.ui.reminders
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -20,6 +25,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -28,14 +34,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tempo.tempoapp.R
 import com.tempo.tempoapp.TempoAppBar
+import com.tempo.tempoapp.TempoApplication
 import com.tempo.tempoapp.data.model.events
 import com.tempo.tempoapp.ui.AppViewModelProvider
 import com.tempo.tempoapp.ui.bleeding.DatePickerDialog
@@ -52,6 +61,7 @@ object ReminderDestination : NavigationDestination {
         get() = R.string.add_reminder
 }
 
+//@RequiresApi(Build.VERSION_CODES.S)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReminderScreen(
@@ -59,6 +69,51 @@ fun ReminderScreen(
     onNavigateUp: () -> Unit,
     navigateBack: () -> Unit
 ) {
+
+    var hasPermission by remember {
+        mutableStateOf(false)
+    }
+
+    val permission =
+        rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestMultiplePermissions()) {
+            hasPermission = it.values.first() && it.values.last()
+        }
+    when {
+        ContextCompat.checkSelfPermission(
+            LocalContext.current,
+            Manifest.permission.READ_CALENDAR
+        ) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(
+            LocalContext.current,
+            Manifest.permission.WRITE_CALENDAR
+        ) == PackageManager.PERMISSION_GRANTED -> {
+            hasPermission = true
+        }
+
+        else ->
+            LaunchedEffect(Unit) {
+                permission.launch(
+                    arrayOf(
+                        Manifest.permission.WRITE_CALENDAR,
+                        Manifest.permission.READ_CALENDAR
+                    )
+                )
+            }
+
+    }
+    /*
+        val launcher = rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.StartActivityForResult()
+        ) {}
+
+        if (!TempoApplication.instance.alarm.canScheduleExactAlarms())
+            LaunchedEffect(Unit) {
+                val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+                val uri = Uri.fromParts("package", TempoApplication.instance.packageName, null)
+                intent.setData(uri)
+                launcher.launch(intent)
+            }
+    */
+
     val coroutineScope = rememberCoroutineScope()
     Scaffold(
         topBar = {
@@ -80,14 +135,23 @@ fun ReminderScreen(
             viewModel::updateTimeUnit,
             viewModel::reset,
             onSave = {
-                coroutineScope.launch {
-                    viewModel.save()
-                }
-                navigateBack()
+                if (hasPermission) {
+                    coroutineScope.launch {
+                        viewModel.save()
+                    }
+                    navigateBack()
+                } else
+                    Toast.makeText(
+                        TempoApplication.instance.baseContext,
+                        "Concedi l'accesso al calendario",
+                        Toast.LENGTH_LONG
+                    ).show()
+
             }
         )
     }
 }
+
 
 @Composable
 private fun ReminderBody(
@@ -282,7 +346,8 @@ private fun ReminderBody(
                         y = dimensionResource(id = R.dimen.padding_small)
                     )
                 ) {
-                    TimeUnit.entries.drop(4).forEach { step ->
+
+                    TimeUnit.entries.drop(6).forEach { step ->
                         DropdownMenuItem(
                             text = { Text(text = step.name) },
                             onClick = {

@@ -4,7 +4,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface LogbookRepository<T> {
 
-    suspend fun insertItem(item: T)
+    suspend fun insertItem(item: T):Long
 
     suspend fun deleteItem(item: T)
 

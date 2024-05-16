@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -70,6 +71,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tempo.tempoapp.R
 import com.tempo.tempoapp.TempoAppBar
+import com.tempo.tempoapp.TempoApplication
 import com.tempo.tempoapp.data.healthconnect.HealthConnectAvailability
 import com.tempo.tempoapp.ui.AppViewModelProvider
 import com.tempo.tempoapp.ui.HomeBody
@@ -112,6 +114,22 @@ fun HomeScreen(
         hasNotificationPermission = granted
     }
 
+    /**/
+    val launcher1 = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) {}
+
+
+
+    if(android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S)
+    if (!TempoApplication.instance.alarm.canScheduleExactAlarms())
+        LaunchedEffect(Unit) {
+            val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+            val uri = Uri.fromParts("package", TempoApplication.instance.packageName, null)
+            intent.setData(uri)
+            launcher1.launch(intent)
+        }
+
     when {
         ContextCompat.checkSelfPermission(
             LocalContext.current,
@@ -120,11 +138,11 @@ fun HomeScreen(
 
         }
 
-        else ->
+        else -> {
             LaunchedEffect(Unit) {
                 launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
             }
-
+        }
     }
 
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)

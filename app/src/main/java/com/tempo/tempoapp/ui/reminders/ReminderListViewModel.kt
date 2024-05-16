@@ -1,8 +1,12 @@
 package com.tempo.tempoapp.ui.reminders
 
+import android.content.ContentUris
+import android.content.Context
+import android.net.Uri
+import android.provider.CalendarContract
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.work.WorkManager
 import com.tempo.tempoapp.data.model.ReminderEvent
 import com.tempo.tempoapp.data.repository.ReminderRepository
 import kotlinx.coroutines.flow.SharingStarted
@@ -13,7 +17,7 @@ import kotlinx.coroutines.flow.stateIn
 
 class ReminderListViewModel(
     private val reminderRepository: ReminderRepository,
-    private val workManager: WorkManager
+    private val context: Context
 ) : ViewModel() {
     val reminderListUiState: StateFlow<ReminderListUiState> = combine(
         reminderRepository.getAll()
@@ -26,7 +30,11 @@ class ReminderListViewModel(
     )
 
     suspend fun deleteReminder(item: ReminderEvent) {
-        workManager.cancelWorkById(item.uuid)
+        val contentResolver = context.contentResolver
+        val deleteUri: Uri =
+            ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, item.idCalendar)
+        val rows: Int = contentResolver.delete(deleteUri, null, null)
+        Log.d(javaClass.simpleName, "Event $rows deleted")
         reminderRepository.deleteItem(item)
     }
 

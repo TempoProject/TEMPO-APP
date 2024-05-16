@@ -1,13 +1,16 @@
 package com.tempo.tempoapp.ui.home
 
+import android.app.AlarmManager
+import android.app.PendingIntent
+import android.content.Intent
+import android.os.Build
 import androidx.compose.runtime.mutableStateOf
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.StepsRecord
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.PeriodicWorkRequest
 import androidx.work.WorkManager
+import com.tempo.tempoapp.TempoApplication
 import com.tempo.tempoapp.data.healthconnect.HealthConnectAvailability
 import com.tempo.tempoapp.data.healthconnect.HealthConnectManager
 import com.tempo.tempoapp.data.model.BleedingEvent
@@ -15,7 +18,7 @@ import com.tempo.tempoapp.data.model.InfusionEvent
 import com.tempo.tempoapp.data.repository.BleedingRepository
 import com.tempo.tempoapp.data.repository.InfusionRepository
 import com.tempo.tempoapp.data.repository.StepsRecordRepository
-import com.tempo.tempoapp.workers.SaveStepsRecord
+import com.tempo.tempoapp.utils.StepsReceiver
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -23,7 +26,6 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.temporal.ChronoUnit
-import java.util.concurrent.TimeUnit
 
 class HomeViewModel(
     bleedingRepository: BleedingRepository,
@@ -54,6 +56,32 @@ class HomeViewModel(
             println("permission granted in viewmodel? ${permissionsGranted.value}")
         }.invokeOnCompletion {
             if (permissionsGranted.value) {
+                val instant = Instant.now().toEpochMilli()
+                val intent =
+                    Intent(TempoApplication.instance.applicationContext, StepsReceiver::class.java)
+                intent.putExtra("instant", instant)
+                val pendingIntent = PendingIntent.getBroadcast(
+                    TempoApplication.instance.applicationContext,
+                    instant.toInt(),
+                    intent,
+                    PendingIntent.FLAG_MUTABLE
+                )
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    if (TempoApplication.instance.alarm.canScheduleExactAlarms()) {
+                        println("scheduling")
+                        TempoApplication.instance.alarm.setExactAndAllowWhileIdle(
+                            AlarmManager.RTC_WAKEUP,
+                            instant,
+                            pendingIntent
+                        )
+                    }
+                } else
+                    TempoApplication.instance.alarm.setExactAndAllowWhileIdle(
+                        AlarmManager.RTC_WAKEUP,
+                        instant,
+                        pendingIntent
+                    )
+                /*
                 val task =
                     PeriodicWorkRequest.Builder(SaveStepsRecord::class.java, 30, TimeUnit.MINUTES)
                         .build()
@@ -61,7 +89,8 @@ class HomeViewModel(
                     "getStepsRecord",
                     ExistingPeriodicWorkPolicy.UPDATE,
                     task
-                )
+                )*/
+
             }
         }
     }
