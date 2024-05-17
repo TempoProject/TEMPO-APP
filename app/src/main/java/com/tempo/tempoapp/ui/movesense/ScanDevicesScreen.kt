@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
+import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -94,10 +95,19 @@ fun ScanDevicesScreen(
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
     ) { perms ->
+        println("perms: $perms")
         val canEnableBL = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             perms[Manifest.permission.BLUETOOTH_CONNECT] == true
         } else
-            true
+            perms[Manifest.permission.BLUETOOTH] == true
+
+        val canEnableGeo =
+            perms[Manifest.permission.ACCESS_FINE_LOCATION] == true && perms[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+
+        if (canEnableGeo)
+            enableBL.launch(
+                Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+            )
 
         if (canEnableBL && !isBluetoothEnabled)
             enableBL.launch(
@@ -105,30 +115,56 @@ fun ScanDevicesScreen(
             )
     }
 
-    when {
-        ContextCompat.checkSelfPermission(
-            LocalContext.current,
-            Manifest.permission.BLUETOOTH
-        ) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(
-            LocalContext.current,
-            Manifest.permission.BLUETOOTH_SCAN
-        ) == PackageManager.PERMISSION_GRANTED
-                && ContextCompat.checkSelfPermission(
-            LocalContext.current,
-            Manifest.permission.BLUETOOTH_CONNECT
-        ) == PackageManager.PERMISSION_GRANTED -> {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        when {
+            ContextCompat.checkSelfPermission(
+                LocalContext.current,
+                Manifest.permission.BLUETOOTH_SCAN
+            ) == PackageManager.PERMISSION_GRANTED
+                    && ContextCompat.checkSelfPermission(
+                LocalContext.current,
+                Manifest.permission.BLUETOOTH_CONNECT
+            ) == PackageManager.PERMISSION_GRANTED -> {
 
-        }
+            }
 
-        else -> {
-            LaunchedEffect(Unit) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            else -> {
+                LaunchedEffect(Unit) {
                     launcher.launch(
                         arrayOf(
                             Manifest.permission.BLUETOOTH_SCAN,
                             Manifest.permission.BLUETOOTH_CONNECT
                         )
                     )
+                }
+            }
+        }
+    } else {
+        when {
+            ContextCompat.checkSelfPermission(
+                LocalContext.current,
+                Manifest.permission.BLUETOOTH
+            ) == PackageManager.PERMISSION_GRANTED
+                    && ContextCompat.checkSelfPermission(
+                LocalContext.current,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(
+                LocalContext.current,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED -> {
+
+            }
+
+            else -> {
+                LaunchedEffect(Unit) {
+                    launcher.launch(
+                        arrayOf(
+                            Manifest.permission.BLUETOOTH,
+                            Manifest.permission.ACCESS_COARSE_LOCATION,
+                            Manifest.permission.ACCESS_FINE_LOCATION
+                        )
+                    )
+
                 }
             }
         }
@@ -151,9 +187,10 @@ fun ScanDevicesScreen(
             DeviceScreen(
                 state = state.value,
                 startScan = {
-                    if (viewModel.hasPermission())
+                    if (viewModel.hasPermission()) {
+                        println("startScan")
                         viewModel.startScan()
-                    else
+                    } else
                         Toast.makeText(
                             context,
                             "Consentire accesso nearby devices",

@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
@@ -123,27 +124,37 @@ fun HomeScreen(
     ) {}
 
 
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        if (!TempoApplication.instance.alarm.canScheduleExactAlarms()) {
+            if (ContextCompat.checkSelfPermission(
+                    LocalContext.current,
+                    Manifest.permission.SCHEDULE_EXACT_ALARM
+                ) != PackageManager.PERMISSION_GRANTED
+            )
+                LaunchedEffect(Unit) {
+                    val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+                    val uri =
+                        Uri.fromParts("package", TempoApplication.instance.packageName, null)
+                    intent.setData(uri)
+                    launcher1.launch(intent)
+                }
+        }
+    }
 
-    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S)
-        if (!TempoApplication.instance.alarm.canScheduleExactAlarms())
-            LaunchedEffect(Unit) {
-                val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
-                val uri = Uri.fromParts("package", TempoApplication.instance.packageName, null)
-                intent.setData(uri)
-                launcher1.launch(intent)
-            }
 
     when {
         ContextCompat.checkSelfPermission(
             LocalContext.current,
             Manifest.permission.POST_NOTIFICATIONS
-        ) == PackageManager.PERMISSION_GRANTED -> {
-
+        ) == PackageManager.PERMISSION_GRANTED
+        -> {
         }
 
         else -> {
-            LaunchedEffect(Unit) {
-                launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                LaunchedEffect(Unit) {
+                    launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                }
             }
         }
     }
@@ -458,7 +469,6 @@ fun HomeScreen(
     }
 }
 
-
 @Composable
 private fun NavDrawerItem(
     @StringRes stringId: Int,
@@ -479,6 +489,7 @@ private fun NavDrawerItem(
         }
     )
 }
+
 
 @Composable
 private fun NotInstalledMessage() {
