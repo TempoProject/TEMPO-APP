@@ -1,12 +1,15 @@
 package com.tempo.tempoapp.ui.movesense
 
 import android.Manifest
+import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
+import android.provider.Settings
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -18,14 +21,24 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.work.Data
 import androidx.work.ExistingPeriodicWorkPolicy
@@ -39,8 +52,12 @@ import com.movesense.mds.MdsHeader
 import com.movesense.mds.MdsResponseListener
 import com.tempo.tempoapp.R
 import com.tempo.tempoapp.TempoAppBar
+import com.tempo.tempoapp.TempoApplication
 import com.tempo.tempoapp.ui.AppViewModelProvider
 import com.tempo.tempoapp.ui.Loading
+import com.tempo.tempoapp.ui.common.BluetoothLegacyTextProvider
+import com.tempo.tempoapp.ui.common.BluetoothTextProvider
+import com.tempo.tempoapp.ui.common.PermissionDialog
 import com.tempo.tempoapp.ui.navigation.NavigationDestination
 import com.tempo.tempoapp.utils.MovesenseService
 import com.tempo.tempoapp.workers.MovesenseSaveRecords
@@ -61,11 +78,20 @@ object MovesenseDestination : NavigationDestination {
 @Composable
 fun MovesenseScreen(
     context: Context,
+    lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
     onNavigateScanDevices: () -> Unit,
     onNavigateBack: () -> Unit,
     onNavigateUp: () -> Unit,
     viewModel: MovesenseViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
+
+    val localContext = LocalContext.current
+
+    var showDialog by remember { mutableStateOf(false) }
+    var canEnableBl by remember { mutableStateOf(false) }
+    var canEnableGeo by remember { mutableStateOf(false) }
+    var isPermissionPermanentlyDenied by remember { mutableStateOf(false) }
+
     val state = viewModel.movesenseUiState.collectAsState()
 
     val scope = rememberCoroutineScope()
@@ -85,47 +111,89 @@ fun MovesenseScreen(
     val enableBL =
         rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) {}
 
-    val openSettings = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()
-    ) {}
-
+    val openSettings =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.StartActivityForResult()
+        ) {}
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
     ) { perms ->
-        val canEnableBL = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        isPermissionPermanentlyDenied = perms.any {
+            !it.value && !ActivityCompat.shouldShowRequestPermissionRationale(
+                localContext as Activity,
+                it.key
+            )
+        }
+        showDialog = isPermissionPermanentlyDenied
+        println("perms: $perms")
+        canEnableBl = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             perms[Manifest.permission.BLUETOOTH_SCAN] == true
-        } else true
+        } else
+            perms[Manifest.permission.BLUETOOTH] == true
 
-        if (canEnableBL && !isBluetoothEnabled) enableBL.launch(
-            Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
-        )
-    }
 
-    when {
-        ContextCompat.checkSelfPermission(
-            LocalContext.current, Manifest.permission.BLUETOOTH
-        ) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(
-            LocalContext.current, Manifest.permission.BLUETOOTH_SCAN
-        ) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(
-            LocalContext.current, Manifest.permission.BLUETOOTH_CONNECT
-        ) == PackageManager.PERMISSION_GRANTED -> {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+            canEnableGeo =
+                perms[Manifest.permission.ACCESS_FINE_LOCATION] == true && perms[Manifest.permission.ACCESS_COARSE_LOCATION] == true
 
+            if (canEnableGeo)
+                enableBL.launch(
+                    Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+                )
         }
 
-        else -> {
-            LaunchedEffect(Unit) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    launcher.launch(
-                        arrayOf(
-                            Manifest.permission.BLUETOOTH_SCAN,
-                            Manifest.permission.BLUETOOTH_CONNECT
-                        )
-                    )
-                }
+
+
+        if (canEnableBl && !isBluetoothEnabled)
+            enableBL.launch(
+                Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+            )
+    }
+
+    fun checkPermissions() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            canEnableBl = ContextCompat.checkSelfPermission(
+                context, Manifest.permission.BLUETOOTH_SCAN
+            ) == PackageManager.PERMISSION_GRANTED &&
+                    ContextCompat.checkSelfPermission(
+                        context, Manifest.permission.BLUETOOTH_CONNECT
+                    ) == PackageManager.PERMISSION_GRANTED
+            showDialog = !(canEnableBl)
+        } else {
+            canEnableBl = ContextCompat.checkSelfPermission(
+                context, Manifest.permission.BLUETOOTH
+            ) == PackageManager.PERMISSION_GRANTED
+            canEnableGeo = ContextCompat.checkSelfPermission(
+                context, Manifest.permission.ACCESS_COARSE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED &&
+                    ContextCompat.checkSelfPermission(
+                        context, Manifest.permission.ACCESS_FINE_LOCATION
+                    ) == PackageManager.PERMISSION_GRANTED
+            showDialog = !(canEnableBl && canEnableGeo)
+        }
+
+    }
+
+    LaunchedEffect(Unit) {
+        checkPermissions()
+    }
+
+    DisposableEffect(context) {
+        val observer = LifecycleEventObserver { _, event ->
+            println(event)
+            if (event == Lifecycle.Event.ON_RESUME) {
+                checkPermissions()
+                println(canEnableBl)
             }
         }
+        val lifecycle = lifecycleOwner.lifecycle
+        lifecycle.addObserver(observer)
+        onDispose {
+            lifecycle.removeObserver(observer)
+        }
     }
+
 
     Scaffold(
         topBar = {
@@ -145,36 +213,22 @@ fun MovesenseScreen(
         else
             MovesenseBody(
                 state,
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) (canEnableBl) else (canEnableGeo && canEnableBl),
                 onConnect = {
                     viewModel.updateUi(isWorking = true)
-                    mds.connect(state.value.movesense.address, object : MdsConnectionListener {
-                        override fun onConnect(p0: String?) {
-                            println("onConnect: $p0")
-                            //viewModel.stopScan()
-                        }
-
-                        override fun onConnectionComplete(p0: String?, p1: String?) {
-                            println("onConnectionComplete: $p0")
-                            scope.launch {
-                                viewModel.updateInfoDevice(state.value.movesense.copy(isConnected = true))
-                            }.invokeOnCompletion {
-                                context.startForegroundService(
-                                    Intent(
-                                        context,
-                                        MovesenseService::class.java
-                                    )
-                                )
-                                viewModel.updateUi()
+                    mds.connect(
+                        state.value.movesense.address,
+                        object : MdsConnectionListener {
+                            override fun onConnect(p0: String?) {
+                                println("onConnect: $p0")
+                                //viewModel.stopScan()
                             }
 
-
-                            //viewModel.stopScan()
-                            //navigateToMovesense()
-                        }
-
-                        override fun onError(p0: MdsException?) {
-                            println("onError: $p0")
-                            if (p0.toString().contains("BleDevice not among connected devices:"))
+                            override fun onConnectionComplete(
+                                p0: String?,
+                                p1: String?
+                            ) {
+                                println("onConnectionComplete: $p0")
                                 scope.launch {
                                     viewModel.updateInfoDevice(
                                         state.value.movesense.copy(
@@ -189,34 +243,51 @@ fun MovesenseScreen(
                                         )
                                     )
                                     viewModel.updateUi()
-                                } else
-                                viewModel.updateUi()
-                        }
+                                }
 
-                        override fun onDisconnect(p0: String?) {
-                            println("onDisconnect: $p0")
-                            viewModel.updateUi(true)
-                            mds.disconnect(state.value.movesense.address)
-                            scope.launch {
-                                viewModel.updateInfoDevice(
-                                    state.value.movesense.copy(
-                                        isConnected = false
-                                    )
+
+                                //viewModel.stopScan()
+                                //navigateToMovesense()
+                            }
+
+                            override fun onError(p0: MdsException?) {
+                                println("onError: $p0")
+                                if (p0.toString()
+                                        .contains("BleDevice not among connected devices:")
                                 )
-                            }.invokeOnCompletion { viewModel.updateUi() }
+                                    scope.launch {
+                                        viewModel.updateInfoDevice(
+                                            state.value.movesense.copy(
+                                                isConnected = true
+                                            )
+                                        )
+                                    }.invokeOnCompletion {
+                                        context.startForegroundService(
+                                            Intent(
+                                                context,
+                                                MovesenseService::class.java
+                                            )
+                                        )
+                                        viewModel.updateUi()
+                                    } else
+                                    viewModel.updateUi()
+                            }
 
-                            //onNavigateUp()
-                            //viewModel.stopScan()
-                        }
-                    })
+                            override fun onDisconnect(p0: String?) {
+                                println("onDisconnect: $p0")
+                                viewModel.updateUi(true)
+                                mds.disconnect(state.value.movesense.address)
+                                scope.launch {
+                                    viewModel.updateInfoDevice(
+                                        state.value.movesense.copy(
+                                            isConnected = false
+                                        )
+                                    )
+                                }.invokeOnCompletion { viewModel.updateUi() }
+                            }
+                        })
                 },
                 onConfigure = {
-                    /*val configure =
-                        OneTimeWorkRequestBuilder<MovesenseWorker>().addTag("configureMovesense")
-                            .build()
-                    WorkManager.getInstance(context).enqueue(configure)
-    */
-
                     val startLogging = PeriodicWorkRequestBuilder<MovesenseSaveRecords>(
                         repeatInterval = 20,
                         TimeUnit.MINUTES
@@ -353,54 +424,88 @@ fun MovesenseScreen(
                         })
 
 
-                }, Modifier.padding(it)
+                },
+                getPermission = { checkPermissions() },
+                Modifier.padding(it)
             )
+        if (showDialog)
+            PermissionDialog(
+                showDialog,
+                permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) BluetoothTextProvider() else BluetoothLegacyTextProvider(),
+                isPermanentlyDeclined = isPermissionPermanentlyDenied,
+                onDismiss = { showDialog = !showDialog },
+                onOkClick = {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+                        launcher.launch(
+                            arrayOf(
+                                Manifest.permission.BLUETOOTH_SCAN,
+                                Manifest.permission.BLUETOOTH_CONNECT,
+                            )
+                        )
+                    else
+                        launcher.launch(
+                            arrayOf(
+                                Manifest.permission.BLUETOOTH,
+                                Manifest.permission.ACCESS_COARSE_LOCATION,
+                                Manifest.permission.ACCESS_FINE_LOCATION
+                            )
+                        )
+                },
+                onGoToAppSettings = {
+                    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                    println(TempoApplication.instance.packageName)
+                    val uri = Uri.parse("package:${context.packageName}")
+                    intent.setData(uri)
+                    openSettings.launch(intent)
+                })
     }
 }
 
 @Composable
 fun MovesenseBody(
     state: State<MovesenseUiState>,
+    hasPermission: Boolean = false,
     onConnect: () -> Unit,
     onConfigure: () -> Unit,
     onDisconnect: () -> Unit,
     onFlush: () -> Unit,
     onDelete: () -> Unit,
     onForget: () -> Unit,
+    getPermission: () -> Unit,
     modifier: Modifier
 ) {
 
     Column(modifier.fillMaxWidth()) {
         OutlinedButton(
-            onClick = onConnect, enabled = !state.value.movesense.isConnected,
+            onClick = onConnect, enabled = !state.value.movesense.isConnected && hasPermission,
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(text = "Connetti")
         }
         OutlinedButton(
             onClick = onConfigure,
-            enabled = state.value.movesense.isConnected && !state.value.isWorking,
+            enabled = state.value.movesense.isConnected && !state.value.isWorking && hasPermission,
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(text = "Configura")
         }
         OutlinedButton(
             onClick = onDisconnect,
-            enabled = state.value.movesense.isConnected && !state.value.isWorking,
+            enabled = state.value.movesense.isConnected && !state.value.isWorking && hasPermission,
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(text = "Disconnetti")
         }
         OutlinedButton(
             onClick = onFlush,
-            enabled = state.value.movesense.isConnected && !state.value.isWorking,
+            enabled = state.value.movesense.isConnected && !state.value.isWorking && hasPermission,
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(text = "Flush della memoria")
         }
         OutlinedButton(
             onClick = onDelete,
-            enabled = state.value.movesense.isConnected && !state.value.isWorking,
+            enabled = state.value.movesense.isConnected && !state.value.isWorking && hasPermission,
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(text = "Cancella dati")
@@ -412,5 +517,13 @@ fun MovesenseBody(
         ) {
             Text(text = "Dimentica il dispositivo")
         }
+        if (!hasPermission)
+            OutlinedButton(
+                onClick = getPermission,
+                enabled = !state.value.isWorking,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(text = "Concedi i permessi")
+            }
     }
 }

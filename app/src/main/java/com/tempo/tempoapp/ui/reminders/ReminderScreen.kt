@@ -1,7 +1,12 @@
 package com.tempo.tempoapp.ui.reminders
 
 import android.Manifest
+import android.app.Activity
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
+import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -25,6 +30,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -35,12 +41,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tempo.tempoapp.R
 import com.tempo.tempoapp.TempoAppBar
@@ -50,6 +61,9 @@ import com.tempo.tempoapp.ui.AppViewModelProvider
 import com.tempo.tempoapp.ui.bleeding.DatePickerDialog
 import com.tempo.tempoapp.ui.bleeding.TextWithIcon
 import com.tempo.tempoapp.ui.bleeding.TimePickerDialog
+import com.tempo.tempoapp.ui.common.BluetoothLegacyTextProvider
+import com.tempo.tempoapp.ui.common.BluetoothTextProvider
+import com.tempo.tempoapp.ui.common.PermissionDialog
 import com.tempo.tempoapp.ui.navigation.NavigationDestination
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
@@ -61,58 +75,71 @@ object ReminderDestination : NavigationDestination {
         get() = R.string.reminder
 }
 
-//@RequiresApi(Build.VERSION_CODES.S)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReminderScreen(
     viewModel: ReminderViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
     onNavigateUp: () -> Unit,
     navigateBack: () -> Unit
 ) {
 
+    val context = LocalContext.current
+    var showDialog by remember {
+        mutableStateOf(false)
+    }
     var hasPermission by remember {
         mutableStateOf(false)
     }
-
-    val permission =
-        rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestMultiplePermissions()) {
-            hasPermission = it.values.first() && it.values.last()
-        }
-    when {
-        ContextCompat.checkSelfPermission(
-            LocalContext.current,
-            Manifest.permission.READ_CALENDAR
-        ) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(
-            LocalContext.current,
-            Manifest.permission.WRITE_CALENDAR
-        ) == PackageManager.PERMISSION_GRANTED -> {
-            hasPermission = true
-        }
-
-        else ->
-            LaunchedEffect(Unit) {
-                permission.launch(
-                    arrayOf(
-                        Manifest.permission.WRITE_CALENDAR,
-                        Manifest.permission.READ_CALENDAR
-                    )
-                )
-            }
-
-    }
-    /*
-        val launcher = rememberLauncherForActivityResult(
+    var isPermissionPermanentlyDenied by remember { mutableStateOf(false) }
+    val localContext = LocalContext.current
+    val openSettings =
+        rememberLauncherForActivityResult(
             contract = ActivityResultContracts.StartActivityForResult()
         ) {}
 
-        if (!TempoApplication.instance.alarm.canScheduleExactAlarms())
-            LaunchedEffect(Unit) {
-                val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
-                val uri = Uri.fromParts("package", TempoApplication.instance.packageName, null)
-                intent.setData(uri)
-                launcher.launch(intent)
+    val permission =
+        rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestMultiplePermissions()) { perms ->
+            isPermissionPermanentlyDenied = perms.any {
+                !it.value && !ActivityCompat.shouldShowRequestPermissionRationale(
+                    localContext as Activity,
+                    it.key
+                )
             }
-    */
+            hasPermission = perms.values.first() && perms.values.last()
+        }
+
+    fun checkPermissions() {
+
+        hasPermission = ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.READ_CALENDAR
+        ) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.WRITE_CALENDAR
+        ) == PackageManager.PERMISSION_GRANTED
+        showDialog = !(hasPermission)
+
+    }
+
+    LaunchedEffect(Unit) {
+        checkPermissions()
+    }
+
+    DisposableEffect(context) {
+        val observer = LifecycleEventObserver { _, event ->
+            println(event)
+            if (event == Lifecycle.Event.ON_RESUME) {
+                checkPermissions()
+                println(hasPermission)
+            }
+        }
+        val lifecycle = lifecycleOwner.lifecycle
+        lifecycle.addObserver(observer)
+        onDispose {
+            lifecycle.removeObserver(observer)
+        }
+    }
 
     val coroutineScope = rememberCoroutineScope()
     Scaffold(
@@ -140,15 +167,39 @@ fun ReminderScreen(
                         viewModel.save()
                     }
                     navigateBack()
-                } else
+                } else {
+                    showDialog = true
                     Toast.makeText(
                         TempoApplication.instance.baseContext,
                         "Concedi l'accesso al calendario",
                         Toast.LENGTH_LONG
                     ).show()
+                }
 
             }
         )
+
+        if (showDialog)
+            PermissionDialog(
+                showDialog,
+                permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) BluetoothTextProvider() else BluetoothLegacyTextProvider(),
+                isPermanentlyDeclined = isPermissionPermanentlyDenied,
+                onDismiss = { showDialog = !showDialog },
+                onOkClick = {
+                    permission.launch(
+                        arrayOf(
+                            Manifest.permission.WRITE_CALENDAR,
+                            Manifest.permission.READ_CALENDAR
+                        )
+                    )
+                },
+                onGoToAppSettings = {
+                    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                    println(TempoApplication.instance.packageName)
+                    val uri = Uri.parse("package:${localContext.packageName}")
+                    intent.setData(uri)
+                    openSettings.launch(intent)
+                })
     }
 }
 
@@ -311,9 +362,7 @@ private fun ReminderBody(
                         DropdownMenuItem(
                             text = { Text(text = step.toString()) },
                             onClick = {
-                                //updateEvent(event)
                                 updateInterval(step)
-                                //saveIsEnabled = event != "Tipo di evento"
                                 showDropdownInterval = !showDropdownInterval
                             },
                             contentPadding = PaddingValues(8.dp)
