@@ -74,6 +74,16 @@ class AlarManagerTextProvider : PermissionTextProvider {
     }
 }
 
+class CalendarTextProvider : PermissionTextProvider {
+    override fun getDescription(isPermanentlyDeclined: Boolean): String {
+        return if (isPermanentlyDeclined) {
+            "Per impostare i promemoria correttamente è necessario concedere l'accesso al calendario e autorizzare l'invio delle notifiche."
+        } else
+            "Per impostare i promemoria correttamente è necessario concedere l'accesso al calendario."
+    }
+
+}
+
 class NotificationTextProvider : PermissionTextProvider {
     override fun getDescription(isPermanentlyDeclined: Boolean): String {
         return if (isPermanentlyDeclined) {
