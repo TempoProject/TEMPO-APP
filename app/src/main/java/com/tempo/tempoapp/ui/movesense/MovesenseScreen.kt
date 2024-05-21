@@ -91,6 +91,7 @@ fun MovesenseScreen(
     var canEnableBl by remember { mutableStateOf(false) }
     var canEnableGeo by remember { mutableStateOf(false) }
     var isPermissionPermanentlyDenied by remember { mutableStateOf(false) }
+    var isLocationEnabled by remember { mutableStateOf(isLocationEnabled(localContext)) }
 
     val state = viewModel.movesenseUiState.collectAsState()
 
@@ -106,7 +107,7 @@ fun MovesenseScreen(
         bluetoothManager.adapter
     }
 
-    val isBluetoothEnabled: Boolean = bluetoothAdapter.isEnabled
+    var isBluetoothEnabled by remember { mutableStateOf(bluetoothAdapter.isEnabled) }
 
     val enableBL =
         rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) {}
@@ -136,14 +137,14 @@ fun MovesenseScreen(
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
             canEnableGeo =
                 perms[Manifest.permission.ACCESS_FINE_LOCATION] == true && perms[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+            isLocationEnabled = isLocationEnabled(localContext)
 
-            if (canEnableGeo)
+            if (canEnableGeo && !isLocationEnabled)
                 enableBL.launch(
                     Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
                 )
+
         }
-
-
 
         if (canEnableBl && !isBluetoothEnabled)
             enableBL.launch(
@@ -160,6 +161,7 @@ fun MovesenseScreen(
                         context, Manifest.permission.BLUETOOTH_CONNECT
                     ) == PackageManager.PERMISSION_GRANTED
             showDialog = !(canEnableBl)
+            isBluetoothEnabled = bluetoothAdapter.isEnabled
         } else {
             canEnableBl = ContextCompat.checkSelfPermission(
                 context, Manifest.permission.BLUETOOTH
@@ -171,6 +173,9 @@ fun MovesenseScreen(
                         context, Manifest.permission.ACCESS_FINE_LOCATION
                     ) == PackageManager.PERMISSION_GRANTED
             showDialog = !(canEnableBl && canEnableGeo)
+            isBluetoothEnabled = bluetoothAdapter.isEnabled
+            isLocationEnabled = isLocationEnabled(localContext)
+
         }
 
     }
@@ -213,7 +218,7 @@ fun MovesenseScreen(
         else
             MovesenseBody(
                 state,
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) (canEnableBl) else (canEnableGeo && canEnableBl),
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) (canEnableBl) else (canEnableGeo && canEnableBl && isLocationEnabled),
                 onConnect = {
                     viewModel.updateUi(isWorking = true)
                     mds.connect(
@@ -428,28 +433,40 @@ fun MovesenseScreen(
                 getPermission = { checkPermissions() },
                 Modifier.padding(it)
             )
-        if (showDialog)
+        if (showDialog) {
+            val isPermanentlyDeclined =
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) !ActivityCompat.shouldShowRequestPermissionRationale(
+                    localContext as Activity,
+                    Manifest.permission.BLUETOOTH_SCAN
+                ) && !ActivityCompat.shouldShowRequestPermissionRationale(
+                    localContext,
+                    Manifest.permission.BLUETOOTH_CONNECT
+                ) else !ActivityCompat.shouldShowRequestPermissionRationale(
+                    localContext as Activity,
+                    Manifest.permission.BLUETOOTH
+                ) && !ActivityCompat.shouldShowRequestPermissionRationale(
+                    localContext,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                ) && !ActivityCompat.shouldShowRequestPermissionRationale(
+                    localContext,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                )
             PermissionDialog(
                 showDialog,
                 permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) BluetoothTextProvider() else BluetoothLegacyTextProvider(),
-                isPermanentlyDeclined = isPermissionPermanentlyDenied,
+                isPermanentlyDeclined = isPermanentlyDeclined,
                 onDismiss = { showDialog = !showDialog },
                 onOkClick = {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
-                        launcher.launch(
-                            arrayOf(
-                                Manifest.permission.BLUETOOTH_SCAN,
-                                Manifest.permission.BLUETOOTH_CONNECT,
-                            )
-                        )
-                    else
-                        launcher.launch(
-                            arrayOf(
-                                Manifest.permission.BLUETOOTH,
-                                Manifest.permission.ACCESS_COARSE_LOCATION,
-                                Manifest.permission.ACCESS_FINE_LOCATION
-                            )
-                        )
+                    val permissionRequired = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+                        arrayOf(
+                            Manifest.permission.BLUETOOTH_SCAN,
+                            Manifest.permission.BLUETOOTH_CONNECT,
+                        ) else arrayOf(
+                        Manifest.permission.BLUETOOTH,
+                        Manifest.permission.ACCESS_COARSE_LOCATION,
+                        Manifest.permission.ACCESS_FINE_LOCATION
+                    )
+                    launcher.launch(permissionRequired)
                 },
                 onGoToAppSettings = {
                     val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
@@ -458,6 +475,7 @@ fun MovesenseScreen(
                     intent.setData(uri)
                     openSettings.launch(intent)
                 })
+        }
     }
 }
 

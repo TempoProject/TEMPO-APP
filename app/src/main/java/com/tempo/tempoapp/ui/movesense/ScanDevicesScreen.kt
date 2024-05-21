@@ -7,9 +7,11 @@ import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.location.LocationManager
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -85,6 +87,13 @@ fun ScanDevicesScreen(
     var canEnableBl by remember { mutableStateOf(false) }
     var canEnableGeo by remember { mutableStateOf(false) }
     var isPermissionPermanentlyDenied by remember { mutableStateOf(false) }
+    var isLocationEnabled by remember {
+        mutableStateOf(
+            isLocationEnabled(
+                localContext
+            )
+        )
+    }
 
     val mds by lazy {
         Mds.builder().build(context)
@@ -97,7 +106,7 @@ fun ScanDevicesScreen(
         bluetoothManager.adapter
     }
 
-    val isBluetoothEnabled: Boolean = bluetoothAdapter.isEnabled
+    var isBluetoothEnabled by remember { mutableStateOf(bluetoothAdapter.isEnabled) }
 
     val state = viewModel.state.collectAsState()
 
@@ -130,14 +139,14 @@ fun ScanDevicesScreen(
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
             canEnableGeo =
                 perms[Manifest.permission.ACCESS_FINE_LOCATION] == true && perms[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+            isLocationEnabled = isLocationEnabled(localContext)
 
-            if (canEnableGeo)
+            if (canEnableGeo && !isLocationEnabled)
                 enableBL.launch(
                     Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
                 )
+
         }
-
-
 
         if (canEnableBl && !isBluetoothEnabled)
             enableBL.launch(
@@ -154,6 +163,7 @@ fun ScanDevicesScreen(
                         context, Manifest.permission.BLUETOOTH_CONNECT
                     ) == PackageManager.PERMISSION_GRANTED
             showDialog = !(canEnableBl)
+            isBluetoothEnabled = bluetoothAdapter.isEnabled
         } else {
             canEnableBl = ContextCompat.checkSelfPermission(
                 context, Manifest.permission.BLUETOOTH
@@ -165,6 +175,9 @@ fun ScanDevicesScreen(
                         context, Manifest.permission.ACCESS_FINE_LOCATION
                     ) == PackageManager.PERMISSION_GRANTED
             showDialog = !(canEnableBl && canEnableGeo)
+            isBluetoothEnabled = bluetoothAdapter.isEnabled
+            isLocationEnabled = isLocationEnabled(localContext)
+
         }
 
     }
@@ -207,15 +220,35 @@ fun ScanDevicesScreen(
             DeviceScreen(
                 state = state.value,
                 startScan = {
+                    if (canEnableBl && !isBluetoothEnabled) {
+                        Toast.makeText(
+                            localContext,
+                            "Attiva il bluetooth per cercare i dispositivi Movesense.",
+                            Toast.LENGTH_LONG
+                        ).show()
+                        enableBL.launch(
+                            Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+                        )
+                    }
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                         if (canEnableBl)
                             viewModel.startScan()
                         else
                             showDialog = true
                     } else {
-                        if (canEnableGeo && canEnableBl)
+                        isLocationEnabled = isLocationEnabled(localContext)
+                        if (canEnableGeo && canEnableBl && isLocationEnabled)
                             viewModel.startScan()
-                        else
+                        else if (canEnableGeo && !isLocationEnabled) {
+                            Toast.makeText(
+                                localContext,
+                                "Attiva la localizzazione per cercare i dispositivi Movesense.",
+                                Toast.LENGTH_LONG
+                            ).show()
+                            enableBL.launch(
+                                Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+                            )
+                        } else
                             showDialog = true
                     }
                 },
@@ -284,28 +317,44 @@ fun ScanDevicesScreen(
                 },
                 Modifier.padding(it)
             )
-        if (showDialog)
+        if (showDialog) {
+            val isPermanentlyDeclined =
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) !ActivityCompat.shouldShowRequestPermissionRationale(
+                    localContext as Activity,
+                    Manifest.permission.BLUETOOTH_SCAN
+                ) && !ActivityCompat.shouldShowRequestPermissionRationale(
+                    localContext,
+                    Manifest.permission.BLUETOOTH_CONNECT
+                ) else !ActivityCompat.shouldShowRequestPermissionRationale(
+                    localContext as Activity,
+                    Manifest.permission.BLUETOOTH
+                ) && !ActivityCompat.shouldShowRequestPermissionRationale(
+                    localContext,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                ) && !ActivityCompat.shouldShowRequestPermissionRationale(
+                    localContext,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                )
             PermissionDialog(
                 showDialog,
                 permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) BluetoothTextProvider() else BluetoothLegacyTextProvider(),
-                isPermanentlyDeclined = isPermissionPermanentlyDenied,
+                isPermanentlyDeclined = isPermanentlyDeclined,
                 onDismiss = { showDialog = !showDialog },
                 onOkClick = {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
-                        launcher.launch(
-                            arrayOf(
-                                Manifest.permission.BLUETOOTH_SCAN,
-                                Manifest.permission.BLUETOOTH_CONNECT,
-                            )
+                    val permissionRequired = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+                        arrayOf(
+                            Manifest.permission.BLUETOOTH_SCAN,
+                            Manifest.permission.BLUETOOTH_CONNECT,
+                        ) else
+                        arrayOf(
+                            Manifest.permission.BLUETOOTH,
+                            Manifest.permission.ACCESS_COARSE_LOCATION,
+                            Manifest.permission.ACCESS_FINE_LOCATION
                         )
-                    else
-                        launcher.launch(
-                            arrayOf(
-                                Manifest.permission.BLUETOOTH,
-                                Manifest.permission.ACCESS_COARSE_LOCATION,
-                                Manifest.permission.ACCESS_FINE_LOCATION
-                            )
-                        )
+                    launcher.launch(
+                        permissionRequired
+                    )
+
                 },
                 onGoToAppSettings = {
                     val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
@@ -314,6 +363,7 @@ fun ScanDevicesScreen(
                     intent.setData(uri)
                     openSettings.launch(intent)
                 })
+        }
     }
 
 }
@@ -389,4 +439,10 @@ fun BluetoothDeviceList(
             }
         }
     }
+}
+
+fun isLocationEnabled(context: Context): Boolean {
+    val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+    return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
+            locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
 }
