@@ -61,8 +61,7 @@ import com.tempo.tempoapp.ui.AppViewModelProvider
 import com.tempo.tempoapp.ui.bleeding.DatePickerDialog
 import com.tempo.tempoapp.ui.bleeding.TextWithIcon
 import com.tempo.tempoapp.ui.bleeding.TimePickerDialog
-import com.tempo.tempoapp.ui.common.BluetoothLegacyTextProvider
-import com.tempo.tempoapp.ui.common.BluetoothTextProvider
+import com.tempo.tempoapp.ui.common.CalendarTextProvider
 import com.tempo.tempoapp.ui.common.PermissionDialog
 import com.tempo.tempoapp.ui.navigation.NavigationDestination
 import kotlinx.coroutines.launch
@@ -111,13 +110,26 @@ fun ReminderScreen(
 
     fun checkPermissions() {
 
-        hasPermission = ContextCompat.checkSelfPermission(
-            context,
-            Manifest.permission.READ_CALENDAR
-        ) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(
-            context,
-            Manifest.permission.WRITE_CALENDAR
-        ) == PackageManager.PERMISSION_GRANTED
+        hasPermission =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.READ_CALENDAR
+            ) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.WRITE_CALENDAR
+            ) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+            else
+                ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.READ_CALENDAR
+                ) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.WRITE_CALENDAR
+                ) == PackageManager.PERMISSION_GRANTED
+
         showDialog = !(hasPermission)
 
     }
@@ -179,18 +191,43 @@ fun ReminderScreen(
             }
         )
 
-        if (showDialog)
+        if (showDialog) {
+            val isPermanentlyDeclined =
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) !ActivityCompat.shouldShowRequestPermissionRationale(
+                    localContext as Activity,
+                    Manifest.permission.WRITE_CALENDAR
+                ) && !ActivityCompat.shouldShowRequestPermissionRationale(
+                    localContext,
+                    Manifest.permission.READ_CALENDAR
+                ) && !ActivityCompat.shouldShowRequestPermissionRationale(
+                    localContext,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) else
+                    !ActivityCompat.shouldShowRequestPermissionRationale(
+                        localContext as Activity,
+                        Manifest.permission.WRITE_CALENDAR
+                    ) && !ActivityCompat.shouldShowRequestPermissionRationale(
+                        localContext,
+                        Manifest.permission.READ_CALENDAR
+                    )
             PermissionDialog(
                 showDialog,
-                permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) BluetoothTextProvider() else BluetoothLegacyTextProvider(),
-                isPermanentlyDeclined = isPermissionPermanentlyDenied,
+                permission = CalendarTextProvider(),
+                isPermanentlyDeclined = isPermanentlyDeclined,
                 onDismiss = { showDialog = !showDialog },
                 onOkClick = {
-                    permission.launch(
-                        arrayOf(
+                    val permissionRequired =
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) arrayOf(
                             Manifest.permission.WRITE_CALENDAR,
-                            Manifest.permission.READ_CALENDAR
+                            Manifest.permission.READ_CALENDAR,
+                            Manifest.permission.POST_NOTIFICATIONS
+                        ) else arrayOf(
+                            Manifest.permission.WRITE_CALENDAR,
+                            Manifest.permission.READ_CALENDAR,
                         )
+
+                    permission.launch(
+                        permissionRequired
                     )
                 },
                 onGoToAppSettings = {
@@ -200,6 +237,7 @@ fun ReminderScreen(
                     intent.setData(uri)
                     openSettings.launch(intent)
                 })
+        }
     }
 }
 
