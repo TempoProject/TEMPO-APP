@@ -16,18 +16,29 @@ import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 
+/**
+ * ViewModel responsible for managing the state and logic of the history screen.
+ *
+ * @param bleedingRepository Repository for managing bleeding events.
+ * @param infusionRepository Repository for managing infusion events.
+ * @param stepsRecordRepository Repository for managing steps records.
+ */
 class HistoryViewModel(
     private val bleedingRepository: BleedingRepository,
     private val infusionRepository: InfusionRepository,
     private val stepsRecordRepository: StepsRecordRepository,
 ) : ViewModel() {
 
+    // Mutable state flow to hold the list of bleeding events
     private val _bleedingList: MutableStateFlow<List<BleedingEvent>> = MutableStateFlow(listOf())
 
+    // Mutable state flow to hold the list of infusion events
     private val _infusionList: MutableStateFlow<List<InfusionEvent>> = MutableStateFlow(listOf())
 
+    // Mutable state flow to hold the count of steps records
     private val _stepsCount: MutableStateFlow<Int> = MutableStateFlow(0)
 
+    // State flow to emit the UI state combining bleeding events, infusion events, and steps count
     val historyUiState: StateFlow<HistoryUiState> = combine(
         _bleedingList,
         _infusionList,
@@ -41,7 +52,7 @@ class HistoryViewModel(
     )
 
     init {
-
+        // Start collecting data when ViewModel is initialized
         viewModelScope.launch {
             updateSteps()
         }
@@ -53,6 +64,11 @@ class HistoryViewModel(
         }
     }
 
+    /**
+     * Update the steps count for the specified timestamp.
+     *
+     * @param newTimestamp The timestamp for which steps count needs to be updated.
+     */
     suspend fun updateSteps(
         newTimestamp: Long = Instant.now().truncatedTo(ChronoUnit.DAYS).toEpochMilli()
     ) {
@@ -61,6 +77,11 @@ class HistoryViewModel(
         }
     }
 
+    /**
+     * Update the list of infusion events for the specified timestamp.
+     *
+     * @param newTimestamp The timestamp for which infusion events need to be updated.
+     */
     suspend fun updateInfusion(
         newTimestamp: Long = Instant.now().truncatedTo(ChronoUnit.DAYS).toEpochMilli()
     ) {
@@ -69,6 +90,11 @@ class HistoryViewModel(
         }
     }
 
+    /**
+     * Update the list of bleeding events for the specified timestamp.
+     *
+     * @param newTimestamp The timestamp for which bleeding events need to be updated.
+     */
     suspend fun updateBleeding(
         newTimestamp: Long = Instant.now().truncatedTo(ChronoUnit.DAYS).toEpochMilli()
     ) {
@@ -82,6 +108,13 @@ class HistoryViewModel(
     }
 }
 
+/**
+ * Represents the UI state for the history screen.
+ *
+ * @property bleedingList List of bleeding events.
+ * @property infusionList List of infusion events.
+ * @property stepsCount Count of steps records.
+ */
 data class HistoryUiState(
     val bleedingList: List<BleedingEvent> = listOf(),
     val infusionList: List<InfusionEvent> = listOf(),
