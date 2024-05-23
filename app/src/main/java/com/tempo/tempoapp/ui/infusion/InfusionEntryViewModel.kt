@@ -13,14 +13,30 @@ import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.Locale
 
+/**
+ * ViewModel for managing the state of the infusion entry screen.
+ *
+ * @param infusionRepository Repository for accessing infusion data.
+ */
 class InfusionEntryViewModel(private val infusionRepository: InfusionRepository) : ViewModel() {
     var uiState by mutableStateOf(InfusionUiState())
         private set
 
+    /**
+     * Updates the UI state with the provided infusion details and validation result.
+     *
+     * @param infusionDetails Details of the infusion event.
+     */
     fun updateUiState(infusionDetails: InfusionDetails) {
         uiState = InfusionUiState(infusionDetails, validateInput(infusionDetails))
     }
 
+    /**
+     * Validates the input for the infusion event.
+     *
+     * @param infusionDetails Details of the infusion event.
+     * @return True if the input is valid, false otherwise.
+     */
     private fun validateInput(infusionDetails: InfusionDetails = uiState.infusionDetails): Boolean {
         return with(infusionDetails) {
             treatment.isNotBlank() &&
@@ -32,6 +48,9 @@ class InfusionEntryViewModel(private val infusionRepository: InfusionRepository)
         }
     }
 
+    /**
+     * Saves the infusion event if the input is valid.
+     */
     suspend fun onSave() {
         if (validateInput())
             infusionRepository.insertItem(uiState.infusionDetails.toEntity())
@@ -39,11 +58,29 @@ class InfusionEntryViewModel(private val infusionRepository: InfusionRepository)
 
 }
 
+/**
+ * UI state for the infusion entry screen.
+ *
+ * @property infusionDetails Details of the infusion event.
+ * @property isEntryValid Indicates whether the entry is valid or not.
+ */
 data class InfusionUiState(
     val infusionDetails: InfusionDetails = InfusionDetails(),
     val isEntryValid: Boolean = false
 )
 
+/**
+ * Model class representing details of an infusion event.
+ *
+ * @property id Unique identifier of the infusion event.
+ * @property treatment Type of treatment for the infusion.
+ * @property infusionSite Site of the infusion.
+ * @property doseUnits Units of dose for the infusion.
+ * @property lotNumber Lot number of the infusion.
+ * @property note Additional note for the infusion.
+ * @property date Date of the infusion event.
+ * @property time Time of the infusion event.
+ */
 data class InfusionDetails(
     val id: Int = 0,
     val treatment: String = "",
@@ -55,6 +92,12 @@ data class InfusionDetails(
     val time: String = Instant.now().truncatedTo(ChronoUnit.MILLIS).toEpochMilli().toStringTime(),
 )
 
+/**
+ * Converts infusion details to an entity for database operations.
+ *
+ * @receiver Details of the infusion event.
+ * @return Infusion event entity.
+ */
 fun InfusionDetails.toEntity(): InfusionEvent =
     InfusionEvent(
         id = id,
@@ -70,6 +113,12 @@ fun InfusionDetails.toEntity(): InfusionEvent =
         ).parse(date.toStringDate().plus(" $time")).time
     )
 
+/**
+ * Converts an infusion event to infusion details.
+ *
+ * @receiver Infusion event.
+ * @return Infusion details.
+ */
 fun InfusionEvent.toInfusionDetails(): InfusionDetails =
     InfusionDetails(
         id = id,
@@ -82,6 +131,12 @@ fun InfusionEvent.toInfusionDetails(): InfusionDetails =
         time = timestamp.toStringTime()
     )
 
+/**
+ * Converts an infusion event to infusion UI state.
+ *
+ * @receiver Infusion event.
+ * @return Infusion UI state.
+ */
 fun InfusionEvent.toInfusionUiState(): InfusionUiState =
     InfusionUiState(
         this.toInfusionDetails()
