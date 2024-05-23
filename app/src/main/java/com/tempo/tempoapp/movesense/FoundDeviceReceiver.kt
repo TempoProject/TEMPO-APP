@@ -6,8 +6,20 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 
+/**
+ * BroadcastReceiver implementation for handling found Bluetooth devices.
+ *
+ * @property onDeviceFound Callback function to be invoked when a Bluetooth device is found.
+ */
 class FoundDeviceReceiver(private val onDeviceFound: (BluetoothDevice) -> Unit) :
     BroadcastReceiver() {
+
+    /**
+     * Called when a broadcast is received.
+     *
+     * @param context The context in which the receiver is running.
+     * @param intent The Intent being received.
+     */
     override fun onReceive(context: Context?, intent: Intent?) {
         println("onReceive ")
         when (intent?.action) {

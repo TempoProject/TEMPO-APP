@@ -8,6 +8,10 @@ import com.tempo.tempoapp.data.repository.ReminderRepository
 import com.tempo.tempoapp.data.repository.StepsRecordRepository
 import com.tempo.tempoapp.data.repository.UtilsRepository
 
+/**
+ * Interface defining a contract for managing repositories within the Android application.
+ * Provides access to various repositories required for data management.
+ */
 interface AppContainer {
     val bleedingRepository: BleedingRepository
     val infusionRepository: InfusionRepository
@@ -18,6 +22,12 @@ interface AppContainer {
     val reminderRepository: ReminderRepository
 }
 
+/**
+ * Class implementing the AppContainer interface, providing concrete implementations for each repository.
+ * Repositories are lazily initialized using database access obtained from the provided Context.
+ *
+ * @param context The application context used for accessing the database.
+ */
 class AppDataContainer(private val context: Context) : AppContainer {
 
     override val bleedingRepository: BleedingRepository by lazy {

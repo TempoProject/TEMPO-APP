@@ -8,28 +8,31 @@ import android.content.Context
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.os.Build
-import com.movesense.mds.Mds
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
+/**
+ * Implementation of the BluetoothController interface for controlling Bluetooth functionality on Android devices.
+ *
+ * @param context The application context.
+ */
 @SuppressLint("MissingPermission")
 class AndroidBluetoothController(private val context: Context) : BluetoothController {
 
-    private val mds by lazy {
-        Mds.builder().build(context)
-    }
-
+    // BluetoothManager instance
     private val bluetoothManager by lazy {
         context.getSystemService(BluetoothManager::class.java)
     }
+    // BluetoothAdapter instance
     private val bluetoothAdapter by lazy {
         bluetoothManager.adapter
     }
+    // BroadcastReceiver for handling found Bluetooth devices
     private val foundDeviceReceiver = FoundDeviceReceiver { device ->
         _scannedDevices.update { devices ->
-            val newDevice = device.toBluetootDeviceInfo()
+            val newDevice = device.toBluetoothDeviceInfo()
             println("device $newDevice")
 
             if (newDevice.name!!.contains(
@@ -41,11 +44,12 @@ class AndroidBluetoothController(private val context: Context) : BluetoothContro
 
     }
 
+    // Mutable state flow for scanned Bluetooth devices
     private val _scannedDevices = MutableStateFlow<List<BluetoothDeviceInfo>>(emptyList())
     override val scannedDevices: StateFlow<List<BluetoothDeviceInfo>>
         get() = _scannedDevices.asStateFlow()
 
-
+    // Mutable state flow for paired Bluetooth devices
     private val _pairedDevices = MutableStateFlow<List<BluetoothDeviceInfo>>(emptyList())
     override val pairedDevices: StateFlow<List<BluetoothDeviceInfo>>
         get() = _pairedDevices.asStateFlow()
@@ -54,6 +58,9 @@ class AndroidBluetoothController(private val context: Context) : BluetoothContro
         updatePairedDevices()
     }
 
+    /**
+     * Starts the discovery process to find nearby Bluetooth devices.
+     */
     override fun startDiscovery() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             if (!hasPermission(Manifest.permission.BLUETOOTH_SCAN)) {
@@ -74,6 +81,9 @@ class AndroidBluetoothController(private val context: Context) : BluetoothContro
         println(bluetoothAdapter.startDiscovery())
     }
 
+    /**
+     * Stops the ongoing discovery process.
+     */
     override fun stopDiscovery() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             if (!hasPermission(Manifest.permission.BLUETOOTH_SCAN)) {
@@ -89,33 +99,16 @@ class AndroidBluetoothController(private val context: Context) : BluetoothContro
         bluetoothAdapter.cancelDiscovery()
     }
 
+    /**
+     * Releases any resources associated with the Bluetooth controller.
+     */
     override fun release() {
         context.unregisterReceiver(foundDeviceReceiver)
     }
 
-    /*
-        fun movesenseConnect(address: String) {
-            mds.connect(address, object : MdsConnectionListener {
-                override fun onConnect(p0: String?) {
-                    println("onConnect: $p0")
-                }
-
-                override fun onConnectionComplete(p0: String?, p1: String?) {
-                    println("onConnectionComplete: $p0")
-                }
-
-                override fun onError(p0: MdsException?) {
-                    println("onError: $p0")
-                }
-
-                override fun onDisconnect(p0: String?) {
-                    println("onDisconnect: $p0")
-                }
-            })
-        }
+    /**
+     * Updates the list of paired Bluetooth devices.
      */
-
-
     private fun updatePairedDevices() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             if (!hasPermission(Manifest.permission.BLUETOOTH_SCAN)) {
@@ -130,12 +123,18 @@ class AndroidBluetoothController(private val context: Context) : BluetoothContro
 
         bluetoothAdapter
             ?.bondedDevices
-            ?.map { it.toBluetootDeviceInfo() }
+            ?.map { it.toBluetoothDeviceInfo() }
             ?.also { devices ->
                 _pairedDevices.update { devices }
             }
     }
 
+    /**
+     * Checks if the app has the required permission.
+     *
+     * @param permission The permission to check.
+     * @return True if the app has the permission, false otherwise.
+     */
     fun hasPermission(permission: String) =
         context.checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED
 }
