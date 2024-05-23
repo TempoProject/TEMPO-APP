@@ -36,6 +36,9 @@ import com.tempo.tempoapp.ui.navigation.NavigationDestination
 import com.tempo.tempoapp.ui.toStringDate
 import kotlinx.coroutines.launch
 
+/**
+ * Defines the destination for navigating to Bleeding Event Details.
+ */
 object BleedingEventDetailsDestination : NavigationDestination {
     override val route: String
         get() = "bleeding_details"
@@ -46,6 +49,9 @@ object BleedingEventDetailsDestination : NavigationDestination {
     val routeWithArgs = "$route/{$itemIdArg}"
 }
 
+/**
+ * Composable function for displaying the details screen of a bleeding event.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BleedingDetailsScreen(
@@ -109,6 +115,9 @@ fun BleedingDetailsScreen(
 
 }
 
+/**
+ * Composable function for displaying the body of a bleeding event's details.
+ */
 @Composable
 fun BleedingDetailsBody(uiState: BleedingDetailsUiState, modifier: Modifier = Modifier) {
     Column(
@@ -122,6 +131,9 @@ fun BleedingDetailsBody(uiState: BleedingDetailsUiState, modifier: Modifier = Mo
     }
 }
 
+/**
+ * Composable function for displaying details of a single bleeding event item.
+ */
 @Composable
 fun BleedingItemDetails(details: BleedingDetails, modifier: Modifier) {
     Card(
@@ -190,6 +202,9 @@ fun BleedingItemDetails(details: BleedingDetails, modifier: Modifier) {
     }
 }
 
+/**
+ * Composable function for displaying a single row of item details.
+ */
 @Composable
 internal fun ItemDetailsRow(
     @StringRes labelResID: Int, itemDetail: String, modifier: Modifier = Modifier

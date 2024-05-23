@@ -14,6 +14,9 @@ import com.tempo.tempoapp.ui.AppViewModelProvider
 import com.tempo.tempoapp.ui.navigation.NavigationDestination
 import kotlinx.coroutines.launch
 
+/**
+ * Represents the destination for editing a bleeding event.
+ */
 object BleedingEventEditDestination : NavigationDestination {
     override val route: String
         get() = "bleeding_edit"
@@ -25,6 +28,12 @@ object BleedingEventEditDestination : NavigationDestination {
 
 }
 
+/**
+ * Composable function for displaying the screen for editing a bleeding event.
+ * @param navigateBack Callback to navigate back to the previous screen.
+ * @param onNavigateUp Callback to handle the Up navigation action.
+ * @param viewModel The view model for managing the UI logic of the edit screen.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BleedingEditScreen(
