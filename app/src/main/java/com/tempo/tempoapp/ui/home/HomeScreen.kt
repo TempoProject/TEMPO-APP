@@ -1,9 +1,11 @@
 package com.tempo.tempoapp.ui.home
 
 import android.Manifest
+import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
@@ -65,6 +67,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -76,6 +79,9 @@ import com.tempo.tempoapp.TempoApplication
 import com.tempo.tempoapp.data.healthconnect.HealthConnectAvailability
 import com.tempo.tempoapp.ui.AppViewModelProvider
 import com.tempo.tempoapp.ui.HomeBody
+import com.tempo.tempoapp.ui.common.AlarManagerTextProvider
+import com.tempo.tempoapp.ui.common.NotificationTextProvider
+import com.tempo.tempoapp.ui.common.PermissionDialog
 import com.tempo.tempoapp.ui.navigation.NavigationDestination
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -104,9 +110,22 @@ fun HomeScreen(
     navigateToScanDevices: () -> Unit,
     navigateToMovesense: () -> Unit,
 ) {
+    val context = LocalContext.current
+
+    var canScheduleExactAlarms by remember {
+        mutableStateOf(true)
+    }
+    var showDialog by remember {
+        mutableStateOf(false)
+    }
+    val settingsLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) {}
+
     val permissionsLauncher =
         rememberLauncherForActivityResult(viewModel.permissionsLauncher) {
             viewModel.initialLoad()
+
         }
     var hasNotificationPermission by remember {
         mutableStateOf(false)
@@ -117,53 +136,38 @@ fun HomeScreen(
         hasNotificationPermission = granted
     }
 
-    /**/
-    val launcher1 = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()
-    ) {}
+    fun checkPermissions() {
 
-
-
-    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S)
-        if (!TempoApplication.instance.alarm.canScheduleExactAlarms())
-            LaunchedEffect(Unit) {
-                val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
-                val uri = Uri.fromParts("package", TempoApplication.instance.packageName, null)
-                intent.setData(uri)
-                launcher1.launch(intent)
-            }
-
-    when {
-        ContextCompat.checkSelfPermission(
-            LocalContext.current,
-            Manifest.permission.POST_NOTIFICATIONS
-        ) == PackageManager.PERMISSION_GRANTED -> {
-
+        hasNotificationPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+        } else {
+            true
         }
 
-        else -> {
-            LaunchedEffect(Unit) {
-                launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
-            }
-        }
+        canScheduleExactAlarms = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            TempoApplication.instance.alarm.canScheduleExactAlarms()
+        } else true
+
+        println(canScheduleExactAlarms)
+
+        showDialog = !(hasNotificationPermission)
+        println(showDialog)
     }
 
-    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    LaunchedEffect(Unit) {
+        checkPermissions()
+    }
 
     val currentOnAvailabilityCheck by rememberUpdatedState(onResumeAvailabilityCheck)
-    val homeUiState by viewModel.homeUiState.collectAsState()
-    val scope = rememberCoroutineScope()
-    val sheetState = rememberModalBottomSheetState()
-    var showBottomSheet by remember {
-        mutableStateOf(false)
-    }
-    var drawerIsEnabled by remember {
-        mutableStateOf(false)
-    }
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
+            println(event)
             if (event == Lifecycle.Event.ON_RESUME) {
                 currentOnAvailabilityCheck()
+                checkPermissions()
             }
         }
         // Add the observer to the lifecycle
@@ -173,6 +177,16 @@ fun HomeScreen(
         onDispose {
             lifecycleOwner.lifecycle.removeObserver(observer)
         }
+    }
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val homeUiState by viewModel.homeUiState.collectAsState()
+    val scope = rememberCoroutineScope()
+    val sheetState = rememberModalBottomSheetState()
+    var showBottomSheet by remember {
+        mutableStateOf(false)
+    }
+    var drawerIsEnabled by remember {
+        mutableStateOf(false)
     }
 
     ModalNavigationDrawer(
@@ -263,7 +277,40 @@ fun HomeScreen(
             },
         ) { innerPadding ->
             println("permission? ${viewModel.permissionsGranted.value}")
+            if (showDialog) {
+                PermissionDialog(
+                    showDialog = showDialog,
+                    permission = NotificationTextProvider(),
+                    isPermanentlyDeclined = !ActivityCompat.shouldShowRequestPermissionRationale(
+                        context as Activity,
+                        Manifest.permission.POST_NOTIFICATIONS
+                    ),
+                    onDismiss = { showDialog = !showDialog },
+                    onOkClick = { launcher.launch(Manifest.permission.POST_NOTIFICATIONS) },
+                    onGoToAppSettings = {
+                        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                        println(TempoApplication.instance.packageName)
+                        val uri = Uri.parse("package:${context.packageName}")
+                        intent.setData(uri)
+                        settingsLauncher.launch(intent)
+                    })
+            }
+            if (!canScheduleExactAlarms) {
+                PermissionDialog(
+                    !canScheduleExactAlarms,
+                    permission = AlarManagerTextProvider(),
+                    isPermanentlyDeclined = true,
+                    onDismiss = { },
+                    onOkClick = { /** NOTHING**/ },
+                    onGoToAppSettings = {
+                        val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+                        val uri =
+                            Uri.fromParts("package", TempoApplication.instance.packageName, null)
+                        intent.setData(uri)
+                        settingsLauncher.launch(intent)
 
+                    })
+            }
             when (availability) {
                 HealthConnectAvailability.INSTALLED -> {
                     if (viewModel.permissionsGranted.value) {
@@ -458,7 +505,6 @@ fun HomeScreen(
     }
 }
 
-
 @Composable
 private fun NavDrawerItem(
     @StringRes stringId: Int,
@@ -479,6 +525,7 @@ private fun NavDrawerItem(
         }
     )
 }
+
 
 @Composable
 private fun NotInstalledMessage() {

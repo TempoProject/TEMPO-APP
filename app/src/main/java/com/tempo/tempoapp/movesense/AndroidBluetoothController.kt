@@ -7,6 +7,7 @@ import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.content.IntentFilter
 import android.content.pm.PackageManager
+import android.os.Build
 import com.movesense.mds.Mds
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -54,22 +55,35 @@ class AndroidBluetoothController(private val context: Context) : BluetoothContro
     }
 
     override fun startDiscovery() {
-         if (!hasPermission(Manifest.permission.BLUETOOTH_SCAN)) {
-            println("no permission")
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (!hasPermission(Manifest.permission.BLUETOOTH_SCAN)) {
+                println("no permission")
+                return
+            }
+        } else if (!hasPermission(Manifest.permission.BLUETOOTH) && !hasPermission(Manifest.permission.ACCESS_COARSE_LOCATION) && !hasPermission(
+                Manifest.permission.ACCESS_FINE_LOCATION
+            )
+        )
             return
-        }
         println("permission")
-        val x = context.registerReceiver(
+        context.registerReceiver(
             foundDeviceReceiver,
             IntentFilter(BluetoothDevice.ACTION_FOUND)
         )
-        println("start discovery: $x")
         updatePairedDevices()
-        bluetoothAdapter.startDiscovery()
+        println(bluetoothAdapter.startDiscovery())
     }
 
     override fun stopDiscovery() {
-        if (!hasPermission(Manifest.permission.BLUETOOTH_SCAN))
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (!hasPermission(Manifest.permission.BLUETOOTH_SCAN)) {
+                println("no permission")
+                return
+            }
+        } else if (!hasPermission(Manifest.permission.BLUETOOTH) && !hasPermission(Manifest.permission.ACCESS_COARSE_LOCATION) && !hasPermission(
+                Manifest.permission.ACCESS_FINE_LOCATION
+            )
+        )
             return
 
         bluetoothAdapter.cancelDiscovery()
@@ -103,7 +117,15 @@ class AndroidBluetoothController(private val context: Context) : BluetoothContro
 
 
     private fun updatePairedDevices() {
-        if (!hasPermission(Manifest.permission.BLUETOOTH_CONNECT))
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (!hasPermission(Manifest.permission.BLUETOOTH_SCAN)) {
+                println("no permission")
+                return
+            }
+        } else if (!hasPermission(Manifest.permission.BLUETOOTH) && !hasPermission(Manifest.permission.ACCESS_COARSE_LOCATION) && !hasPermission(
+                Manifest.permission.ACCESS_FINE_LOCATION
+            )
+        )
             return
 
         bluetoothAdapter

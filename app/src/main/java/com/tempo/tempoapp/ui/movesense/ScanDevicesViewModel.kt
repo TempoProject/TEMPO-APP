@@ -52,7 +52,9 @@ class ScanDevicesViewModel(
     fun hasPermission() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
         bluetoothController.hasPermission(Manifest.permission.BLUETOOTH_SCAN)
     } else {
-        true
+        bluetoothController.hasPermission(Manifest.permission.BLUETOOTH) && bluetoothController.hasPermission(
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        ) && bluetoothController.hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)
     }
 
 
