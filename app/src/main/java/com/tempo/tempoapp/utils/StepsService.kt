@@ -60,23 +60,7 @@ class StepsService : Service() {
                 val list =
                     healthConnectManager.readSteps(instantStartTime, instantNow)
                         .toMutableList()
-                //Log.d(TAG, "full list: $list")
-                /*try {
-                    if (list.last().startTime == instantThirtyMinutes)
-                        list.removeLast()
-                    Log.d(TAG, "list after removeLast(): $list")
-                } catch (err: NoSuchElementException) {
-                    Log.e(TAG, err.message!!)
-                }*/
-                /*if (list.isEmpty())
-                    stepsRecordRepository.insertItem(
-                        com.tempo.tempoapp.data.model.StepsRecord(
-                            steps = 100,
-                            date = Instant.now().truncatedTo(ChronoUnit.DAYS).toEpochMilli(),
-                            startTime = Instant.now().toEpochMilli(),
-                            endTime = Instant.now().toEpochMilli()
-                        )
-                    )*/
+
                 list.forEach {
                     stepsRecordRepository.insertItem(
                         com.tempo.tempoapp.data.model.StepsRecord(
