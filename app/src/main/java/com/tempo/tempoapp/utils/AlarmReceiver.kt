@@ -20,11 +20,26 @@ import java.time.Instant
 import java.time.temporal.ChronoUnit
 import kotlin.random.Random
 
+/**
+ * AlarmReceiver is a BroadcastReceiver responsible for handling alarm events triggered by reminders.
+ * It receives broadcasts when reminder alarms go off and displays notifications accordingly.
+ * If the reminder is periodic, it reschedules the alarm for the next occurrence.
+ *
+ * @property alarmManager The AlarmManager instance used to schedule alarms.
+ * @property reminderRepository The repository for managing reminder data.
+ */
 class AlarmReceiver(
     private val alarmManager: AlarmManager = TempoApplication.instance.alarm,
     private val reminderRepository: ReminderRepository = TempoApplication.instance.container.reminderRepository
 ) :
     BroadcastReceiver() {
+
+    /**
+     * Handles the action to be taken when a reminder alarm is received.
+     *
+     * @param context The context in which the receiver is running.
+     * @param intent The Intent being received.
+     */
     override fun onReceive(context: Context, intent: Intent?) {
         val notificationManager =
             context.getSystemService(Context.NOTIFICATION_SERVICE) as
