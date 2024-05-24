@@ -6,7 +6,6 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Build
-import androidx.annotation.RequiresApi
 import com.tempo.tempoapp.TempoApplication
 import com.tempo.tempoapp.data.repository.ReminderRepository
 import kotlinx.coroutines.CoroutineScope
@@ -14,12 +13,26 @@ import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.launch
 import java.time.Instant
 
+/**
+ * RebootBroadcastReceiver is a BroadcastReceiver responsible for scheduling alarms
+ * after the device is rebooted.
+ *
+ * @property reminderRepository The ReminderRepository instance used for accessing reminder data.
+ * @property alarmManager The AlarmManager instance used for scheduling alarms.
+ */
 class RebootBroadcastReceiver(
     private val reminderRepository: ReminderRepository = TempoApplication.instance.container.reminderRepository,
     private val alarmManager: AlarmManager = TempoApplication.instance.alarm
 ) :
     BroadcastReceiver() {
-    @RequiresApi(Build.VERSION_CODES.S)
+
+    /**
+     * Receives the broadcast when the device is rebooted and schedules alarms for reminders.
+     *
+     * @param p0 The context in which the receiver is running.
+     * @param p1 The Intent being received.
+     */
+    //@RequiresApi(Build.VERSION_CODES.S)
     override fun onReceive(p0: Context?, p1: Intent?) {
         if (p1?.action == "android.intent.action.BOOT_COMPLETED") {
             CoroutineScope(Main).launch {
