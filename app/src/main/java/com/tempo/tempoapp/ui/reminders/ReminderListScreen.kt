@@ -37,6 +37,9 @@ import com.tempo.tempoapp.ui.toStringTime
 import kotlinx.coroutines.launch
 
 
+/**
+ * Represents a navigation destination for the reminder list.
+ */
 object ReminderListDestination : NavigationDestination {
     override val route: String
         get() = "reminderList"
@@ -44,11 +47,17 @@ object ReminderListDestination : NavigationDestination {
         get() = R.string.reminder
 }
 
+/**
+ * Composable function representing the reminder list screen.
+ * Displays a list of reminders and allows deleting reminders.
+ *
+ * @param onNavigateUp Lambda function to navigate up.
+ * @param viewModel ReminderListViewModel used for managing reminder list data and operations.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReminderList(
     onNavigateUp: () -> Unit,
-    navigateBack: () -> Unit,
     viewModel: ReminderListViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val uiState = viewModel.reminderListUiState.collectAsState()
@@ -74,6 +83,13 @@ fun ReminderList(
     }
 }
 
+/**
+ * Composable function representing the body of the reminder list screen.
+ *
+ * @param reminderList List of ReminderEvent objects representing reminders.
+ * @param deleteReminder Lambda function to delete a reminder.
+ * @param modifier Modifier for applying layout attributes.
+ */
 @Composable
 private fun ReminderListBody(
     reminderList: List<ReminderEvent>,
@@ -90,6 +106,13 @@ private fun ReminderListBody(
     }
 }
 
+/**
+ * Composable function representing an individual reminder item.
+ *
+ * @param item ReminderEvent object representing the reminder.
+ * @param deleteReminder Lambda function to delete the reminder.
+ * @param modifier Modifier for applying layout attributes.
+ */
 @Composable
 private fun ReminderItem(
     item: ReminderEvent,
@@ -106,10 +129,6 @@ private fun ReminderItem(
                 .fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_small))
         ) {
-/*            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            )*/
             Text(
                 text = item.event,
                 style = MaterialTheme.typography.titleLarge,
@@ -117,10 +136,6 @@ private fun ReminderItem(
             Spacer(Modifier.weight(1f))
             if (item.isPeriodic)
                 Text(text = "Il promemoria si ripete ogni: ${item.period} ${item.timeUnit}")
-            /*Text(
-                text = "Periodico? ${if (item.isPeriodic) " Si " else " No"}",
-                style = MaterialTheme.typography.titleMedium
-            )*/
             Row(
                 Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,

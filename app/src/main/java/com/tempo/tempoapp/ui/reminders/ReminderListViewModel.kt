@@ -14,11 +14,17 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 
-
+/**
+ * ViewModel responsible for managing the reminder list UI state and operations.
+ *
+ * @property reminderRepository Repository for accessing reminder data.
+ * @property context Context required for accessing content resolver.
+ */
 class ReminderListViewModel(
     private val reminderRepository: ReminderRepository,
     private val context: Context
 ) : ViewModel() {
+    // StateFlow representing the UI state of the reminder list
     val reminderListUiState: StateFlow<ReminderListUiState> = combine(
         reminderRepository.getAll()
     ) {
@@ -29,6 +35,11 @@ class ReminderListViewModel(
         started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS)
     )
 
+    /**
+     * Suspended function to delete a reminder.
+     *
+     * @param item ReminderEvent to be deleted.
+     */
     suspend fun deleteReminder(item: ReminderEvent) {
         val contentResolver = context.contentResolver
         val deleteUri: Uri =
@@ -43,6 +54,11 @@ class ReminderListViewModel(
     }
 }
 
+/**
+ * Represents the UI state of the reminder list.
+ *
+ * @property reminderList List of ReminderEvent objects.
+ */
 data class ReminderListUiState(
     val reminderList: List<ReminderEvent> = listOf()
 )
