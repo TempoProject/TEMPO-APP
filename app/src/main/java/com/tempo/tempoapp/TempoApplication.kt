@@ -23,22 +23,30 @@ import com.tempo.tempoapp.workers.SaveInfusionRecords
 import com.tempo.tempoapp.workers.SaveStepsRecords
 import java.util.concurrent.TimeUnit
 
+/**
+ * Application class for Tempo app.
+ */
 class TempoApplication : Application() {
-    /**
-     * AppContainer instance used by the rest of classes to obtain dependencies
-     */
     lateinit var container: AppContainer
     lateinit var healthConnectManager: HealthConnectManager
     lateinit var workManager: WorkManager
     private lateinit var notificationManager: NotificationManager
     lateinit var database: DatabaseReference
     lateinit var alarm: AlarmManager
+
+    /**
+     * Called when the application is starting.
+     */
     override fun onCreate() {
         super.onCreate()
         instance = this
         notificationManager =
             getSystemService(Context.NOTIFICATION_SERVICE) as
                     NotificationManager
+
+        /**
+         * Create notification channels.
+         */
         val notificationChannelSendSteps = NotificationChannel(
             "Passi",
             "Invio passi",
@@ -68,6 +76,9 @@ class TempoApplication : Application() {
         database =
             Firebase.database("https://tempo-app-94a6c-default-rtdb.europe-west1.firebasedatabase.app/").reference
 
+        /**
+         * Schedule periodic work for saving records.
+         */
         val constraints =
             Constraints(requiresBatteryNotLow = true, requiredNetworkType = NetworkType.CONNECTED)
         val stepsRecords =
