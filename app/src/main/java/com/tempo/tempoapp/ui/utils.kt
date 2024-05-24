@@ -34,13 +34,27 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-
+/**
+ * Converts a timestamp to a date string in the format "dd-MM-yyyy".
+ *
+ * @receiver The timestamp.
+ * @return The formatted date string.
+ */
 fun Long.toStringDate(): String =
     SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(Date(this))
 
+/**
+ * Converts a timestamp to a time string in the format "HH:mm".
+ *
+ * @receiver The timestamp.
+ * @return The formatted time string.
+ */
 fun Long.toStringTime(): String =
     SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(this))
 
+/**
+ * Composable function representing a loading indicator.
+ */
 @Composable
 fun Loading(){
     Column(
@@ -59,6 +73,14 @@ fun Loading(){
         )
     }
 }
+
+/**
+ * Composable function representing an item count.
+ *
+ * @param count The count value.
+ * @param iconId The icon resource ID.
+ * @param modifier The modifier for the item count.
+ */
 @Composable
 fun <T> ItemCount(count: T, @DrawableRes iconId: Int, modifier: Modifier = Modifier) {
     Column{
@@ -89,6 +111,16 @@ fun <T> ItemCount(count: T, @DrawableRes iconId: Int, modifier: Modifier = Modif
     }
 }
 
+/**
+ * Composable function representing the body of the home screen.
+ *
+ * @param bleedingEventList The list of bleeding events.
+ * @param infusionEventList The list of infusion events.
+ * @param stepsCount The count of steps.
+ * @param modifier The modifier for the home body.
+ * @param onInfusionItemClick Callback for when an infusion item is clicked.
+ * @param onBleedingItemClick Callback for when a bleeding item is clicked.
+ */
 @Composable
 fun HomeBody(
     bleedingEventList: List<BleedingEvent>,
@@ -132,6 +164,15 @@ fun HomeBody(
     }
 }
 
+/**
+ * Composable function representing a list of events.
+ *
+ * @param bleedingEventList The list of bleeding events.
+ * @param infusionEventList The list of infusion events.
+ * @param onInfusionItemClick Callback for when an infusion item is clicked.
+ * @param onBleedingItemClick Callback for when a bleeding item is clicked.
+ * @param modifier The modifier for the events list.
+ */
 @Composable
 fun EventsList(
     bleedingEventList: List<BleedingEvent>,
