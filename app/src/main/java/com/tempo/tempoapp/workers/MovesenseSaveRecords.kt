@@ -7,16 +7,22 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import androidx.work.await
-import com.tempo.tempoapp.TempoApplication
 
+/**
+ * MovesenseSaveRecords is a Worker class responsible for saving records related to Movesense data.
+ *
+ * @param appContext The application context.
+ * @param params The parameters to configure the worker.
+ */
 class MovesenseSaveRecords(appContext: Context, params: WorkerParameters) :
     CoroutineWorker(appContext, params) {
-    private val movesenseRepository =
-        (appContext.applicationContext as TempoApplication).container.movesenseRepository
 
-    //private val mds = Mds.builder().build(appContext)
+    /**
+     * Performs the background work to save Movesense records.
+     *
+     * @return The Result of the work.
+     */
     override suspend fun doWork(): Result {
-        //val deviceInfo = movesenseRepository.getDeviceInfo()
         val stopLogging =
             OneTimeWorkRequestBuilder<MovesenseWorker>().addTag("configureMovesense")
                 .setInputData(Data.Builder().putInt("state", 2).build())
