@@ -16,6 +16,8 @@ import java.time.temporal.ChronoUnit
  * @property endTime The end time of the recorded steps in milliseconds.
  * @property isSent Boolean indicating if the steps record has been sent to the server.
  */
+
+typealias StepsRecordModel = StepsRecord
 @Entity(tableName = "steps")
 data class StepsRecord(
     @PrimaryKey(true)
