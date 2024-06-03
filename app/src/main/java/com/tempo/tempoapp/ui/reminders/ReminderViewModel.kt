@@ -25,53 +25,98 @@ import java.util.Locale
 import java.util.TimeZone
 import java.util.concurrent.TimeUnit
 
+/**
+ * ViewModel class responsible for managing reminder data and logic.
+ *
+ * @property reminderRepository The repository for accessing reminder data.
+ * @property context Context required for accessing content resolver.
+ */
 class ReminderViewModel(
     private val reminderRepository: ReminderRepository,
     private val context: Context
 ) : ViewModel() {
+
+    /**
+     * Represents the current UI state of the reminder screen.
+     */
     var uiState by mutableStateOf(ReminderUiState())
         private set
 
-
+    /**
+     * Updates the event in the UI state.
+     *
+     * @param event The new event value.
+     */
     fun updateEvent(event: String) {
         uiState = uiState.copy(event = event)
     }
 
+    /**
+     * Updates the time in the UI state.
+     *
+     * @param time The new time value.
+     */
     fun updateTime(time: String) {
         uiState = uiState.copy(
             time = time
         )
     }
 
+    /**
+     * Updates the date in the UI state.
+     *
+     * @param date The new date value.
+     */
     fun updateDate(date: Long) {
         uiState = uiState.copy(
             date = date.toStringDate()
         )
     }
 
+    /**
+     * Updates the interval in the UI state.
+     *
+     * @param interval The new interval value.
+     */
     fun updateInterval(interval: Int) {
         uiState = uiState.copy(
             interval = interval.toLong()
         )
     }
 
+    /**
+     * Updates whether the reminder is periodic in the UI state.
+     *
+     * @param isPeriodic The new value indicating whether the reminder is periodic.
+     */
     fun updateIsPeriodic(isPeriodic: Boolean) {
         uiState = uiState.copy(
             isPeriodic = isPeriodic
         )
     }
 
+    /**
+     * Updates the time unit in the UI state.
+     *
+     * @param timeUnit The new time unit value.
+     */
     fun updateTimeUnit(timeUnit: TimeUnit) {
         uiState = uiState.copy(
             timeUnit = timeUnit
         )
     }
 
+    /**
+     * Resets the UI state to its initial values.
+     */
     fun reset() {
         uiState = ReminderUiState()
     }
 
 
+    /**
+     * Saves the reminder.
+     */
     suspend fun save() {
         var data = uiState.toReminderEvent(-1)
         val idCalendar = createEvent(context, data)
@@ -119,16 +164,16 @@ class ReminderViewModel(
     }
 }
 
+/**
+ * Creates a calendar event based on the provided reminder event data.
+ *
+ * @param context The application context.
+ * @param reminderEvent The reminder event data.
+ * @return The ID of the created calendar event.
+ */
 private fun createEvent(
     context: Context,
     reminderEvent: ReminderEvent
-    /*
-    title: String,
-    description: String,
-    startTimeMillis: Long,
-    endTimeMillis: Long
-
-     */
 ): Long {
     val eventValues = ContentValues().apply {
         put(CalendarContract.Events.TITLE, reminderEvent.event)
@@ -167,6 +212,12 @@ private fun createEvent(
 
 }
 
+/**
+ * Retrieves the ID of the default calendar.
+ *
+ * @param context The application context.
+ * @return The ID of the default calendar.
+ */
 private fun getCalendarId(context: Context): Long {
     var calendarId: Long = -1
 
@@ -200,6 +251,16 @@ private fun getCalendarId(context: Context): Long {
     return calendarId
 }
 
+/**
+ * Represents the UI state of the reminder screen.
+ *
+ * @property event The reminder event.
+ * @property date The reminder date.
+ * @property time The reminder time.
+ * @property isPeriodic Indicates whether the reminder is periodic.
+ * @property interval The reminder interval.
+ * @property timeUnit The time unit for the reminder interval.
+ */
 data class ReminderUiState(
     val event: String = "Tipo di evento",
     val date: String = Instant.now().toEpochMilli().toStringDate(),
@@ -209,6 +270,12 @@ data class ReminderUiState(
     val timeUnit: TimeUnit = TimeUnit.DAYS
 )
 
+/**
+ * Converts the UI state of a reminder to a ReminderEvent.
+ *
+ * @param idCalendar The ID of the calendar associated with the reminder.
+ * @return The converted ReminderEvent.
+ */
 fun ReminderUiState.toReminderEvent(idCalendar: Long): ReminderEvent =
     ReminderEvent(
         event = event,

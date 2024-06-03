@@ -8,15 +8,22 @@ import com.tempo.tempoapp.TempoApplication
 import com.tempo.tempoapp.data.model.toStepsRecordToJson
 import kotlinx.coroutines.tasks.await
 
+/**
+ * SaveStepsRecords is a Worker class responsible for saving steps records to Firebase.
+ *
+ * @param appContext The application context.
+ * @param params The parameters to configure the worker.
+ */
 class SaveStepsRecords(appContext: Context, params: WorkerParameters) :
     CoroutineWorker(appContext, params) {
 
     private val TAG = javaClass.simpleName
 
-
+    // Steps record repository to access steps records
     private val stepsRecordRepository =
         (appContext.applicationContext as TempoApplication).container.stepsRecordRepository
 
+    // Firebase database reference
     private val databaseRef =
         (appContext.applicationContext as TempoApplication).database
 
@@ -35,6 +42,12 @@ class SaveStepsRecords(appContext: Context, params: WorkerParameters) :
             appContext.getSystemService(Context.NOTIFICATION_SERVICE) as
                     NotificationManager
 
+     */
+
+    /**
+     * Performs the background work to save steps records to Firebase.
+     *
+     * @return The Result of the work.
      */
     override suspend fun doWork(): Result {
 
@@ -98,13 +111,15 @@ class SaveStepsRecords(appContext: Context, params: WorkerParameters) :
 
          */
 
+        // Get steps records to be sent
         val stepsRecords = stepsRecordRepository.getAllDaySteps(
             isSent = false
         )
 
-
+        // Get Firebase installation ID
         val id = FirebaseInstallations.getInstance().id.await()
 
+        // Save steps records to Firebase
         stepsRecords.forEach { record ->
             /* try {
                  val response = PostgresApi.retrofitService.postSteps(it.toStepsRecordToJson(it.id))

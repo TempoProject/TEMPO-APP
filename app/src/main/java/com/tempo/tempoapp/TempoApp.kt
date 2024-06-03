@@ -16,6 +16,9 @@ import androidx.navigation.compose.rememberNavController
 import com.tempo.tempoapp.data.healthconnect.HealthConnectManager
 import com.tempo.tempoapp.ui.navigation.TempoNavHost
 
+/**
+ * Composable function for the Tempo app.
+ */
 @Composable
 fun TempoApp(
     navController: NavHostController = rememberNavController(),
@@ -24,6 +27,9 @@ fun TempoApp(
     TempoNavHost(navController = navController, healthConnectManager)
 }
 
+/**
+ * Composable function for the Tempo app's app bar.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TempoAppBar(

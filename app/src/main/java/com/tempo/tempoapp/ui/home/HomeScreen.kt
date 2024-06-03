@@ -87,11 +87,32 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 
+/**
+ * Representing the home navigation destination.
+ */
 object HomeDestination : NavigationDestination {
     override val route = "home"
     override val titleRes = R.string.app_name
 }
 
+/**
+ * Composable function for rendering the Home screen.
+ *
+ * @param modifier Modifier for customizing the layout.
+ * @param viewModel ViewModel instance for the Home screen.
+ * @param availability Availability status of Health Connect.
+ * @param onResumeAvailabilityCheck Lambda function to check availability on resume.
+ * @param lifecycleOwner Lifecycle owner for observing lifecycle changes.
+ * @param navigateToBleedingEntry Lambda function to navigate to the Bleeding Entry screen.
+ * @param navigateToInfusionEntry Lambda function to navigate to the Infusion Entry screen.
+ * @param navigateToBleedingUpdate Lambda function to navigate to the Bleeding Update screen with an ID parameter.
+ * @param navigateToInfusionUpdate Lambda function to navigate to the Infusion Update screen with an ID parameter.
+ * @param navigateToHistory Lambda function to navigate to the History screen.
+ * @param navigateToAddReminder Lambda function to navigate to the Add Reminder screen.
+ * @param navigateToReminderList Lambda function to navigate to the Reminder List screen.
+ * @param navigateToScanDevices Lambda function to navigate to the Scan Devices screen.
+ * @param navigateToMovesense Lambda function to navigate to the Movesense screen.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
@@ -505,6 +526,15 @@ fun HomeScreen(
     }
 }
 
+/**
+ * Composable function for rendering a navigation drawer item.
+ *
+ * @param stringId String resource ID for the label text.
+ * @param icon Icon for the drawer item.
+ * @param scope Coroutine scope for managing drawer state changes.
+ * @param drawerState Drawer state object.
+ * @param navDestination Lambda function to navigate to the corresponding destination.
+ */
 @Composable
 private fun NavDrawerItem(
     @StringRes stringId: Int,
@@ -527,6 +557,10 @@ private fun NavDrawerItem(
 }
 
 
+/**
+ * Composable function for displaying a message when Health Connect is not installed.
+ * It provides a clickable link to install Health Connect.
+ */
 @Composable
 private fun NotInstalledMessage() {
     // Build the URL to allow the user to install the Health Connect package

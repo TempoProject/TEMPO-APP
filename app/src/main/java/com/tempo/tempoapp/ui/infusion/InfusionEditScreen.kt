@@ -14,6 +14,9 @@ import com.tempo.tempoapp.ui.AppViewModelProvider
 import com.tempo.tempoapp.ui.navigation.NavigationDestination
 import kotlinx.coroutines.launch
 
+/**
+ * Represents the destination for editing infusion details.
+ */
 object InfusionEditDestination : NavigationDestination {
     override val route: String
         get() = "infusion_edit"
@@ -24,6 +27,13 @@ object InfusionEditDestination : NavigationDestination {
     val routeWithArgs = "$route/{$itemIdArg}"
 }
 
+/**
+ * Composable function for displaying the screen for editing infusion details.
+ *
+ * @param navigateBack Function to navigate back to the previous screen.
+ * @param onNavigateUp Function to handle the Up navigation action.
+ * @param viewModel ViewModel for managing the state of the screen.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InfusionEditScreen(

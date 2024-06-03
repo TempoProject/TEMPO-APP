@@ -11,6 +11,7 @@ import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.StepsRecord
 import com.tempo.tempoapp.R
 import com.tempo.tempoapp.TempoApplication
+import com.tempo.tempoapp.data.model.StepsRecordModel
 import com.tempo.tempoapp.data.model.Utils
 import com.tempo.tempoapp.data.model.toTimestamp
 import kotlinx.coroutines.CoroutineScope
@@ -20,6 +21,10 @@ import java.time.Instant
 import java.time.temporal.ChronoUnit
 
 
+/**
+ * Service class to handle periodic fetching and storing of steps data from HealthConnect.
+ * This service runs in the foreground to ensure it's not killed by the system.
+ */
 class StepsService : Service() {
 
     private val serviceScope = CoroutineScope(Dispatchers.IO)
@@ -51,7 +56,7 @@ class StepsService : Service() {
 
                 var instantStartTime = Instant.now().minusSeconds(1800)
                 //Log.d(TAG, "instant default: $instantStartTime")
-                if (latestUpdate != null) {
+                if (latestUpdate != null && latestUpdate < Instant.now().toEpochMilli()) {
                     instantStartTime = Instant.ofEpochMilli(latestUpdate)
                     //  Log.d(TAG, "instant update: $instantStartTime")
                 }
@@ -60,26 +65,10 @@ class StepsService : Service() {
                 val list =
                     healthConnectManager.readSteps(instantStartTime, instantNow)
                         .toMutableList()
-                //Log.d(TAG, "full list: $list")
-                /*try {
-                    if (list.last().startTime == instantThirtyMinutes)
-                        list.removeLast()
-                    Log.d(TAG, "list after removeLast(): $list")
-                } catch (err: NoSuchElementException) {
-                    Log.e(TAG, err.message!!)
-                }*/
-                /*if (list.isEmpty())
-                    stepsRecordRepository.insertItem(
-                        com.tempo.tempoapp.data.model.StepsRecord(
-                            steps = 100,
-                            date = Instant.now().truncatedTo(ChronoUnit.DAYS).toEpochMilli(),
-                            startTime = Instant.now().toEpochMilli(),
-                            endTime = Instant.now().toEpochMilli()
-                        )
-                    )*/
+
                 list.forEach {
                     stepsRecordRepository.insertItem(
-                        com.tempo.tempoapp.data.model.StepsRecord(
+                        StepsRecordModel(
                             steps = it.count,
                             date = it.startTime.toTimestamp(ChronoUnit.DAYS),
                             startTime = it.startTime.toTimestamp(ChronoUnit.MILLIS),

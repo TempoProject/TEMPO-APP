@@ -56,6 +56,10 @@ import com.tempo.tempoapp.ui.navigation.NavigationDestination
 import com.tempo.tempoapp.ui.toStringDate
 import kotlinx.coroutines.launch
 
+/**
+ * Represents the destination for navigating to the bleeding event screen.
+ * Implements the NavigationDestination interface to define navigation route and title resource.
+ */
 object BleedingEntryDestination : NavigationDestination {
     override val route: String
         get() = "bleeding_event"
@@ -63,6 +67,13 @@ object BleedingEntryDestination : NavigationDestination {
         get() = R.string.add_new_bleeding
 }
 
+/**
+ * Composable function for rendering the bleeding event screen.
+ *
+ * @param navigateBack Callback function to navigate back to the previous screen.
+ * @param onNavigateUp Callback function to handle the up navigation action.
+ * @param viewModel ViewModel responsible for managing the state and logic of the screen.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BleedingEntryScreen(
@@ -98,6 +109,14 @@ fun BleedingEntryScreen(
     }
 }
 
+/**
+ * Composable function representing the body of the bleeding event screen.
+ *
+ * @param uiState UI state of the bleeding event.
+ * @param onItemClick Callback function invoked when an item is clicked.
+ * @param onSave Callback function invoked when the user saves the bleeding event.
+ * @param modifier Modifier for customizing the layout.
+ */
 @Composable
 fun BleedingEventBody(
     uiState: BleedingEventUiState,
@@ -131,7 +150,13 @@ fun BleedingEventBody(
 
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+/**
+ * Composable function for rendering the form inputs of the bleeding event.
+ *
+ * @param uiState UI state of the bleeding event.
+ * @param onItemClick Callback function invoked when an item is clicked.
+ * @param modifier Modifier for customizing the layout.
+ */
 @Composable
 fun BleedingEventInputForm(
     uiState: BleedingEventUiState,
@@ -262,6 +287,12 @@ fun BleedingEventInputForm(
     }
 }
 
+/**
+ * Composable function for rendering the date picker dialog.
+ *
+ * @param onDateSelected Callback function invoked when a date is selected.
+ * @param onDismiss Callback function invoked when the dialog is dismissed.
+ */
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 fun DatePickerDialog(
@@ -292,6 +323,13 @@ fun DatePickerDialog(
     }
 }
 
+/**
+ * Composable function for rendering the time picker dialog.
+ *
+ * @param onTimeSelected Callback function invoked when a time is selected.
+ * @param onDismiss Callback function invoked when the dialog is dismissed.
+ * @param modifier Modifier for customizing the layout.
+ */
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 fun TimePickerDialog(
@@ -333,6 +371,15 @@ fun TimePickerDialog(
     }
 }
 
+/**
+ * Composable function for rendering a dropdown list.
+ *
+ * @param bleedingDetails Details of the bleeding event.
+ * @param itemList List of items to display in the dropdown.
+ * @param modifier Modifier for customizing the layout.
+ * @param onItemClick Callback function invoked when an item is clicked.
+ * @param label Resource ID for the label associated with the dropdown.
+ */
 @Composable
 fun DropdownList(
     bleedingDetails: BleedingDetails,
@@ -427,6 +474,12 @@ fun DropdownList(
     }
 }
 
+/**
+ * Composable function for rendering text with an icon.
+ *
+ * @param text Text to display.
+ * @param modifier Modifier for customizing the layout.
+ */
 @Composable
 fun TextWithIcon(text: String, modifier: Modifier = Modifier) {
     Row(

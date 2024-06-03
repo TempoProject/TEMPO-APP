@@ -67,6 +67,9 @@ import com.tempo.tempoapp.ui.navigation.NavigationDestination
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 
+/**
+ * Representing a navigation destination for reminders.
+ */
 object ReminderDestination : NavigationDestination {
     override val route: String
         get() = "reminder"
@@ -74,6 +77,14 @@ object ReminderDestination : NavigationDestination {
         get() = R.string.reminder
 }
 
+/**
+ * ReminderScreen is a composable function that represents the UI screen for managing reminders.
+ *
+ * @param viewModel The view model for managing reminder functionality.
+ * @param lifecycleOwner The lifecycle owner used for observing the lifecycle events.
+ * @param onNavigateUp Callback function to navigate up.
+ * @param navigateBack Callback function to navigate back.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReminderScreen(
@@ -241,7 +252,20 @@ fun ReminderScreen(
     }
 }
 
-
+/**
+ * ReminderBody is a composable function representing the main content of the reminder screen.
+ *
+ * @param modifier Modifier for the layout.
+ * @param uiState UI state for the reminder.
+ * @param updateEvent Function to update the reminder event.
+ * @param updateTime Function to update the reminder time.
+ * @param updateDate Function to update the reminder date.
+ * @param updateIsPeriodic Function to update whether the reminder is periodic.
+ * @param updateInterval Function to update the reminder interval.
+ * @param updateTimeUnit Function to update the reminder time unit.
+ * @param reset Function to reset the reminder.
+ * @param onSave Function to save the reminder.
+ */
 @Composable
 private fun ReminderBody(
     modifier: Modifier = Modifier,

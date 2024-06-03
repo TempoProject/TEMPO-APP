@@ -13,6 +13,12 @@ import java.io.Serializable
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 
+/**
+ * StepsReceiver is a BroadcastReceiver responsible for handling steps-related broadcasts.
+ *
+ * @property alarmManager The AlarmManager instance used for scheduling alarms.
+ * @property reminderRepository The ReminderRepository instance used for accessing reminder data.
+ */
 @SuppressLint("RestrictedApi")
 class StepsReceiver(
     private val alarmManager: AlarmManager = TempoApplication.instance.alarm,
@@ -20,8 +26,12 @@ class StepsReceiver(
 ) :
     BroadcastReceiver() {
 
-
-    //@RequiresApi(Build.VERSION_CODES.S)
+    /**
+     * Receives the broadcast and starts the StepsService as a foreground service.
+     *
+     * @param context The context in which the receiver is running.
+     * @param intent The Intent being received.
+     */
     override fun onReceive(context: Context, intent: Intent?) {
         val serviceIntent = Intent(context, StepsService::class.java)
         context.startForegroundService(serviceIntent)
@@ -55,7 +65,13 @@ class StepsReceiver(
     }
 }
 
-
+/**
+ * Retrieves a Serializable object from the Intent.
+ *
+ * @param key The key with which the Serializable object was added to the Intent.
+ * @param mClass The class of the Serializable object.
+ * @return The Serializable object retrieved from the Intent.
+ */
 @Suppress("UNCHECKED_CAST", "DEPRECATION")
 fun <T : Serializable?> Intent.getSerializable(key: String, mClass: Class<T>): T {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)

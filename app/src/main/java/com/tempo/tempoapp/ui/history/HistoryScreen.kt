@@ -30,11 +30,24 @@ import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 
+/**
+ * Represents a destination for the history screen in the navigation system.
+ * Implements the [NavigationDestination] interface.
+ */
 object HistoryDestination : NavigationDestination {
     override val route = "history"
     override val titleRes = R.string.history
 }
 
+/**
+ * Represents a screen for displaying the history of bleeding and infusion events.
+ *
+ * @param navigateToBleedingUpdate Callback to navigate to the update screen for a bleeding event.
+ * @param navigateToInfusionUpdate Callback to navigate to the update screen for an infusion event.
+ * @param modifier Modifier for the screen.
+ * @param viewModel View model for managing the state and logic of the history screen.
+ * @param onNavigateUp Callback to handle navigation up action.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HistoryScreen(
@@ -44,9 +57,9 @@ fun HistoryScreen(
     viewModel: HistoryViewModel = viewModel(factory = AppViewModelProvider.Factory),
     onNavigateUp: () -> Unit,
 ) {
-
-
+    // Collect the state from the view model
     val historyUiState by viewModel.historyUiState.collectAsState()
+    // Remember coroutine scope
     val scope = rememberCoroutineScope()
 
     var showDatePickerDialog by remember {

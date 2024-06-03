@@ -19,6 +19,14 @@ import com.tempo.tempoapp.data.model.ReminderEvent
 import com.tempo.tempoapp.data.model.StepsRecord
 import com.tempo.tempoapp.data.model.Utils
 
+/**
+ * Database class representing the SQLite database for the application.
+ * Defines entities and provides DAOs for accessing data tables.
+ *
+ * @param entities Array of entity classes representing database tables.
+ * @param version The version number of the database schema.
+ * @param exportSchema Whether to export the database schema.
+ */
 @Database(
     entities = arrayOf(
         BleedingEvent::class,
@@ -45,6 +53,13 @@ abstract class TempoDatabase : RoomDatabase() {
         @Volatile
         private var INSTANCE: TempoDatabase? = null
 
+        /**
+         * Retrieves an instance of the TempoDatabase.
+         * If an instance does not exist, creates a new one.
+         *
+         * @param context The application context.
+         * @return An instance of TempoDatabase.
+         */
         fun getDatabase(context: Context): TempoDatabase {
             return INSTANCE ?: synchronized(this) {
                 Room.databaseBuilder(

@@ -52,6 +52,9 @@ import com.tempo.tempoapp.ui.navigation.NavigationDestination
 import com.tempo.tempoapp.ui.toStringDate
 import kotlinx.coroutines.launch
 
+/**
+ * Navigation destination for the infusion entry screen.
+ */
 object InfusionEntryDestination : NavigationDestination {
     override val route: String
         get() = "infusion_entry"
@@ -59,6 +62,13 @@ object InfusionEntryDestination : NavigationDestination {
         get() = R.string.infusion
 }
 
+/**
+ * Composable function for displaying the infusion entry screen.
+ *
+ * @param navigateBack Function to navigate back to the previous screen.
+ * @param onNavigateUp Function to handle the up navigation.
+ * @param viewModel ViewModel for managing the state of the infusion entry screen.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InfusionEventScreen(
@@ -90,6 +100,14 @@ fun InfusionEventScreen(
     }
 }
 
+/**
+ * Composable function representing the body of the infusion event screen.
+ *
+ * @param uiState Current UI state of the infusion event.
+ * @param onItemClick Callback function for item click.
+ * @param onSave Callback function for saving the infusion event.
+ * @param modifier Modifier for the body.
+ */
 @Composable
 fun InfusionEventBody(
     uiState: InfusionUiState,
@@ -120,6 +138,13 @@ fun InfusionEventBody(
     }
 }
 
+/**
+ * Composable function for displaying the input form of the infusion event.
+ *
+ * @param uiState Current UI state of the infusion event.
+ * @param onItemClick Callback function for item click.
+ * @param modifier Modifier for the input form.
+ */
 @Composable
 fun InfusionEventInputForm(
     uiState: InfusionUiState,
@@ -256,6 +281,14 @@ fun InfusionEventInputForm(
     }
 }
 
+/**
+ * Composable function for displaying a dropdown list.
+ *
+ * @param infusionDetails Current details of the infusion event.
+ * @param itemList List of items for the dropdown.
+ * @param onItemClick Callback function for item click.
+ * @param label Label resource ID for the dropdown.
+ */
 @Composable
 fun DropdownList(
     infusionDetails: InfusionDetails,

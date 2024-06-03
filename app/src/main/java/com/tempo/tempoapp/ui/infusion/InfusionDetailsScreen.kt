@@ -34,6 +34,9 @@ import com.tempo.tempoapp.ui.navigation.NavigationDestination
 import com.tempo.tempoapp.ui.toStringDate
 import kotlinx.coroutines.launch
 
+/**
+ * Represents the destination for viewing infusion details.
+ */
 object InfusionDetailsDestination : NavigationDestination {
     override val route: String
         get() = "infusion_details"
@@ -44,6 +47,14 @@ object InfusionDetailsDestination : NavigationDestination {
     val routeWithArgs = "${InfusionEntryDestination.route}/{$itemIdArg}"
 }
 
+/**
+ * Composable function for displaying the screen to view infusion details.
+ *
+ * @param onNavigateUp Navigation callback for navigating up.
+ * @param navigateBack Navigation callback for navigating back.
+ * @param navigateToInfusionEdit Navigation callback for editing infusion details.
+ * @param viewModel View model for managing infusion details.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InfusionDetailsScreen(
@@ -107,6 +118,12 @@ fun InfusionDetailsScreen(
     }
 }
 
+/**
+ * Composable function for displaying the body content of infusion details.
+ *
+ * @param uiState UI state containing infusion details.
+ * @param modifier Modifier for customizing the layout.
+ */
 @Composable
 fun InfusionDetailsBody(uiState: InfusionDetailsUiState, modifier: Modifier = Modifier) {
     Column(
@@ -120,6 +137,12 @@ fun InfusionDetailsBody(uiState: InfusionDetailsUiState, modifier: Modifier = Mo
     }
 }
 
+/**
+ * Composable function for displaying details of an infusion item.
+ *
+ * @param details Details of the infusion item.
+ * @param modifier Modifier for customizing the layout.
+ */
 @Composable
 fun InfusionItemDetails(details: InfusionDetails, modifier: Modifier) {
     Card(

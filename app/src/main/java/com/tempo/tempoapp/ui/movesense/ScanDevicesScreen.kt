@@ -64,6 +64,10 @@ import com.tempo.tempoapp.utils.MovesenseService
 import kotlinx.coroutines.launch
 
 
+/**
+ * Represents a navigation destination for scanning devices.
+ */
+
 object ScanDeviceDestination : NavigationDestination {
     override val route: String
         get() = "scandevices"
@@ -72,16 +76,24 @@ object ScanDeviceDestination : NavigationDestination {
 
 }
 
+/**
+ * Composable function representing the screen for scanning Bluetooth devices.
+ * Handles permissions, scans for devices, and displays the list of scanned devices.
+ *
+ * @param lifecycleOwner The LifecycleOwner used for observing lifecycle events.
+ * @param viewModel ScanDevicesViewModel used for managing scanning-related data and operations.
+ * @param navigateToMovesense Lambda function to navigate to the Movesense screen.
+ * @param onNavigateUp Lambda function to navigate up.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScanDevicesScreen(
-    context: Context,
     lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
     viewModel: ScanDevicesViewModel = viewModel(factory = AppViewModelProvider.Factory),
     navigateToMovesense: () -> Unit,
     onNavigateUp: () -> Unit
 ) {
-    val localContext = LocalContext.current
+    val context = LocalContext.current
 
     var showDialog by remember { mutableStateOf(false) }
     var canEnableBl by remember { mutableStateOf(false) }
@@ -90,7 +102,7 @@ fun ScanDevicesScreen(
     var isLocationEnabled by remember {
         mutableStateOf(
             isLocationEnabled(
-                localContext
+                context
             )
         )
     }
@@ -124,7 +136,7 @@ fun ScanDevicesScreen(
     ) { perms ->
         isPermissionPermanentlyDenied = perms.any {
             !it.value && !ActivityCompat.shouldShowRequestPermissionRationale(
-                localContext as Activity,
+                context as Activity,
                 it.key
             )
         }
@@ -139,7 +151,7 @@ fun ScanDevicesScreen(
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
             canEnableGeo =
                 perms[Manifest.permission.ACCESS_FINE_LOCATION] == true && perms[Manifest.permission.ACCESS_COARSE_LOCATION] == true
-            isLocationEnabled = isLocationEnabled(localContext)
+            isLocationEnabled = isLocationEnabled(context)
 
             if (canEnableGeo && !isLocationEnabled)
                 enableBL.launch(
@@ -176,7 +188,7 @@ fun ScanDevicesScreen(
                     ) == PackageManager.PERMISSION_GRANTED
             showDialog = !(canEnableBl && canEnableGeo)
             isBluetoothEnabled = bluetoothAdapter.isEnabled
-            isLocationEnabled = isLocationEnabled(localContext)
+            isLocationEnabled = isLocationEnabled(context)
 
         }
 
@@ -222,7 +234,7 @@ fun ScanDevicesScreen(
                 startScan = {
                     if (canEnableBl && !isBluetoothEnabled) {
                         Toast.makeText(
-                            localContext,
+                            context,
                             "Attiva il bluetooth per cercare i dispositivi Movesense.",
                             Toast.LENGTH_LONG
                         ).show()
@@ -236,12 +248,12 @@ fun ScanDevicesScreen(
                         else
                             showDialog = true
                     } else {
-                        isLocationEnabled = isLocationEnabled(localContext)
+                        isLocationEnabled = isLocationEnabled(context)
                         if (canEnableGeo && canEnableBl && isLocationEnabled)
                             viewModel.startScan()
                         else if (canEnableGeo && !isLocationEnabled) {
                             Toast.makeText(
-                                localContext,
+                                context,
                                 "Attiva la localizzazione per cercare i dispositivi Movesense.",
                                 Toast.LENGTH_LONG
                             ).show()
@@ -320,19 +332,19 @@ fun ScanDevicesScreen(
         if (showDialog) {
             val isPermanentlyDeclined =
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) !ActivityCompat.shouldShowRequestPermissionRationale(
-                    localContext as Activity,
+                    context as Activity,
                     Manifest.permission.BLUETOOTH_SCAN
                 ) && !ActivityCompat.shouldShowRequestPermissionRationale(
-                    localContext,
+                    context,
                     Manifest.permission.BLUETOOTH_CONNECT
                 ) else !ActivityCompat.shouldShowRequestPermissionRationale(
-                    localContext as Activity,
+                    context as Activity,
                     Manifest.permission.BLUETOOTH
                 ) && !ActivityCompat.shouldShowRequestPermissionRationale(
-                    localContext,
+                    context,
                     Manifest.permission.ACCESS_COARSE_LOCATION
                 ) && !ActivityCompat.shouldShowRequestPermissionRationale(
-                    localContext,
+                    context,
                     Manifest.permission.ACCESS_COARSE_LOCATION
                 )
             PermissionDialog(
@@ -368,6 +380,15 @@ fun ScanDevicesScreen(
 
 }
 
+/**
+ * Composable function representing the device screen displaying the list of scanned Bluetooth devices.
+ *
+ * @param state BluetoothUiState holding the state of scanned devices.
+ * @param startScan Lambda function to start scanning for devices.
+ * @param stopScan Lambda function to stop scanning for devices.
+ * @param onClick Lambda function triggered on clicking a device.
+ * @param modifier Modifier for applying layout attributes.
+ */
 @Composable
 fun DeviceScreen(
     state: BluetoothUiState,
@@ -402,6 +423,13 @@ fun DeviceScreen(
     }
 }
 
+/**
+ * Composable function representing the list of scanned Bluetooth devices.
+ *
+ * @param scannedDevices List of scanned Bluetooth devices.
+ * @param onClick Lambda function triggered on clicking a device.
+ * @param modifier Modifier for applying layout attributes.
+ */
 @Composable
 fun BluetoothDeviceList(
     scannedDevices: List<BluetoothDeviceInfo>,
@@ -441,6 +469,12 @@ fun BluetoothDeviceList(
     }
 }
 
+/**
+ * Function to check if location services are enabled.
+ *
+ * @param context The Context.
+ * @return Boolean indicating if location services are enabled.
+ */
 fun isLocationEnabled(context: Context): Boolean {
     val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
     return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||

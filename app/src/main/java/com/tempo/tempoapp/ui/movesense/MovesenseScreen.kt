@@ -4,7 +4,6 @@ import android.Manifest
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -66,6 +65,9 @@ import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 
 
+/**
+ * Represents the navigation destination for the Movesense screen.
+ */
 object MovesenseDestination : NavigationDestination {
     override val route: String
         get() = "movesense"
@@ -74,24 +76,29 @@ object MovesenseDestination : NavigationDestination {
 
 }
 
+/**
+ * Represents the Movesense screen composable function.
+ * This composable function displays the Movesense screen UI.
+ *
+ * @param lifecycleOwner The lifecycle owner used to observe the lifecycle of the screen.
+ * @param onNavigateBack Callback function to navigate back from the Movesense screen.
+ * @param viewModel The MovesenseViewModel used to manage data for the Movesense screen.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MovesenseScreen(
-    context: Context,
     lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
-    onNavigateScanDevices: () -> Unit,
     onNavigateBack: () -> Unit,
-    onNavigateUp: () -> Unit,
     viewModel: MovesenseViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
 
-    val localContext = LocalContext.current
+    val context = LocalContext.current
 
     var showDialog by remember { mutableStateOf(false) }
     var canEnableBl by remember { mutableStateOf(false) }
     var canEnableGeo by remember { mutableStateOf(false) }
     var isPermissionPermanentlyDenied by remember { mutableStateOf(false) }
-    var isLocationEnabled by remember { mutableStateOf(isLocationEnabled(localContext)) }
+    var isLocationEnabled by remember { mutableStateOf(isLocationEnabled(context)) }
 
     val state = viewModel.movesenseUiState.collectAsState()
 
@@ -122,7 +129,7 @@ fun MovesenseScreen(
     ) { perms ->
         isPermissionPermanentlyDenied = perms.any {
             !it.value && !ActivityCompat.shouldShowRequestPermissionRationale(
-                localContext as Activity,
+                context as Activity,
                 it.key
             )
         }
@@ -137,7 +144,7 @@ fun MovesenseScreen(
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
             canEnableGeo =
                 perms[Manifest.permission.ACCESS_FINE_LOCATION] == true && perms[Manifest.permission.ACCESS_COARSE_LOCATION] == true
-            isLocationEnabled = isLocationEnabled(localContext)
+            isLocationEnabled = isLocationEnabled(context)
 
             if (canEnableGeo && !isLocationEnabled)
                 enableBL.launch(
@@ -174,7 +181,7 @@ fun MovesenseScreen(
                     ) == PackageManager.PERMISSION_GRANTED
             showDialog = !(canEnableBl && canEnableGeo)
             isBluetoothEnabled = bluetoothAdapter.isEnabled
-            isLocationEnabled = isLocationEnabled(localContext)
+            isLocationEnabled = isLocationEnabled(context)
 
         }
 
@@ -436,19 +443,19 @@ fun MovesenseScreen(
         if (showDialog) {
             val isPermanentlyDeclined =
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) !ActivityCompat.shouldShowRequestPermissionRationale(
-                    localContext as Activity,
+                    context as Activity,
                     Manifest.permission.BLUETOOTH_SCAN
                 ) && !ActivityCompat.shouldShowRequestPermissionRationale(
-                    localContext,
+                    context,
                     Manifest.permission.BLUETOOTH_CONNECT
                 ) else !ActivityCompat.shouldShowRequestPermissionRationale(
-                    localContext as Activity,
+                    context as Activity,
                     Manifest.permission.BLUETOOTH
                 ) && !ActivityCompat.shouldShowRequestPermissionRationale(
-                    localContext,
+                    context,
                     Manifest.permission.ACCESS_COARSE_LOCATION
                 ) && !ActivityCompat.shouldShowRequestPermissionRationale(
-                    localContext,
+                    context,
                     Manifest.permission.ACCESS_COARSE_LOCATION
                 )
             PermissionDialog(
@@ -479,6 +486,21 @@ fun MovesenseScreen(
     }
 }
 
+/**
+ * Composable function representing the body content of the Movesense screen.
+ * Displays buttons for various actions related to Movesense devices.
+ *
+ * @param state State object holding Movesense UI state.
+ * @param hasPermission Boolean indicating if required permissions are granted.
+ * @param onConnect Lambda function to connect to Movesense device.
+ * @param onConfigure Lambda function to configure Movesense device.
+ * @param onDisconnect Lambda function to disconnect from Movesense device.
+ * @param onFlush Lambda function to flush Movesense device memory.
+ * @param onDelete Lambda function to delete Movesense device data.
+ * @param onForget Lambda function to forget Movesense device.
+ * @param getPermission Lambda function to request permissions.
+ * @param modifier Modifier for applying layout attributes.
+ */
 @Composable
 fun MovesenseBody(
     state: State<MovesenseUiState>,

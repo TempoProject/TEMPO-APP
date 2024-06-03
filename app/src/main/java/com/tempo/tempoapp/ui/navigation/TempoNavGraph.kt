@@ -10,7 +10,6 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.tempo.tempoapp.TempoApplication
 import com.tempo.tempoapp.data.healthconnect.HealthConnectManager
 import com.tempo.tempoapp.ui.bleeding.BleedingDetailsScreen
 import com.tempo.tempoapp.ui.bleeding.BleedingEditScreen
@@ -37,6 +36,14 @@ import com.tempo.tempoapp.ui.reminders.ReminderList
 import com.tempo.tempoapp.ui.reminders.ReminderListDestination
 import com.tempo.tempoapp.ui.reminders.ReminderScreen
 
+/**
+ * TempoNavHost is a composable function that defines the navigation structure of the Tempo app.
+ * It utilizes Jetpack Compose's NavHost to handle navigation between different destinations within the app.
+ *
+ * @param navController The NavHostController responsible for navigating between destinations.
+ * @param healthConnectManager An instance of HealthConnectManager for managing health-related functionalities.
+ * @param modifier Optional modifier for customizing the layout of the NavHost.
+ */
 @Composable
 fun TempoNavHost(
     navController: NavHostController,
@@ -190,6 +197,9 @@ fun TempoNavHost(
             )
         }
 
+        /**
+         * Reminder
+         */
         composable(
             route = ReminderDestination.route
         ) {
@@ -199,22 +209,27 @@ fun TempoNavHost(
             )
         }
 
+        /**
+         * Reminder List
+         */
         composable(
             route = ReminderListDestination.route
         ) {
             ReminderList(
-                onNavigateUp = { navController.navigateUp() },
-                navigateBack = { navController.popBackStack() },
+                onNavigateUp = { navController.navigateUp() }
             )
         }
 
+        /**
+         * Scan Bluetooth device
+         */
         composable(
             route = ScanDeviceDestination.route
         ) {
             ScanDevicesScreen(
-                context = TempoApplication.instance.applicationContext,
+                //context = TempoApplication.instance.applicationContext,
                 navigateToMovesense = {
-                    navController.navigate(MovesenseDestination.route){
+                    navController.navigate(MovesenseDestination.route) {
                         popUpTo(HomeDestination.route) {
                             inclusive = false
                         }
@@ -224,27 +239,21 @@ fun TempoNavHost(
             )
         }
 
+        /**
+         * Movesense screen
+         */
         composable(
             route = MovesenseDestination.route
         )
         {
             MovesenseScreen(
-                context = TempoApplication.instance.applicationContext,
-                onNavigateScanDevices = {
-                    navController.popBackStack(
-                        route = ScanDeviceDestination.route,
-                        inclusive = false
-                    )
-                },
+                //context = TempoApplication.instance.applicationContext,
                 onNavigateBack = {
                     navController.popBackStack(
                         route = HomeDestination.route,
                         inclusive = false
                     )
-                },
-                onNavigateUp = {
-                    navController.navigateUp()
-                },
+                }
             )
         }
 

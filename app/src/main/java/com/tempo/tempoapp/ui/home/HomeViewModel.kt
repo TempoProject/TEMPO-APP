@@ -9,7 +9,6 @@ import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.StepsRecord
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.work.WorkManager
 import com.tempo.tempoapp.TempoApplication
 import com.tempo.tempoapp.data.healthconnect.HealthConnectAvailability
 import com.tempo.tempoapp.data.healthconnect.HealthConnectManager
@@ -29,22 +28,40 @@ import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 
+/**
+ * ViewModel class for the Home screen. Manages the UI state and handles business logic
+ * related to Bleeding events, Infusion events, Steps records, and Movesense devices.
+ *
+ * @param bleedingRepository Repository for handling bleeding events.
+ * @param infusionRepository Repository for handling infusion events.
+ * @param stepsRecordRepository Repository for handling steps records.
+ * @param movesenseRepository Repository for handling Movesense devices.
+ * @param healthConnectManager Manager for handling Health Connect interactions.
+ */
 class HomeViewModel(
     bleedingRepository: BleedingRepository,
     infusionRepository: InfusionRepository,
     stepsRecordRepository: StepsRecordRepository,
     movesenseRepository: MovesenseRepository,
     private val healthConnectManager: HealthConnectManager,
-    private val workManager: WorkManager
 ) : ViewModel() {
 
+    /**
+     * Set of permissions required for reading steps records.
+     */
     val permission = setOf(
         HealthPermission.getReadPermission(StepsRecord::class)
     )
 
+    /**
+     * State to keep track of whether the required permissions are granted.
+     */
     var permissionsGranted = mutableStateOf(false)
         private set
 
+    /**
+     * Permissions launcher for requesting Health Connect permissions.
+     */
     val permissionsLauncher = healthConnectManager.requestPermissionsActivityContract()
 
     init {
@@ -52,6 +69,9 @@ class HomeViewModel(
             initialLoad()
     }
 
+    /**
+     * Initial load function to check for permissions and schedule an alarm if permissions are granted.
+     */
     fun initialLoad() {
         viewModelScope.launch {
             permissionsGranted.value =
@@ -88,6 +108,10 @@ class HomeViewModel(
         }
     }
 
+    /**
+     * Combined state flow of UI state containing lists of bleeding events, infusion events,
+     * steps count, and movesense device information.
+     */
     val homeUiState: StateFlow<HomeUiState> =
         combine(
             bleedingRepository.getAllDayBleeding(
@@ -108,32 +132,20 @@ class HomeViewModel(
             initialValue = HomeUiState(),
             started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS)
         )
-    /* bleedingRepository.getAll().combie(
-         infusionRepository.getAll(),
-         stepsRecordRepository.getAll()
-     ) { bleeding, infusion, steps ->
-         HomeUiState(bleeding, infusion, steps)
-     }.stateIn(
-         scope = viewModelScope,
-         initialValue = HomeUiState(),
-         started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS)
-     )
-
-
-    suspend fun readStepsInterval() {
-        val startOfDay = Instant.now().minusSeconds(900)
-        val now = Instant.now()
-        println(healthConnectManager.readSteps(startOfDay, now).forEach {
-            println(it.count)
-        })
-    }
-     */
 
     companion object {
         private const val TIMEOUT_MILLIS = 5_000L
     }
 }
 
+/**
+ * Data class representing the UI state of the Home screen.
+ *
+ * @param bleedingList List of bleeding events.
+ * @param infusionList List of infusion events.
+ * @param stepsCount Total steps count.
+ * @param movesense Movesense device information.
+ */
 data class HomeUiState(
     val bleedingList: List<BleedingEvent> = listOf(),
     val infusionList: List<InfusionEvent> = mutableListOf(),
