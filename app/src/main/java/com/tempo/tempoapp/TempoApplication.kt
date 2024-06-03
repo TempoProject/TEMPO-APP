@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit
 class TempoApplication : Application() {
     lateinit var container: AppContainer
     lateinit var healthConnectManager: HealthConnectManager
-    lateinit var workManager: WorkManager
+    private lateinit var workManager: WorkManager
     private lateinit var notificationManager: NotificationManager
     lateinit var database: DatabaseReference
     lateinit var alarm: AlarmManager
