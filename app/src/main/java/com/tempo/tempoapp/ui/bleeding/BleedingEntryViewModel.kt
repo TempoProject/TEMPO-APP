@@ -106,10 +106,10 @@ data class BleedingDetails(
 )
 
 /**
- * Extension function to convert BleedingEvent entity to BleedingDetails.
+ * Extension function to convert BleedingDetails to BleedingEvent entity.
  *
- * @receiver BleedingEvent object.
- * @return Corresponding BleedingDetails.
+ * @receiver BleedingDetails object.
+ * @return Corresponding BleedingEvent entity.
  */
 fun BleedingDetails.toEntity(): BleedingEvent =
     BleedingEvent(
@@ -120,6 +120,7 @@ fun BleedingDetails.toEntity(): BleedingEvent =
         painScale = painScale,
         note = note,
         date = date,
+        isSent = false,
         timestamp = SimpleDateFormat(
             "dd-MM-yyyy HH:mm",
             Locale.getDefault()
@@ -127,10 +128,10 @@ fun BleedingDetails.toEntity(): BleedingEvent =
     )
 
 /**
- * Extension function to convert BleedingEvent entity to BleedingEventUiState.
+ * Extension function to convert BleedingEvent to BleedingDetails.
  *
  * @receiver BleedingEvent object.
- * @return Corresponding BleedingEventUiState.
+ * @return Corresponding BleedingDetails object.
  */
 fun BleedingEvent.toBleedingDetails(): BleedingDetails =
     BleedingDetails(
@@ -144,6 +145,12 @@ fun BleedingEvent.toBleedingDetails(): BleedingDetails =
         time = timestamp.toStringTime()
     )
 
+/**
+ * Extension function to convert BleedingEvent to BleedingEventUiState.
+ *
+ * @receiver BleedingEvent object.
+ * @return Corresponding BleedingEventUiState object.
+ */
 fun BleedingEvent.toBleedingUiState(): BleedingEventUiState =
     BleedingEventUiState(
         bleedingDetails = this.toBleedingDetails(),
