@@ -107,6 +107,7 @@ fun InfusionDetails.toEntity(): InfusionEvent =
         lotNumber = lotNumber.toInt(),
         note = note,
         date = date,
+        isSent = false,
         timestamp = SimpleDateFormat(
             "dd-MM-yyyy HH:mm",
             Locale.getDefault()
