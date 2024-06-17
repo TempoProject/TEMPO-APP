@@ -1,9 +1,11 @@
 package com.tempo.tempoapp.workers
 
 import android.content.Context
+import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.google.firebase.installations.FirebaseInstallations
+import com.tempo.tempoapp.FirebaseRealtimeDatabase
 import com.tempo.tempoapp.TempoApplication
 import kotlinx.coroutines.tasks.await
 
@@ -15,15 +17,17 @@ import kotlinx.coroutines.tasks.await
  */
 class SaveBleedingRecords(appContext: Context, params: WorkerParameters) :
     CoroutineWorker(appContext, params) {
+    companion object {
+        private val TAG = SaveBleedingRecords::class.java.simpleName
+    }
 
-    private val TAG = javaClass.simpleName
     // Bleeding repository to access bleeding records
     private val bleedingRepository =
         (appContext.applicationContext as TempoApplication).container.bleedingRepository
 
     // Firebase database reference
     private val databaseRef =
-        (appContext.applicationContext as TempoApplication).database
+        FirebaseRealtimeDatabase.instance
 
 
     /**
@@ -38,8 +42,10 @@ class SaveBleedingRecords(appContext: Context, params: WorkerParameters) :
 
         // Get bleeding records to be sent
         val bleedingRecords = bleedingRepository.getAllBleedingToSent(isSent = false)
-        bleedingRecords.forEach { record ->
 
+        Log.d(TAG, "Bleeding records to be sent: ${bleedingRecords.size}")
+        bleedingRecords.forEach { record ->
+            // Save bleeding record to Firebase
             databaseRef.child("bleedings").child(id).child(record.id.toString())
                 .setValue(record)
             /*
