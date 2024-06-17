@@ -12,7 +12,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.DatePicker
@@ -24,13 +26,17 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -49,7 +55,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tempo.tempoapp.R
 import com.tempo.tempoapp.TempoAppBar
 import com.tempo.tempoapp.data.model.BleedingCause
-import com.tempo.tempoapp.data.model.Severity
 import com.tempo.tempoapp.data.model.bleedingSite
 import com.tempo.tempoapp.ui.AppViewModelProvider
 import com.tempo.tempoapp.ui.navigation.NavigationDestination
@@ -64,7 +69,7 @@ object BleedingEntryDestination : NavigationDestination {
     override val route: String
         get() = "bleeding_event"
     override val titleRes: Int
-        get() = R.string.add_new_bleeding
+        get() = R.string.add_event
 }
 
 /**
@@ -125,7 +130,9 @@ fun BleedingEventBody(
     modifier: Modifier = Modifier//.padding(8.dp)
 ) {
     Column(
-        modifier = modifier.padding(dimensionResource(id = R.dimen.padding_medium)),
+        modifier = modifier
+            .padding(dimensionResource(id = R.dimen.padding_medium))
+            .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_large))
     ) {
         BleedingEventInputForm(
@@ -172,19 +179,119 @@ fun BleedingEventInputForm(
         mutableStateOf(false)
     }
     var date by remember {
-        mutableStateOf(uiState.bleedingDetails.date)
+        mutableLongStateOf(uiState.bleedingDetails.date)
     }
+    val radioOptions =
+        listOf(stringResource(id = R.string.yes), stringResource(id = R.string.no))
+    var isABleedingEpisode by remember { mutableStateOf(uiState.bleedingDetails.isABleedingEpisode) }
+    var questionBleedingEpisode by remember { mutableStateOf(uiState.bleedingDetails.questionBleedingEpisode) }
+    var questionTreatment by remember { mutableStateOf(uiState.bleedingDetails.treatment) }
+
     Column(
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_medium))
+        horizontalAlignment = Alignment.Start,
+        verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_small))
     ) {
         DropdownList(
             uiState.bleedingDetails,
             itemList = bleedingSite.toList(),
             onItemClick = onItemClick,
-            label = R.string.site_string_label,
+            label = R.string.site_string_label
         )
 
+        Text(
+            text = "Hai avuto un episodio di sanguinamento?",
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = modifier.padding(
+                start = dimensionResource(id = R.dimen.padding_small),
+                end = dimensionResource(id = R.dimen.padding_small)
+            )
+            //modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_small))
+        )
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            radioOptions.forEach { options ->
+                println(isABleedingEpisode)
+                Text(
+                    text = options,
+                    modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_small)),
+                    style = MaterialTheme.typography.bodySmall
+                )
+                RadioButton(
+                    selected = (options == isABleedingEpisode),//uiState.bleedingDetails.isABleedingEpisode),
+                    onClick = {
+                        isABleedingEpisode = options
+                        onItemClick(
+                            uiState.bleedingDetails.copy(
+                                isABleedingEpisode = options,
+                                questionBleedingEpisode = radioOptions[1],
+                            )
+                        )
+
+                    })
+            }
+        }
+        if (isABleedingEpisode == stringResource(id = R.string.no)) {
+            Text(
+                text = "Secondo te è sanguinamento?",
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = modifier.padding(
+                    start = dimensionResource(id = R.dimen.padding_small),
+                    end = dimensionResource(id = R.dimen.padding_small)
+                )
+            )
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                radioOptions.forEach { options ->
+                    Text(
+                        text = options,
+                        modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_small)),
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                    RadioButton(
+                        selected = (options == questionBleedingEpisode),
+                        onClick = {
+                            questionBleedingEpisode = options
+                            onItemClick(
+                                uiState.bleedingDetails.copy(
+                                    questionBleedingEpisode = options,
+                                    isABleedingEpisode = radioOptions[1]
+                                )
+                            )
+                        })
+                }
+            }
+        }
+        Text(
+            text = "Ti sei trattato?",
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = modifier.padding(
+                start = dimensionResource(id = R.dimen.padding_small),
+                end = dimensionResource(id = R.dimen.padding_small)
+            ),
+        )
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            radioOptions.forEach { options ->
+                Text(
+                    text = options,
+                    modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_small)),
+                    style = MaterialTheme.typography.bodySmall
+                )
+                RadioButton(
+                    selected = (options == questionTreatment),
+                    onClick = { questionTreatment = options })
+            }
+        }
         DropdownList(
             uiState.bleedingDetails,
             itemList = BleedingCause.entries.map {
@@ -194,18 +301,33 @@ fun BleedingEventInputForm(
             label = R.string.cause_string_label,
         )
 
-        DropdownList(
-            uiState.bleedingDetails,
-            itemList = Severity.entries.map { it.name },
-            onItemClick = onItemClick,
-            label = R.string.pain_scale_string_label,
+        var sliderPosition by remember { mutableFloatStateOf(uiState.bleedingDetails.painScale.toFloat()) }
+        Text(
+            text = stringResource(id = R.string.pain_scale_string_label) + ": " + sliderPosition.toInt(),
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = modifier.padding(
+                start = dimensionResource(id = R.dimen.padding_small),
+                end = dimensionResource(id = R.dimen.padding_small)
+            )
+            //modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_small))
         )
 
-        DropdownList(
-            uiState.bleedingDetails,
-            itemList = Severity.entries.map { it.name },
-            onItemClick = onItemClick,
-            label = R.string.severity_string_label,
+        Slider(
+            value = sliderPosition,
+            modifier = modifier.padding(
+                start = dimensionResource(id = R.dimen.padding_medium),
+                end = dimensionResource(id = R.dimen.padding_medium)
+            ),
+            steps = 9,
+            onValueChange = { sliderPosition = it },
+            valueRange = 0f..10f,
+            onValueChangeFinished = {
+                onItemClick(
+                    uiState.bleedingDetails.copy(
+                        painScale = sliderPosition.toString()
+                    )
+                )
+            },
         )
 
         Row(
@@ -416,14 +538,6 @@ fun DropdownList(
                     stringResource(id = label)
                 }
 
-                R.string.severity_string_label -> bleedingDetails.severity.ifBlank {
-                    stringResource(id = label)
-                }
-
-                R.string.pain_scale_string_label -> bleedingDetails.painScale.ifBlank {
-                    stringResource(id = label)
-                }
-
                 else -> stringResource(id = label)
             }
         }, modifier)
@@ -448,20 +562,14 @@ fun DropdownList(
                                 )
                             }
 
-                            R.string.cause_string_label -> onItemClick(bleedingDetails.copy(cause = it))
-                            R.string.pain_scale_string_label -> onItemClick(
+                            R.string.cause_string_label -> onItemClick(
                                 bleedingDetails.copy(
-                                    painScale = it
+                                    cause = it
                                 )
                             )
 
                             else -> {
                                 println(it)
-                                onItemClick(
-                                    bleedingDetails.copy(
-                                        severity = it
-                                    )
-                                )
                             }
                         }
                         showDropdown = !showDropdown
@@ -482,12 +590,13 @@ fun DropdownList(
  */
 @Composable
 fun TextWithIcon(text: String, modifier: Modifier = Modifier) {
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier = modifier.fillMaxWidth()
     ) {
-        Text(text = text)
+        Text(text = text, textAlign = TextAlign.Center, modifier = Modifier.weight(1f))
         Spacer(modifier = Modifier.width(4.dp)) // Spazio tra l'icona e il testo
         Icon(
             painter = painterResource(id = R.drawable.arrow_downward), contentDescription = text,
