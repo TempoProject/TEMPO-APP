@@ -55,7 +55,6 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tempo.tempoapp.R
 import com.tempo.tempoapp.TempoAppBar
-import com.tempo.tempoapp.TempoApplication
 import com.tempo.tempoapp.data.model.events
 import com.tempo.tempoapp.ui.AppViewModelProvider
 import com.tempo.tempoapp.ui.bleeding.DatePickerDialog
@@ -102,7 +101,7 @@ fun ReminderScreen(
         mutableStateOf(false)
     }
     var isPermissionPermanentlyDenied by remember { mutableStateOf(false) }
-    val localContext = LocalContext.current
+
     val openSettings =
         rememberLauncherForActivityResult(
             contract = ActivityResultContracts.StartActivityForResult()
@@ -112,7 +111,7 @@ fun ReminderScreen(
         rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestMultiplePermissions()) { perms ->
             isPermissionPermanentlyDenied = perms.any {
                 !it.value && !ActivityCompat.shouldShowRequestPermissionRationale(
-                    localContext as Activity,
+                    context as Activity,
                     it.key
                 )
             }
@@ -151,10 +150,8 @@ fun ReminderScreen(
 
     DisposableEffect(context) {
         val observer = LifecycleEventObserver { _, event ->
-            println(event)
             if (event == Lifecycle.Event.ON_RESUME) {
                 checkPermissions()
-                println(hasPermission)
             }
         }
         val lifecycle = lifecycleOwner.lifecycle
@@ -193,7 +190,7 @@ fun ReminderScreen(
                 } else {
                     showDialog = true
                     Toast.makeText(
-                        TempoApplication.instance.baseContext,
+                        context,
                         "Concedi l'accesso al calendario",
                         Toast.LENGTH_LONG
                     ).show()
@@ -205,20 +202,20 @@ fun ReminderScreen(
         if (showDialog) {
             val isPermanentlyDeclined =
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) !ActivityCompat.shouldShowRequestPermissionRationale(
-                    localContext as Activity,
+                    context as Activity,
                     Manifest.permission.WRITE_CALENDAR
                 ) && !ActivityCompat.shouldShowRequestPermissionRationale(
-                    localContext,
+                    context,
                     Manifest.permission.READ_CALENDAR
                 ) && !ActivityCompat.shouldShowRequestPermissionRationale(
-                    localContext,
+                    context,
                     Manifest.permission.POST_NOTIFICATIONS
                 ) else
                     !ActivityCompat.shouldShowRequestPermissionRationale(
-                        localContext as Activity,
+                        context as Activity,
                         Manifest.permission.WRITE_CALENDAR
                     ) && !ActivityCompat.shouldShowRequestPermissionRationale(
-                        localContext,
+                        context,
                         Manifest.permission.READ_CALENDAR
                     )
             PermissionDialog(
@@ -243,8 +240,7 @@ fun ReminderScreen(
                 },
                 onGoToAppSettings = {
                     val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-                    println(TempoApplication.instance.packageName)
-                    val uri = Uri.parse("package:${localContext.packageName}")
+                    val uri = Uri.parse("package:${context.packageName}")
                     intent.setData(uri)
                     openSettings.launch(intent)
                 })
