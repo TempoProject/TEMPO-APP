@@ -1,9 +1,11 @@
 package com.tempo.tempoapp.workers
 
 import android.content.Context
+import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.google.firebase.installations.FirebaseInstallations
+import com.tempo.tempoapp.FirebaseRealtimeDatabase
 import com.tempo.tempoapp.TempoApplication
 import kotlinx.coroutines.tasks.await
 
@@ -16,7 +18,9 @@ import kotlinx.coroutines.tasks.await
 class SaveInfusionRecords(appContext: Context, params: WorkerParameters) :
     CoroutineWorker(appContext, params) {
 
-    private val TAG = javaClass.simpleName
+    companion object {
+        private val TAG = SaveInfusionRecords::class.java.simpleName
+    }
 
     // Infusion repository to access infusion records
     private val infusionRepository =
@@ -24,7 +28,7 @@ class SaveInfusionRecords(appContext: Context, params: WorkerParameters) :
 
     // Firebase database reference
     private val databaseRef =
-        (appContext.applicationContext as TempoApplication).database
+        FirebaseRealtimeDatabase.instance
 
 
     /**
@@ -41,6 +45,7 @@ class SaveInfusionRecords(appContext: Context, params: WorkerParameters) :
         val infusionRecords = infusionRepository.getAllInfusionToSent(isSent = false)
 
 
+        Log.d(TAG, "Infusion records to be sent: ${infusionRecords.size}")
         // Save infusion records to Firebase
         infusionRecords.forEach { record ->
 
