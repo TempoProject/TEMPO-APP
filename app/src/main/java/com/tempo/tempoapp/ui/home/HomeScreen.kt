@@ -219,7 +219,7 @@ fun HomeScreen(
                 Text(stringResource(id = R.string.app_name), modifier = Modifier.padding(16.dp))
                 Divider()
                 NavDrawerItem(
-                    stringId = R.string.add_new_bleeding,
+                    stringId = R.string.add_event,
                     icon = ImageVector.vectorResource(id = R.drawable.baseline_bloodtype_24),
                     scope = scope,
                     drawerState = drawerState,
@@ -361,7 +361,7 @@ fun HomeScreen(
                                         .fillMaxWidth()
                                         .padding(4.dp)
                                 ) {
-                                    Text("Aggiungi infusione")
+                                    Text(stringResource(R.string.add_infusion))
                                 }
                                 OutlinedButton(
                                     onClick = {
@@ -378,7 +378,7 @@ fun HomeScreen(
                                         .fillMaxWidth()
                                         .padding(4.dp)
                                 ) {
-                                    Text("Aggiungi Sanguinamento")
+                                    Text(stringResource(R.string.add_event))
                                 }
                                 OutlinedButton(
                                     onClick = {
