@@ -57,10 +57,16 @@ data class BleedingEvent(
     val bleedingSite: String,
     @ColumnInfo(name = "cause")
     val bleedingCause: String,
-    @ColumnInfo(name = "severity")
-    val severity: String,
+    //@ColumnInfo(name = "severity")
+    //val severity: String,
     @ColumnInfo(name = "pain_scale")
     val painScale: String,
+    @ColumnInfo(name = "is_a_bleeding_episode")
+    val isABleedingEpisode: String,
+    @ColumnInfo(name = "question_bleeding_episode")
+    val questionBleedingEpisode: String,
+    @ColumnInfo(name = "treatment")
+    val treatment: String,
     @ColumnInfo(name = "date")
     val date: Long,
     @ColumnInfo(name = "timestamp")
@@ -78,7 +84,6 @@ data class BleedingEvent(
  * @property id The unique identifier of the bleeding event.
  * @property bleeding_site The site of the bleeding.
  * @property cause The cause of the bleeding event.
- * @property severity The severity level of the bleeding event.
  * @property pain_scale The scale of pain experienced during the bleeding event.
  * @property date The date of the bleeding event in milliseconds.
  * @property timestamp The timestamp of when the bleeding event was recorded in milliseconds.
@@ -88,8 +93,11 @@ data class BleedingEventJson(
     val id: Int,
     val bleeding_site: String,
     val cause: String,
-    val severity: String,
+    //val severity: String,
     val pain_scale: String,
+    val isABleedingEpisode: String,
+    val questionBleedingEpisode: String,
+    val treatment: String,
     val date: Long,
     val timestamp: Long,
     val note: String?,
@@ -102,5 +110,17 @@ data class BleedingEventJson(
  * @return The [BleedingEventJson] representation of the bleeding event.
  */
 fun BleedingEvent.toBleedingEventJson(id: Int = 0): BleedingEventJson =
-    BleedingEventJson(id, bleedingSite, bleedingCause, severity, painScale, date, timestamp, note)
+    BleedingEventJson(
+        id,
+        bleedingSite,
+        bleedingCause,
+        //severity,
+        painScale,
+        questionBleedingEpisode,
+        isABleedingEpisode,
+        treatment,
+        date,
+        timestamp,
+        note
+    )
 
