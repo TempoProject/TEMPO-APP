@@ -2,6 +2,8 @@ package com.tempo.tempoapp.ui.home
 
 import android.Manifest
 import android.app.Activity
+import android.app.AlarmManager
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -75,7 +77,6 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tempo.tempoapp.R
 import com.tempo.tempoapp.TempoAppBar
-import com.tempo.tempoapp.TempoApplication
 import com.tempo.tempoapp.data.healthconnect.HealthConnectAvailability
 import com.tempo.tempoapp.ui.AppViewModelProvider
 import com.tempo.tempoapp.ui.HomeBody
@@ -94,6 +95,8 @@ object HomeDestination : NavigationDestination {
     override val route = "home"
     override val titleRes = R.string.app_name
 }
+
+private const val TAG = "HomeScreen"
 
 /**
  * Composable function for rendering the Home screen.
@@ -132,6 +135,7 @@ fun HomeScreen(
     navigateToMovesense: () -> Unit,
 ) {
     val context = LocalContext.current
+    val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
     var canScheduleExactAlarms by remember {
         mutableStateOf(true)
@@ -169,13 +173,12 @@ fun HomeScreen(
         }
 
         canScheduleExactAlarms = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            TempoApplication.instance.alarm.canScheduleExactAlarms()
+            alarmManager.canScheduleExactAlarms()
         } else true
 
-        println(canScheduleExactAlarms)
+        Log.d(TAG, "Can schedule exact alarms: $canScheduleExactAlarms")
 
         showDialog = !(hasNotificationPermission)
-        println(showDialog)
     }
 
     LaunchedEffect(Unit) {
@@ -185,7 +188,6 @@ fun HomeScreen(
     val currentOnAvailabilityCheck by rememberUpdatedState(onResumeAvailabilityCheck)
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
-            println(event)
             if (event == Lifecycle.Event.ON_RESUME) {
                 currentOnAvailabilityCheck()
                 checkPermissions()
@@ -274,7 +276,7 @@ fun HomeScreen(
                         if (drawerIsEnabled)
                             scope.launch {
                                 drawerState.apply {
-                                    Log.d(javaClass.simpleName, "drawer is closed? $isClosed")
+                                    Log.d(TAG, "Drawer state: $isOpen")
                                     if (isClosed)
                                         open()
                                     else close()
@@ -297,7 +299,7 @@ fun HomeScreen(
                 }
             },
         ) { innerPadding ->
-            println("permission? ${viewModel.permissionsGranted.value}")
+            Log.d(TAG, "Permissions granted: ${viewModel.permissionsGranted.value}")
             if (showDialog) {
                 PermissionDialog(
                     showDialog = showDialog,
@@ -310,7 +312,6 @@ fun HomeScreen(
                     onOkClick = { launcher.launch(Manifest.permission.POST_NOTIFICATIONS) },
                     onGoToAppSettings = {
                         val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-                        println(TempoApplication.instance.packageName)
                         val uri = Uri.parse("package:${context.packageName}")
                         intent.setData(uri)
                         settingsLauncher.launch(intent)
@@ -326,7 +327,7 @@ fun HomeScreen(
                     onGoToAppSettings = {
                         val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
                         val uri =
-                            Uri.fromParts("package", TempoApplication.instance.packageName, null)
+                            Uri.fromParts("package", context.packageName, null)
                         intent.setData(uri)
                         settingsLauncher.launch(intent)
 
@@ -402,7 +403,6 @@ fun HomeScreen(
                             homeUiState.bleedingList,
                             homeUiState.infusionList,
                             homeUiState.stepsCount,
-                            //homeUiState.stepsList,
                             modifier = modifier
                                 .padding(innerPadding)
                                 .fillMaxSize(),
@@ -512,7 +512,6 @@ fun HomeScreen(
                         homeUiState.bleedingList,
                         homeUiState.infusionList,
                         homeUiState.stepsCount,
-                        //homeUiState.stepsList,
                         modifier = modifier
                             .padding(innerPadding)
                             .fillMaxSize(),
