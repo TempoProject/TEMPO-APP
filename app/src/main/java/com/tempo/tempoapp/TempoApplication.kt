@@ -1,6 +1,5 @@
 package com.tempo.tempoapp
 
-import android.app.AlarmManager
 import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -31,15 +30,12 @@ class TempoApplication : Application() {
     lateinit var healthConnectManager: HealthConnectManager
     private lateinit var workManager: WorkManager
     private lateinit var notificationManager: NotificationManager
-    lateinit var database: DatabaseReference
-    lateinit var alarm: AlarmManager
 
     /**
      * Called when the application is starting.
      */
     override fun onCreate() {
         super.onCreate()
-        instance = this
         notificationManager =
             getSystemService(Context.NOTIFICATION_SERVICE) as
                     NotificationManager
@@ -48,18 +44,18 @@ class TempoApplication : Application() {
          * Create notification channels.
          */
         val notificationChannelSendSteps = NotificationChannel(
-            "Passi",
-            "Invio passi",
+            getString(R.string.steps_notification_channel_id),
+            getString(R.string.steps_notification_channel_name),
             NotificationManager.IMPORTANCE_NONE
         )
         val notificationChannelReminder = NotificationChannel(
-            "Reminder",
-            "Promemoria",
+            getString(R.string.reminder_notification_channel_id),
+            getString(R.string.reminder_notification_channel_name),
             NotificationManager.IMPORTANCE_DEFAULT
         )
         val notificationChannelMovesense = NotificationChannel(
-            "Movesense",
-            "Movesense",
+            getString(R.string.movesense_notification_channel_id),
+            getString(R.string.movesense_notification_channel_name),
             NotificationManager.IMPORTANCE_DEFAULT
         )
         notificationManager.createNotificationChannels(
@@ -72,9 +68,6 @@ class TempoApplication : Application() {
         container = AppDataContainer(this)
         healthConnectManager = HealthConnectManager(this)
         workManager = WorkManager.getInstance(this)
-        alarm = getSystemService(ALARM_SERVICE) as AlarmManager
-        database =
-            Firebase.database("https://tempo-app-94a6c-default-rtdb.europe-west1.firebasedatabase.app/").reference
 
         /**
          * Schedule periodic work for saving records.
@@ -103,31 +96,35 @@ class TempoApplication : Application() {
 
         workManager.enqueueUniquePeriodicWork(
             "StepsRecords",
-            ExistingPeriodicWorkPolicy.KEEP,
+            ExistingPeriodicWorkPolicy.UPDATE,
             stepsRecords
         )
 
         workManager.enqueueUniquePeriodicWork(
             "BleedingRecords",
-            ExistingPeriodicWorkPolicy.KEEP,
+            ExistingPeriodicWorkPolicy.UPDATE,
             bleedingRecords
         )
 
         workManager.enqueueUniquePeriodicWork(
             "InfusionRecords",
-            ExistingPeriodicWorkPolicy.KEEP,
+            ExistingPeriodicWorkPolicy.UPDATE,
             infusionRecords
         )
 
         workManager.enqueueUniquePeriodicWork(
             "AccelerometerRecords",
-            ExistingPeriodicWorkPolicy.KEEP,
+            ExistingPeriodicWorkPolicy.UPDATE,
             saveAccelerometer
         )
     }
 
-    companion object {
-        lateinit var instance: TempoApplication
-            private set
-    }
+}
+
+/**
+ * Firebase Realtime Database object.
+ */
+object FirebaseRealtimeDatabase {
+    val instance: DatabaseReference
+        get() = Firebase.database("https://tempo-app-94a6c-default-rtdb.europe-west1.firebasedatabase.app/").reference
 }
