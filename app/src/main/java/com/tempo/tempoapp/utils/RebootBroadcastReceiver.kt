@@ -6,8 +6,8 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.util.Log
 import com.tempo.tempoapp.TempoApplication
-import com.tempo.tempoapp.data.repository.ReminderRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.launch
@@ -17,14 +17,14 @@ import java.time.Instant
  * RebootBroadcastReceiver is a BroadcastReceiver responsible for scheduling alarms
  * after the device is rebooted.
  *
- * @property reminderRepository The ReminderRepository instance used for accessing reminder data.
- * @property alarmManager The AlarmManager instance used for scheduling alarms.
  */
-class RebootBroadcastReceiver(
-    private val reminderRepository: ReminderRepository = TempoApplication.instance.container.reminderRepository,
-    private val alarmManager: AlarmManager = TempoApplication.instance.alarm
-) :
+
+class RebootBroadcastReceiver :
     BroadcastReceiver() {
+
+    companion object {
+        private val TAG = RebootBroadcastReceiver::class.java.simpleName
+    }
 
     /**
      * Receives the broadcast when the device is rebooted and schedules alarms for reminders.
@@ -34,53 +34,64 @@ class RebootBroadcastReceiver(
      */
     //@RequiresApi(Build.VERSION_CODES.S)
     override fun onReceive(p0: Context?, p1: Intent?) {
+        Log.d(TAG, "onReceive: ${p1?.action}")
+
+        val alarmManager = p0?.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val reminderRepository =
+            (p0.applicationContext as TempoApplication).container.reminderRepository
+
         if (p1?.action == "android.intent.action.BOOT_COMPLETED") {
+
+            val intent = Intent(p0, StepsReceiver::class.java)
+            val instant = Instant.now().toEpochMilli()
+            intent.putExtra("instant", instant)
+            val pendingIntent = PendingIntent.getBroadcast(
+                p0,
+                instant.toInt(),
+                intent,
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+            )
+            /* if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                 if (alarmManager.canScheduleExactAlarms())
+                     alarmManager.setExactAndAllowWhileIdle(
+                         AlarmManager.RTC_WAKEUP,
+                         instant,
+                         pendingIntent
+                     )
+             } else
+                 alarmManager.setExactAndAllowWhileIdle(
+                     AlarmManager.RTC_WAKEUP,
+                     instant,
+                     pendingIntent
+                 )*/
+            Log.d(TAG, "scheduled steps service with instant: $instant")
+            AlarmManagerHelper(p0).scheduleStepsService(pendingIntent, instant)
             CoroutineScope(Main).launch {
-                val intent = Intent(p0!!, StepsReceiver::class.java)
-                val instant = Instant.now().toEpochMilli()
-                intent.putExtra("instant", instant)
-                val pendingIntent = PendingIntent.getBroadcast(
-                    p0,
-                    instant.toInt(),
-                    intent,
-                    PendingIntent.FLAG_MUTABLE
-                )
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    if (alarmManager.canScheduleExactAlarms())
-                        alarmManager.setExactAndAllowWhileIdle(
-                            AlarmManager.RTC_WAKEUP,
-                            instant,
-                            pendingIntent
-                        )
-                } else
-                    alarmManager.setExactAndAllowWhileIdle(
-                        AlarmManager.RTC_WAKEUP,
-                        instant,
-                        pendingIntent
-                    )
+
+                Log.d(TAG, "scheduling alarms after reboot")
                 reminderRepository.getAll().collect { reminders ->
                     for (reminder in reminders) {
-                        val intent = Intent(p0, StepsReceiver::class.java)
-                        intent.putExtra("id", reminder.id)
-                        intent.putExtra("REMINDER", reminder)
-                        val pendingIntent = PendingIntent.getBroadcast(
+                        val newIntent = Intent(p0, AlarmReceiver::class.java)
+                        newIntent.putExtra("id", reminder.id)
+                        newIntent.putExtra("REMINDER", reminder)
+                        val newPendingIntent = PendingIntent.getBroadcast(
                             p0,
                             reminder.timestamp.toInt(),
-                            intent,
-                            PendingIntent.FLAG_MUTABLE
+                            newIntent,
+                            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
                         )
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                             if (alarmManager.canScheduleExactAlarms())
                                 alarmManager.setExactAndAllowWhileIdle(
                                     AlarmManager.RTC_WAKEUP,
                                     reminder.timestamp,
-                                    pendingIntent
+                                    newPendingIntent
                                 )
                         } else
                             alarmManager.setExactAndAllowWhileIdle(
                                 AlarmManager.RTC_WAKEUP,
                                 reminder.timestamp,
-                                pendingIntent
+                                newPendingIntent
                             )
 
                     }
@@ -89,3 +100,4 @@ class RebootBroadcastReceiver(
         }
     }
 }
+
