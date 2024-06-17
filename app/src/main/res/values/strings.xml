@@ -32,4 +32,10 @@
     <string name="reminder">Lista promemoria</string>
     <string name="add_reminder">Aggiungi promemoria</string>
     <string name="scandevices">Cerca dispositivi</string>
+    <string name="steps_notification_channel_id">Passi</string>
+    <string name="steps_notification_channel_name">Invio passi</string>
+    <string name="reminder_notification_channel_id">Promemoria</string>
+    <string name="reminder_notification_channel_name">Promemoria evento</string>
+    <string name="movesense_notification_channel_id">Movesense</string>
+    <string name="movesense_notification_channel_name">Movesense</string>
 </resources>
