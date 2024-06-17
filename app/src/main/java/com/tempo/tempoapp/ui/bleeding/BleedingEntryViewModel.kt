@@ -55,7 +55,7 @@ class BleedingEntryViewModel(private val bleedingRepository: BleedingRepository)
             site.isNotBlank()
                     && cause.isNotBlank()
                     && painScale.isNotBlank()
-                    && severity.isNotBlank()
+                    //&& severity.isNotBlank()
                     //&& date.isNotBlank()
                     && time.isNotBlank()
 
@@ -72,14 +72,16 @@ class BleedingEntryViewModel(private val bleedingRepository: BleedingRepository)
 }
 
 /**
- * UI state of the bleeding event screen.
+ * Represents the UI state of the bleeding event.
  *
  * @property bleedingDetails Details of the bleeding event.
- * @property isEntryValid Flag indicating if the entry is valid.
+ * @property isEntryValid Flag indicating whether the bleeding event entry is valid.
+ * @property isLoading Flag indicating whether the data is loaded.
  */
 data class BleedingEventUiState(
     val bleedingDetails: BleedingDetails = BleedingDetails(),
-    val isEntryValid: Boolean = false
+    val isEntryValid: Boolean = false,
+    val isLoading: Boolean = false
 )
 
 /**
@@ -98,8 +100,11 @@ data class BleedingDetails(
     val id: Int = 0,
     val site: String = "",
     val cause: String = "",
-    val severity: String = "",
-    val painScale: String = "",
+    //val severity: String = "",
+    val painScale: String = "".ifEmpty { "0.0" },
+    val isABleedingEpisode: String = "".ifEmpty { "No" },
+    val questionBleedingEpisode: String = "".ifEmpty { "No" },
+    val treatment: String = "".ifEmpty { "No" },
     val note: String? = null,
     val date: Long = Instant.now().truncatedTo(ChronoUnit.DAYS).toEpochMilli(),
     val time: String = Instant.now().truncatedTo(ChronoUnit.MILLIS).toEpochMilli().toStringTime(),
@@ -116,11 +121,14 @@ fun BleedingDetails.toEntity(): BleedingEvent =
         id = id,
         bleedingSite = site,
         bleedingCause = cause,
-        severity = severity,
+        //severity = severity,
         painScale = painScale,
         note = note,
         date = date,
         isSent = false,
+        questionBleedingEpisode = questionBleedingEpisode,
+        isABleedingEpisode = isABleedingEpisode,
+        treatment = treatment,
         timestamp = SimpleDateFormat(
             "dd-MM-yyyy HH:mm",
             Locale.getDefault()
@@ -138,8 +146,11 @@ fun BleedingEvent.toBleedingDetails(): BleedingDetails =
         id = id,
         site = bleedingSite,
         cause = bleedingCause,
-        severity = severity,
+        //severity = severity,
         painScale = painScale,
+        questionBleedingEpisode = questionBleedingEpisode,
+        isABleedingEpisode = isABleedingEpisode,
+        treatment = treatment,
         note = note,
         date = date,
         time = timestamp.toStringTime()
