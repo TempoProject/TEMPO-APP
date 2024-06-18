@@ -11,6 +11,7 @@ import android.location.LocationManager
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -51,7 +52,6 @@ import com.movesense.mds.MdsConnectionListener
 import com.movesense.mds.MdsException
 import com.tempo.tempoapp.R
 import com.tempo.tempoapp.TempoAppBar
-import com.tempo.tempoapp.TempoApplication
 import com.tempo.tempoapp.data.model.Movesense
 import com.tempo.tempoapp.movesense.BluetoothDeviceInfo
 import com.tempo.tempoapp.ui.AppViewModelProvider
@@ -75,6 +75,8 @@ object ScanDeviceDestination : NavigationDestination {
         get() = R.string.scandevices
 
 }
+
+private const val TAG = "ScanDevicesScreen"
 
 /**
  * Composable function representing the screen for scanning Bluetooth devices.
@@ -141,7 +143,7 @@ fun ScanDevicesScreen(
             )
         }
         showDialog = isPermissionPermanentlyDenied
-        println("perms: $perms")
+        Log.d(TAG, "onRequestPermissionsResult: $perms")
         canEnableBl = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             perms[Manifest.permission.BLUETOOTH_SCAN] == true
         } else
@@ -200,10 +202,8 @@ fun ScanDevicesScreen(
 
     DisposableEffect(context) {
         val observer = LifecycleEventObserver { _, event ->
-            println(event)
             if (event == Lifecycle.Event.ON_RESUME) {
                 checkPermissions()
-                println(canEnableBl)
             }
         }
         val lifecycle = lifecycleOwner.lifecycle
@@ -232,6 +232,7 @@ fun ScanDevicesScreen(
             DeviceScreen(
                 state = state.value,
                 startScan = {
+                    Log.d(TAG, "startScan")
                     if (canEnableBl && !isBluetoothEnabled) {
                         Toast.makeText(
                             context,
@@ -266,15 +267,16 @@ fun ScanDevicesScreen(
                 },
                 stopScan = viewModel::stopScan,
                 onClick = { device ->
+                    Log.d(TAG, "onClick: ${device.name}")
                     viewModel.updateUi(true)
                     mds.connect(device.address, object : MdsConnectionListener {
                         override fun onConnect(p0: String?) {
-                            println("onConnect: $p0")
+                            Log.d(TAG, "onConnect: $p0")
                             viewModel.stopScan()
                         }
 
                         override fun onConnectionComplete(p0: String?, p1: String?) {
-                            println("onConnectionComplete: $p0")
+                            Log.d(TAG, "onConnectionComplete: $p0, $p1")
                             viewModel.stopScan()
                             context.startForegroundService(
                                 Intent(
@@ -295,7 +297,7 @@ fun ScanDevicesScreen(
                                     viewModel.updateUi()
                                     navigateToMovesense()
                                 } catch (e: Exception) {
-                                    println(err.toString())
+                                    Log.e(TAG, "onConnectionComplete: ${err?.message}")
                                 }
 
                             }
@@ -303,13 +305,13 @@ fun ScanDevicesScreen(
                         }
 
                         override fun onError(p0: MdsException?) {
-                            println("onError: $p0")
+                            Log.e(TAG, "onError: ${p0?.message}")
                             viewModel.updateUi()
                             viewModel.stopScan()
                         }
 
                         override fun onDisconnect(p0: String?) {
-                            println("onDisconnect: $p0")
+                            Log.d(TAG, "onDisconnect: $p0")
                             viewModel.stopScan()
                             scope.launch {
                                 viewModel.saveDevice(
@@ -370,7 +372,6 @@ fun ScanDevicesScreen(
                 },
                 onGoToAppSettings = {
                     val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-                    println(TempoApplication.instance.packageName)
                     val uri = Uri.parse("package:${context.packageName}")
                     intent.setData(uri)
                     openSettings.launch(intent)

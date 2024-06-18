@@ -1,24 +1,20 @@
 package com.tempo.tempoapp.ui.reminders
 
-import android.app.AlarmManager
-import android.app.PendingIntent
+import android.app.Application
 import android.content.ContentResolver
 import android.content.ContentValues
 import android.content.Context
-import android.content.Intent
-import android.os.Build
 import android.provider.CalendarContract
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.ViewModel
-import com.tempo.tempoapp.TempoApplication
+import androidx.lifecycle.AndroidViewModel
 import com.tempo.tempoapp.data.model.ReminderEvent
 import com.tempo.tempoapp.data.repository.ReminderRepository
 import com.tempo.tempoapp.ui.toStringDate
 import com.tempo.tempoapp.ui.toStringTime
-import com.tempo.tempoapp.utils.AlarmReceiver
+import com.tempo.tempoapp.utils.AlarmManagerHelper
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.util.Locale
@@ -26,15 +22,16 @@ import java.util.TimeZone
 import java.util.concurrent.TimeUnit
 
 /**
- * ViewModel class responsible for managing reminder data and logic.
+ * ViewModel class for the Reminder screen. Manages the UI state and handles business logic
+ * related to creating and saving reminders.
  *
- * @property reminderRepository The repository for accessing reminder data.
- * @property context Context required for accessing content resolver.
+ * @param reminderRepository Repository for handling reminder events.
+ * @param application The application context.
  */
 class ReminderViewModel(
     private val reminderRepository: ReminderRepository,
-    private val context: Context
-) : ViewModel() {
+    application: Application
+) : AndroidViewModel(application) {
 
     /**
      * Represents the current UI state of the reminder screen.
@@ -119,34 +116,11 @@ class ReminderViewModel(
      */
     suspend fun save() {
         var data = uiState.toReminderEvent(-1)
-        val idCalendar = createEvent(context, data)
+        val idCalendar = createEvent(getApplication<Application>().applicationContext, data)
         println(idCalendar)
         reminderRepository.insertItem(data.copy(idCalendar = idCalendar))
         data = data.copy(idCalendar = idCalendar)
-        println(data)
-        val intent = Intent(context, AlarmReceiver::class.java)
-        intent.putExtra("REMINDER", data)
-
-        val pendingIntent = PendingIntent.getBroadcast(
-            context,
-            data.timestamp.toInt(),
-            intent,
-            PendingIntent.FLAG_MUTABLE
-        )
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            if (TempoApplication.instance.alarm.canScheduleExactAlarms())
-                TempoApplication.instance.alarm.setExactAndAllowWhileIdle(
-                    AlarmManager.RTC_WAKEUP,
-                    data.timestamp,
-                    pendingIntent
-                )
-        } else
-            TempoApplication.instance.alarm.setExactAndAllowWhileIdle(
-                AlarmManager.RTC_WAKEUP,
-                data.timestamp,
-                pendingIntent
-            )
+        AlarmManagerHelper(getApplication<Application>().applicationContext).scheduleReminderService(data)
         /*
                     val task = OneTimeWorkRequest.Builder(NotificationWorker::class.java)
                         .setInputData(Data.Builder().putString("EVENT", uiState.event).build())
@@ -163,7 +137,6 @@ class ReminderViewModel(
 
     }
 }
-
 /**
  * Creates a calendar event based on the provided reminder event data.
  *
@@ -250,6 +223,7 @@ private fun getCalendarId(context: Context): Long {
 
     return calendarId
 }
+
 
 /**
  * Represents the UI state of the reminder screen.

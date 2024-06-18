@@ -1,8 +1,8 @@
 <resources>
     <string name="app_name">Tempo App</string>
     <string name="severity_string_label">Gravità del sanguinamento</string>
-    <string name="site_string_label">Sede sanguinamento</string>
-    <string name="cause_string_label">Tipo di sanguinamento</string>
+    <string name="site_string_label">Sede evento</string>
+    <string name="cause_string_label">Causa</string>
     <string name="pain_scale_string_label">Scala del dolore</string>
     <string name="no_bleeding_event">Aggiungi un evento</string>
     <string name="add_new_bleeding">Aggiungi sanguinamento</string>
@@ -32,4 +32,15 @@
     <string name="reminder">Lista promemoria</string>
     <string name="add_reminder">Aggiungi promemoria</string>
     <string name="scandevices">Cerca dispositivi</string>
+    <string name="steps_notification_channel_id">Passi</string>
+    <string name="steps_notification_channel_name">Invio passi</string>
+    <string name="reminder_notification_channel_id">Promemoria</string>
+    <string name="reminder_notification_channel_name">Promemoria evento</string>
+    <string name="movesense_notification_channel_id">Movesense</string>
+    <string name="movesense_notification_channel_name">Movesense</string>
+    <string name="add_infusion">Aggiungi infusione</string>
+    <string name="add_event">Aggiungi evento</string>
+    <string name="yes">Si</string>
+    <string name="no">No</string>
+    <string name="bleeding">Sanguinamento</string>
 </resources>

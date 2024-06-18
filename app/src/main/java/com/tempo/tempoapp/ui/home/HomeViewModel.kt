@@ -1,15 +1,13 @@
 package com.tempo.tempoapp.ui.home
 
-import android.app.AlarmManager
+import android.app.Application
 import android.app.PendingIntent
 import android.content.Intent
-import android.os.Build
 import androidx.compose.runtime.mutableStateOf
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.StepsRecord
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.tempo.tempoapp.TempoApplication
 import com.tempo.tempoapp.data.healthconnect.HealthConnectAvailability
 import com.tempo.tempoapp.data.healthconnect.HealthConnectManager
 import com.tempo.tempoapp.data.model.BleedingEvent
@@ -19,6 +17,7 @@ import com.tempo.tempoapp.data.repository.BleedingRepository
 import com.tempo.tempoapp.data.repository.InfusionRepository
 import com.tempo.tempoapp.data.repository.MovesenseRepository
 import com.tempo.tempoapp.data.repository.StepsRecordRepository
+import com.tempo.tempoapp.utils.AlarmManagerHelper
 import com.tempo.tempoapp.utils.StepsReceiver
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -28,23 +27,24 @@ import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 
-/**
- * ViewModel class for the Home screen. Manages the UI state and handles business logic
- * related to Bleeding events, Infusion events, Steps records, and Movesense devices.
+/** ViewModel for the Home screen.
  *
- * @param bleedingRepository Repository for handling bleeding events.
- * @param infusionRepository Repository for handling infusion events.
- * @param stepsRecordRepository Repository for handling steps records.
- * @param movesenseRepository Repository for handling Movesense devices.
- * @param healthConnectManager Manager for handling Health Connect interactions.
+ * @param bleedingRepository Repository for bleeding events.
+ * @param infusionRepository Repository for infusion events.
+ * @param stepsRecordRepository Repository for steps records.
+ * @param movesenseRepository Repository for Movesense device information.
+ * @param healthConnectManager Health Connect manager.
+ * @param application Application context.
  */
+
 class HomeViewModel(
     bleedingRepository: BleedingRepository,
     infusionRepository: InfusionRepository,
     stepsRecordRepository: StepsRecordRepository,
     movesenseRepository: MovesenseRepository,
     private val healthConnectManager: HealthConnectManager,
-) : ViewModel() {
+    application: Application
+) : AndroidViewModel(application) {
 
     /**
      * Set of permissions required for reading steps records.
@@ -81,29 +81,21 @@ class HomeViewModel(
             if (permissionsGranted.value) {
                 val instant = Instant.now().toEpochMilli()
                 val intent =
-                    Intent(TempoApplication.instance.applicationContext, StepsReceiver::class.java)
+                    Intent(
+                        getApplication<Application>().applicationContext,
+                        StepsReceiver::class.java
+                    )
                 intent.putExtra("instant", instant)
                 val pendingIntent = PendingIntent.getBroadcast(
-                    TempoApplication.instance.applicationContext,
+                    getApplication<Application>().applicationContext,
                     instant.toInt(),
                     intent,
-                    PendingIntent.FLAG_MUTABLE
+                    PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
                 )
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    if (TempoApplication.instance.alarm.canScheduleExactAlarms()) {
-                        println("scheduling")
-                        TempoApplication.instance.alarm.setExactAndAllowWhileIdle(
-                            AlarmManager.RTC_WAKEUP,
-                            instant,
-                            pendingIntent
-                        )
-                    }
-                } else
-                    TempoApplication.instance.alarm.setExactAndAllowWhileIdle(
-                        AlarmManager.RTC_WAKEUP,
-                        instant,
-                        pendingIntent
-                    )
+                AlarmManagerHelper(getApplication<Application>().applicationContext).scheduleStepsService(
+                    pendingIntent,
+                    instant
+                )
             }
         }
     }

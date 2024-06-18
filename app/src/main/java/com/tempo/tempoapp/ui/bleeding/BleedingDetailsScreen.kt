@@ -32,6 +32,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tempo.tempoapp.R
 import com.tempo.tempoapp.TempoAppBar
 import com.tempo.tempoapp.ui.AppViewModelProvider
+import com.tempo.tempoapp.ui.Loading
 import com.tempo.tempoapp.ui.navigation.NavigationDestination
 import com.tempo.tempoapp.ui.toStringDate
 import kotlinx.coroutines.launch
@@ -124,10 +125,13 @@ fun BleedingDetailsBody(uiState: BleedingDetailsUiState, modifier: Modifier = Mo
         modifier = modifier.padding(dimensionResource(id = R.dimen.padding_medium)),
         verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_medium))
     ) {
-        BleedingItemDetails(
-            uiState.bleedingDetails,
-            modifier = Modifier.fillMaxWidth()
-        )
+        if (uiState.isLoading) {
+            Loading()
+        } else
+            BleedingItemDetails(
+                uiState.bleedingDetails,
+                modifier = Modifier.fillMaxWidth()
+            )
     }
 }
 
@@ -163,8 +167,8 @@ fun BleedingItemDetails(details: BleedingDetails, modifier: Modifier) {
             )
         )
         ItemDetailsRow(
-            labelResID = R.string.severity_string_label,
-            itemDetail = details.severity,
+            labelResID = R.string.bleeding,
+            itemDetail = details.isABleedingEpisode,
             modifier = Modifier.padding(
                 horizontal = dimensionResource(
                     id = R.dimen
@@ -174,7 +178,7 @@ fun BleedingItemDetails(details: BleedingDetails, modifier: Modifier) {
         )
         ItemDetailsRow(
             labelResID = R.string.pain_scale_string_label,
-            itemDetail = details.painScale,
+            itemDetail = details.painScale + " / 10",
             modifier = Modifier.padding(
                 horizontal = dimensionResource(
                     id = R.dimen
@@ -183,7 +187,9 @@ fun BleedingItemDetails(details: BleedingDetails, modifier: Modifier) {
             )
         )
         ItemDetailsRow(
-            labelResID = R.string.date, itemDetail = details.date.toStringDate(), modifier = Modifier.padding(
+            labelResID = R.string.date,
+            itemDetail = details.date.toStringDate(),
+            modifier = Modifier.padding(
                 horizontal = dimensionResource(
                     id = R.dimen
                         .padding_medium

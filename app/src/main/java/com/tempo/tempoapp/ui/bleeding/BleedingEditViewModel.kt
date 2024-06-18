@@ -26,7 +26,7 @@ class BleedingEditViewModel(
         checkNotNull(savedStateHandle[BleedingEventEditDestination.itemIdArg])
 
     /** Mutable state variable for the UI state of the edit screen. */
-    var uiState by mutableStateOf(BleedingEventUiState())
+    var uiState by mutableStateOf(BleedingEventUiState(isLoading = true))
         private set
 
     init {
@@ -34,6 +34,8 @@ class BleedingEditViewModel(
         viewModelScope.launch {
             uiState = bleedingRepository.getItemFromId(eventId).filterNotNull().first()
                 .toBleedingUiState()
+        }.invokeOnCompletion {
+            uiState = uiState.copy(isLoading = false)
         }
     }
 
@@ -67,8 +69,6 @@ class BleedingEditViewModel(
             site.isNotBlank()
                     && cause.isNotBlank()
                     && painScale.isNotBlank()
-                    && severity.isNotBlank()
-                    //&& date.isNotBlank()
                     && time.isNotBlank()
 
         }

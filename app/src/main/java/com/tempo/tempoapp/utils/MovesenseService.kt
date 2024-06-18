@@ -33,13 +33,12 @@ import kotlinx.coroutines.launch
  */
 class MovesenseService : Service() {
 
-    private val mds: Mds = Mds.builder().build(TempoApplication.instance.applicationContext)
+    companion object {
+        private val TAG = MovesenseService::class.java.simpleName
+    }
 
     private var mdsSub: MdsSubscription? = null
     private val serviceScope = CoroutineScope(Dispatchers.IO)
-    private val notificationManager =
-        TempoApplication.instance.getSystemService(Context.NOTIFICATION_SERVICE) as
-                NotificationManager
 
     /**
      * Starts the MovesenseService and handles incoming intents.
@@ -50,67 +49,55 @@ class MovesenseService : Service() {
      * @return The type of service handling requested, either START_NOT_STICKY, START_STICKY, START_REDELIVER_INTENT.
      */
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-
+        val notificationManager =
+            getSystemService(Context.NOTIFICATION_SERVICE) as
+                    NotificationManager
+        val mds: Mds = Mds.builder().build(this.applicationContext)
         val movesenseRepository =
-            (TempoApplication.instance.applicationContext as TempoApplication).container.movesenseRepository
+            (this.applicationContext as TempoApplication).container.movesenseRepository
         var deviceInfo = Movesense("", "", false)
         serviceScope.launch {
             deviceInfo = serviceScope.async { movesenseRepository.getDeviceInfo() }.await()
 
         }
-        startForegroundService()
+        Log.d(TAG, "Starting foreground service")
+        startForegroundService(notificationManager)
         mdsSub?.unsubscribe()
+
+        Log.d(TAG, "Subscribing to Movesense events")
         mdsSub = mds.subscribe(
             Mds.URI_EVENTLISTENER, """{"Uri": "${Mds.URI_CONNECTEDDEVICES}"}""",
             object : MdsNotificationListener {
                 override fun onNotification(p0: String?) {
-                    println("onNotification: $p0")
-                    println("deviceInfo: $deviceInfo")
+                    Log.i(TAG, "deviceInfo: $deviceInfo")
 
                     val map = Gson().fromJson(p0, Map::class.java)
 
-
                     if (map["Method"] == "DEL") {
-                        println("disconnected")
-                        sendNotification("Movesense scollegato")
+                        Log.i(TAG, "Movesense disconnected")
+                        sendNotification(notificationManager, "Movesense scollegato")
                         serviceScope.launch {
                             movesenseRepository.updateItem(
                                 deviceInfo.copy(
                                     isConnected = false
                                 )
                             )
-                        }/*.invokeOnCompletion {
-
-                            WorkManager.getInstance(applicationContext)
-                                .cancelAllWorkByTag("onConfigure")
-                        }*/
+                        }
                     } else {
-                        sendNotification("Movesense collegato")
-                        println("connected")
+                        sendNotification(notificationManager, "Movesense collegato")
+                        Log.i(TAG, "Movesense connected")
                         serviceScope.launch {
                             movesenseRepository.updateItem(
                                 deviceInfo.copy(
                                     isConnected = true
                                 )
                             )
-                        }/*.invokeOnCompletion {
-                            // start worker
-                            val flushData = PeriodicWorkRequestBuilder<MovesenseSaveRecords>(
-                                repeatInterval = 20,
-                                TimeUnit.MINUTES
-                            ).addTag("onConfigure").build()
-                            WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork(
-                                "onConfigure",
-                                ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
-                                flushData
-                            )
-                        }*/
+                        }
                     }
                 }
 
-
                 override fun onError(p0: MdsException?) {
-                    println("data listener onError $p0")
+                    Log.d(TAG, "Error: ${p0?.message}")
                 }
 
             })
@@ -122,6 +109,7 @@ class MovesenseService : Service() {
      * Stops the MovesenseService and cleans up resources.
      */
     override fun onDestroy() {
+        Log.d(TAG, "Service destroyed")
         Toast.makeText(this, "Service done", Toast.LENGTH_SHORT).show()
         stopForegroundService()
 
@@ -130,8 +118,8 @@ class MovesenseService : Service() {
     /**
      * Starts the service in the foreground.
      */
-    private fun startForegroundService() {
-        startForeground(2, sendNotification("Movesense collegato"))
+    private fun startForegroundService(notificationManager: NotificationManager) {
+        startForeground(2, sendNotification(notificationManager, "Movesense collegato"))
     }
 
     /**
@@ -140,7 +128,10 @@ class MovesenseService : Service() {
      * @param content The content of the notification.
      * @return The notification that was sent.
      */
-    private fun sendNotification(content: String): Notification {
+    private fun sendNotification(
+        notificationManager: NotificationManager,
+        content: String
+    ): Notification {
         val title = "Movesense"
         val notification = NotificationCompat.Builder(applicationContext, "Movesense")
             .setContentTitle(title)
@@ -158,7 +149,7 @@ class MovesenseService : Service() {
      * Stops the service from running in the foreground.
      */
     private fun stopForegroundService() {
-        Log.d(javaClass.simpleName, "unsubscribe")
+        Log.d(TAG, "Stopping foreground service")
         mdsSub?.unsubscribe()
         stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()

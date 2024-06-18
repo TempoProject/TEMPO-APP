@@ -6,6 +6,7 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.os.IBinder
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.StepsRecord
@@ -27,45 +28,50 @@ import java.time.temporal.ChronoUnit
  */
 class StepsService : Service() {
 
-    private val serviceScope = CoroutineScope(Dispatchers.IO)
-    private val notificationManager =
-        TempoApplication.instance.getSystemService(Context.NOTIFICATION_SERVICE) as
-                NotificationManager
+    companion object {
+        private val TAG = StepsService::class.java.simpleName
+    }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        val notificationManager =
+            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
         val healthConnectManager =
-            (TempoApplication.instance.applicationContext as TempoApplication).healthConnectManager
+            (this.applicationContext as TempoApplication).healthConnectManager
 
         val stepsRecordRepository =
-            (TempoApplication.instance.applicationContext as TempoApplication).container.stepsRecordRepository
+            (this.applicationContext as TempoApplication).container.stepsRecordRepository
 
         val utilsRepository =
-            (TempoApplication.instance.applicationContext as TempoApplication).container.utilsRepository
+            (this.applicationContext as TempoApplication).container.utilsRepository
 
         val permission = setOf(
             HealthPermission.getReadPermission(StepsRecord::class)
         )
 
-        startForegroundService()
-        serviceScope.launch {
-            println("in foreground service")
+        Log.d(TAG, "Starting foreground service")
+        startForegroundService(notificationManager)
+
+        CoroutineScope(Dispatchers.IO).launch {
+
+            Log.d(TAG, "Fetching steps data")
             if (healthConnectManager.hasAllPermissions(permission)) {
 
                 val latestUpdate = utilsRepository.getLatestUpdate()
-                //Log.d(TAG, latestUpdate.toString())
-
                 var instantStartTime = Instant.now().minusSeconds(1800)
-                //Log.d(TAG, "instant default: $instantStartTime")
+
                 if (latestUpdate != null && latestUpdate < Instant.now().toEpochMilli()) {
                     instantStartTime = Instant.ofEpochMilli(latestUpdate)
-                    //  Log.d(TAG, "instant update: $instantStartTime")
                 }
+                println("start time $instantStartTime")
                 val instantNow = Instant.now()
+                println("end time $instantNow")
 
                 val list =
                     healthConnectManager.readSteps(instantStartTime, instantNow)
                         .toMutableList()
 
+                Log.i(TAG, "Fetched ${list.size} steps data")
                 list.forEach {
                     stepsRecordRepository.insertItem(
                         StepsRecordModel(
@@ -76,6 +82,8 @@ class StepsService : Service() {
                         )
                     )
                 }
+
+                Log.d(TAG, "Updating latest update time")
                 if (latestUpdate == null)
                     utilsRepository.insertItem(
                         Utils(
@@ -95,8 +103,8 @@ class StepsService : Service() {
                         )
                 }
             }
-            stopForegroundService()
         }
+        stopForegroundService()
         return START_NOT_STICKY
     }
 
@@ -104,16 +112,19 @@ class StepsService : Service() {
         return null
     }
 
-    private fun startForegroundService() {
-        startForeground(1, sendNotification(""))
+    private fun startForegroundService(notificationManager: NotificationManager) {
+        startForeground(1, sendNotification(notificationManager))
     }
 
-    private fun sendNotification(progress: String): Notification {
-        val title = "Passi"
-        val notification = NotificationCompat.Builder(applicationContext, "Passi")
+    private fun sendNotification(notificationManager: NotificationManager): Notification {
+        val title = getString(R.string.steps_notification_channel_name)
+        val notification = NotificationCompat.Builder(
+            applicationContext,
+            getString(R.string.steps_notification_channel_id)
+        )
             .setContentTitle(title)
             .setTicker(title)
-            .setContentText("Invio passi: $progress...")
+            .setContentText(title)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setOngoing(true)
             .build()
@@ -123,6 +134,7 @@ class StepsService : Service() {
     }
 
     private fun stopForegroundService() {
+        Log.d(TAG, "Stopping foreground service")
         stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()
     }

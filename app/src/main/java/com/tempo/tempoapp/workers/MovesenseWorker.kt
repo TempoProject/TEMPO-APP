@@ -12,6 +12,7 @@ import com.movesense.mds.Mds
 import com.movesense.mds.MdsException
 import com.movesense.mds.MdsHeader
 import com.movesense.mds.MdsResponseListener
+import com.tempo.tempoapp.FirebaseRealtimeDatabase
 import com.tempo.tempoapp.TempoApplication
 import com.tempo.tempoapp.data.model.Accelerometer
 import com.tempo.tempoapp.data.model.toAccelerometerFirebase
@@ -29,6 +30,10 @@ import kotlinx.coroutines.tasks.await
 class MovesenseWorker(appContext: Context, params: WorkerParameters) :
     CoroutineWorker(appContext, params) {
 
+    companion object {
+        private val TAG = MovesenseWorker::class.java.simpleName
+    }
+
     // Movesense repository to access Movesense data
     private val movesenseRepository =
         (appContext.applicationContext as TempoApplication).container.movesenseRepository
@@ -39,7 +44,7 @@ class MovesenseWorker(appContext: Context, params: WorkerParameters) :
 
     // Firebase database reference
     private val databaseRef =
-        (appContext.applicationContext as TempoApplication).database
+        FirebaseRealtimeDatabase.instance
 
 
     // Movesense data service
@@ -58,6 +63,7 @@ class MovesenseWorker(appContext: Context, params: WorkerParameters) :
         // Process based on the state input
         when (val state = inputData.getInt("state", 2)) {
             1 -> {
+                Log.d(TAG, "Configuring data logging...")
                 // Configure data logging
                 val jsonConfig = """
                            {
@@ -89,7 +95,7 @@ class MovesenseWorker(appContext: Context, params: WorkerParameters) :
             }
 
             2, 3 -> {
-                // Start or stop data logging
+                Log.d(TAG, if (state == 2) "Stopping" else "Starting" + " data logging...")
                 mds.put(
                     "suunto://${
                         deviceInfo.name.split(" ").last()
@@ -110,7 +116,7 @@ class MovesenseWorker(appContext: Context, params: WorkerParameters) :
             }
 
             4 -> {
-                // Retrieve logged data
+                Log.d(TAG, "Saving data...")
                 mds.get(
                     "suunto://${
                         deviceInfo.name.split(" ").last()
@@ -201,7 +207,7 @@ class MovesenseWorker(appContext: Context, params: WorkerParameters) :
             }
 
             5 -> {
-                // Delete logged data
+                Log.d(TAG, "Deleting data from movesense device...")
                 mds.delete("suunto://${
                     deviceInfo.name.split(" ").last()
                 }/Mem/Logbook/Entries/", null, object : MdsResponseListener {
@@ -216,7 +222,7 @@ class MovesenseWorker(appContext: Context, params: WorkerParameters) :
             }
 
             6 -> {
-                // Send accelerometer data to Firebase
+                Log.d(TAG, "Sending data to Firebase...")
                 CoroutineScope(Dispatchers.IO).launch {
                     val data = accelerometerRepository.getAllData(false)
                     val id = FirebaseInstallations.getInstance().id.await()

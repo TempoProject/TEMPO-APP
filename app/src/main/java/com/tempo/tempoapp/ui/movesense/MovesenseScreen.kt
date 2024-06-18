@@ -51,7 +51,6 @@ import com.movesense.mds.MdsHeader
 import com.movesense.mds.MdsResponseListener
 import com.tempo.tempoapp.R
 import com.tempo.tempoapp.TempoAppBar
-import com.tempo.tempoapp.TempoApplication
 import com.tempo.tempoapp.ui.AppViewModelProvider
 import com.tempo.tempoapp.ui.Loading
 import com.tempo.tempoapp.ui.common.BluetoothLegacyTextProvider
@@ -75,6 +74,8 @@ object MovesenseDestination : NavigationDestination {
         get() = R.string.movesense
 
 }
+
+private val TAG = "MovesenseScreen"
 
 /**
  * Represents the Movesense screen composable function.
@@ -134,7 +135,7 @@ fun MovesenseScreen(
             )
         }
         showDialog = isPermissionPermanentlyDenied
-        println("perms: $perms")
+        Log.d(TAG, "Permissions: $perms")
         canEnableBl = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             perms[Manifest.permission.BLUETOOTH_SCAN] == true
         } else
@@ -193,10 +194,8 @@ fun MovesenseScreen(
 
     DisposableEffect(context) {
         val observer = LifecycleEventObserver { _, event ->
-            println(event)
             if (event == Lifecycle.Event.ON_RESUME) {
                 checkPermissions()
-                println(canEnableBl)
             }
         }
         val lifecycle = lifecycleOwner.lifecycle
@@ -227,12 +226,13 @@ fun MovesenseScreen(
                 state,
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) (canEnableBl) else (canEnableGeo && canEnableBl && isLocationEnabled),
                 onConnect = {
+                    Log.d(TAG, "onConnect: ${state.value.movesense.address}")
                     viewModel.updateUi(isWorking = true)
                     mds.connect(
                         state.value.movesense.address,
                         object : MdsConnectionListener {
                             override fun onConnect(p0: String?) {
-                                println("onConnect: $p0")
+                                Log.d(TAG, "onConnect: $p0")
                                 //viewModel.stopScan()
                             }
 
@@ -240,7 +240,7 @@ fun MovesenseScreen(
                                 p0: String?,
                                 p1: String?
                             ) {
-                                println("onConnectionComplete: $p0")
+                                Log.d(TAG, "onConnectionComplete: $p0, $p1")
                                 scope.launch {
                                     viewModel.updateInfoDevice(
                                         state.value.movesense.copy(
@@ -256,14 +256,10 @@ fun MovesenseScreen(
                                     )
                                     viewModel.updateUi()
                                 }
-
-
-                                //viewModel.stopScan()
-                                //navigateToMovesense()
                             }
 
                             override fun onError(p0: MdsException?) {
-                                println("onError: $p0")
+                                Log.e(TAG, "onError: $p0")
                                 if (p0.toString()
                                         .contains("BleDevice not among connected devices:")
                                 )
@@ -286,7 +282,7 @@ fun MovesenseScreen(
                             }
 
                             override fun onDisconnect(p0: String?) {
-                                println("onDisconnect: $p0")
+                                Log.d(TAG, "onDisconnect: $p0")
                                 viewModel.updateUi(true)
                                 mds.disconnect(state.value.movesense.address)
                                 scope.launch {
@@ -300,6 +296,7 @@ fun MovesenseScreen(
                         })
                 },
                 onConfigure = {
+                    Log.d(TAG, "onConfigure: ${state.value.movesense.address}")
                     val startLogging = PeriodicWorkRequestBuilder<MovesenseSaveRecords>(
                         repeatInterval = 20,
                         TimeUnit.MINUTES
@@ -314,6 +311,7 @@ fun MovesenseScreen(
 
                 },
                 onDisconnect = {
+                    Log.d(TAG, "onDisconnect: ${state.value.movesense.address}")
                     mds.put(
                         "suunto://${
                             state.value.movesense.name.split(" ").last()
@@ -374,6 +372,7 @@ fun MovesenseScreen(
                         })
                 },
                 onFlush = {
+                    Log.d(TAG, "onFlush: ${state.value.movesense.address}")
                     val flushData = OneTimeWorkRequestBuilder<MovesenseWorker>()
                         .setInputData(Data.Builder().putInt("state", 4).build())
                         .addTag("onFlush")
@@ -381,6 +380,7 @@ fun MovesenseScreen(
                     WorkManager.getInstance(context).enqueue(flushData)
                 },
                 onDelete = {
+                    Log.d(TAG, "onDelete: ${state.value.movesense.address}")
                     val delete =
                         OneTimeWorkRequestBuilder<MovesenseWorker>()
                             .setInputData(Data.Builder().putInt("state", 5).build())
@@ -390,6 +390,7 @@ fun MovesenseScreen(
                 },
                 onForget = {
                     viewModel.updateUi(isWorking = true)
+                    Log.d(TAG, "onForget: ${state.value.movesense.address}")
                     mds.put(
                         "suunto://${
                             state.value.movesense.name.split(" ").last()
@@ -477,7 +478,6 @@ fun MovesenseScreen(
                 },
                 onGoToAppSettings = {
                     val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-                    println(TempoApplication.instance.packageName)
                     val uri = Uri.parse("package:${context.packageName}")
                     intent.setData(uri)
                     openSettings.launch(intent)

@@ -11,6 +11,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tempo.tempoapp.R
 import com.tempo.tempoapp.TempoAppBar
 import com.tempo.tempoapp.ui.AppViewModelProvider
+import com.tempo.tempoapp.ui.Loading
 import com.tempo.tempoapp.ui.navigation.NavigationDestination
 import kotlinx.coroutines.launch
 
@@ -54,14 +55,17 @@ fun BleedingEditScreen(
             )
         }
     ) {
-        BleedingEventBody(
-            uiState, viewModel::updateUiState, onSave = {
-                coroutineScope.launch {
-                    viewModel.update()
-                    navigateBack()
-                }
-            },
-            modifier = Modifier.padding(it)
-        )
+        if (uiState.isLoading) {
+            Loading()
+        } else
+            BleedingEventBody(
+                uiState, viewModel::updateUiState, onSave = {
+                    coroutineScope.launch {
+                        viewModel.update()
+                        navigateBack()
+                    }
+                },
+                modifier = Modifier.padding(it)
+            )
     }
 }

@@ -26,11 +26,15 @@ class BleedingDetailsViewModel(
     // State flow representing the UI state of the bleeding details screen
     val uiState: StateFlow<BleedingDetailsUiState> =
         bleedingRepository.getItemFromId(itemId).filterNotNull().map {
-            BleedingDetailsUiState(bleedingDetails = it.toBleedingDetails(), itemId)
+            BleedingDetailsUiState(
+                bleedingDetails = it.toBleedingDetails(),
+                itemId,
+                isLoading = false
+            )
         }.stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
-            initialValue = BleedingDetailsUiState()
+            initialValue = BleedingDetailsUiState(isLoading = true)
         )
 
     /**
@@ -47,11 +51,13 @@ class BleedingDetailsViewModel(
 }
 
 /**
- * Represents the UI state for displaying bleeding event details.
- * @param bleedingDetails The details of the bleeding event.
+ * Represents the UI state of the Bleeding Event Details screen.
+ * @param bleedingDetails The bleeding details to be displayed.
  * @param id The ID of the bleeding event.
+ * @param isLoading Flag indicating whether the data is being loaded.
  */
 data class BleedingDetailsUiState(
     val bleedingDetails: BleedingDetails = BleedingDetails(),
-    val id: Int = -1
+    val id: Int = -1,
+    val isLoading: Boolean = false
 )

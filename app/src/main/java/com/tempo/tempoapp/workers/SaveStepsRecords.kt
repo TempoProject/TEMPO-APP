@@ -1,9 +1,11 @@
 package com.tempo.tempoapp.workers
 
 import android.content.Context
+import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.google.firebase.installations.FirebaseInstallations
+import com.tempo.tempoapp.FirebaseRealtimeDatabase
 import com.tempo.tempoapp.TempoApplication
 import com.tempo.tempoapp.data.model.toStepsRecordToJson
 import kotlinx.coroutines.tasks.await
@@ -17,7 +19,10 @@ import kotlinx.coroutines.tasks.await
 class SaveStepsRecords(appContext: Context, params: WorkerParameters) :
     CoroutineWorker(appContext, params) {
 
-    private val TAG = javaClass.simpleName
+
+    companion object {
+        private val TAG = SaveStepsRecords::class.java.simpleName
+    }
 
     // Steps record repository to access steps records
     private val stepsRecordRepository =
@@ -25,7 +30,7 @@ class SaveStepsRecords(appContext: Context, params: WorkerParameters) :
 
     // Firebase database reference
     private val databaseRef =
-        (appContext.applicationContext as TempoApplication).database
+        FirebaseRealtimeDatabase.instance
 
 
     /*
@@ -116,6 +121,7 @@ class SaveStepsRecords(appContext: Context, params: WorkerParameters) :
             isSent = false
         )
 
+        Log.d(TAG, "Steps records to be sent: ${stepsRecords.size}")
         // Get Firebase installation ID
         val id = FirebaseInstallations.getInstance().id.await()
 

@@ -40,6 +40,7 @@ object AppViewModelProvider {
                 tempoApplication().container.stepsRecordRepository,
                 tempoApplication().container.movesenseRepository,
                 tempoApplication().healthConnectManager,
+                tempoApplication()
             )
         }
         initializer {
@@ -83,7 +84,7 @@ object AppViewModelProvider {
         initializer {
             ReminderViewModel(
                 tempoApplication().container.reminderRepository,
-                tempoApplication().applicationContext
+                tempoApplication()
             )
         }
 
