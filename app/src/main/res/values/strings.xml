@@ -1,23 +1,26 @@
 <resources>
     <string name="app_name">Tempo App</string>
+    <string name="event">Evento</string>
+    <string name="infusion">Infusione</string>
     <string name="severity_string_label">Gravità del sanguinamento</string>
     <string name="site_string_label">Sede evento</string>
     <string name="cause_string_label">Causa</string>
     <string name="pain_scale_string_label">Scala del dolore</string>
-    <string name="no_bleeding_event">Aggiungi un evento</string>
-    <string name="add_new_bleeding">Aggiungi sanguinamento</string>
     <string name="details">Dettagli</string>
     <string name="movesense">Movesense</string>
     <string name="date">Data</string>
     <string name="time">Ora</string>
     <string name="edit">Modifica</string>
-    <string name="infusion">Aggiungi infusione</string>
     <string name="note">Note</string>
     <string name="infusion_site">Sede infusione</string>
     <string name="dose_units">Dose in unità</string>
     <string name="lot_number">Numero di lotto</string>
     <string name="treatment">Trattamento</string>
     <string name="history">Storico eventi</string>
+    <string name="reminder">Lista promemoria</string>
+    <string name="add_infusion">Aggiungi infusione</string>
+    <string name="add_event">Aggiungi evento</string>
+    <string name="add_reminder">Aggiungi promemoria</string>
 
     <string name="market_url">market://details</string>
     <string name="health_connect_package">com.google.android.apps.healthdata</string>
@@ -29,8 +32,6 @@
         Per un corretto funzionamento dell"'"applicazione, installa Health Connect da Google Play.
     </string>
     <string name="not_installed_tag">not_installed_tag</string>
-    <string name="reminder">Lista promemoria</string>
-    <string name="add_reminder">Aggiungi promemoria</string>
     <string name="scandevices">Cerca dispositivi</string>
     <string name="steps_notification_channel_id">Passi</string>
     <string name="steps_notification_channel_name">Invio passi</string>
@@ -38,9 +39,12 @@
     <string name="reminder_notification_channel_name">Promemoria evento</string>
     <string name="movesense_notification_channel_id">Movesense</string>
     <string name="movesense_notification_channel_name">Movesense</string>
-    <string name="add_infusion">Aggiungi infusione</string>
-    <string name="add_event">Aggiungi evento</string>
     <string name="yes">Si</string>
     <string name="no">No</string>
     <string name="bleeding">Sanguinamento</string>
+    <string name="authorize">Autorizza</string>
+    <string name="health_connect_permission_required">Concedi l\'accesso a health connect</string>
+    <string name="health_connect_not_installed">Health connect non installato</string>
+    <string name="save">Salva</string>
+    <string name="reset">Reset</string>
 </resources>
