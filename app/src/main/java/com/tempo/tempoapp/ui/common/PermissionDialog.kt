@@ -1,6 +1,7 @@
 package com.tempo.tempoapp.ui.common
 
 
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -13,6 +14,8 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import com.tempo.tempoapp.R
+
+private const val TAG = "PermissionDialog"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,6 +38,10 @@ fun PermissionDialog(
                 Text(text = permission.getDescription(isPermanentlyDeclined))
             },
             confirmButton = {
+                Log.d(
+                    TAG,
+                    "permission isPermanentlyDeclined: $isPermanentlyDeclined"
+                )
                 Text(
                     text = if (isPermanentlyDeclined) "Apri impostazioni" else "Concedi autorizzazione",
                     fontWeight = FontWeight.Bold,

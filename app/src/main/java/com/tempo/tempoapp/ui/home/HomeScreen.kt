@@ -177,6 +177,7 @@ fun HomeScreen(
         } else true
 
         Log.d(TAG, "Can schedule exact alarms: $canScheduleExactAlarms")
+        Log.d(TAG, "Has notification permission: $hasNotificationPermission")
 
         showDialog = !(hasNotificationPermission)
     }

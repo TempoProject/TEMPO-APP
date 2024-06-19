@@ -7,6 +7,7 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -200,9 +201,20 @@ fun ReminderScreen(
         )
 
         if (showDialog) {
+            Log.d(
+                "ReminderScreen", "permission rationale: ${
+                    ActivityCompat.shouldShowRequestPermissionRationale(
+                        context as Activity,
+                        Manifest.permission.WRITE_CALENDAR
+                    ) && ActivityCompat.shouldShowRequestPermissionRationale(
+                        context,
+                        Manifest.permission.WRITE_CALENDAR
+                    )
+                }"
+            )
             val isPermanentlyDeclined =
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) !ActivityCompat.shouldShowRequestPermissionRationale(
-                    context as Activity,
+                    context,
                     Manifest.permission.WRITE_CALENDAR
                 ) && !ActivityCompat.shouldShowRequestPermissionRationale(
                     context,
@@ -212,12 +224,12 @@ fun ReminderScreen(
                     Manifest.permission.POST_NOTIFICATIONS
                 ) else
                     !ActivityCompat.shouldShowRequestPermissionRationale(
-                        context as Activity,
+                        context,
                         Manifest.permission.WRITE_CALENDAR
-                    ) && !ActivityCompat.shouldShowRequestPermissionRationale(
+                    ) /*&& !ActivityCompat.shouldShowRequestPermissionRationale(
                         context,
                         Manifest.permission.READ_CALENDAR
-                    )
+                    )*/
             PermissionDialog(
                 showDialog,
                 permission = CalendarTextProvider(),
