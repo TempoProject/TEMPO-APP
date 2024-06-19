@@ -10,7 +10,6 @@ import android.net.Uri
 import android.os.Build
 import android.provider.Settings
 import android.util.Log
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
@@ -227,7 +226,7 @@ fun HomeScreen(
                     navigateToBleedingEntry
                 )
                 NavDrawerItem(
-                    stringId = R.string.infusion,
+                    stringId = R.string.add_infusion,
                     icon = ImageVector.vectorResource(id = R.drawable.baseline_medication_24),
                     scope = scope,
                     drawerState = drawerState,
@@ -278,9 +277,7 @@ fun HomeScreen(
                             scope.launch {
                                 drawerState.apply {
                                     Log.d(TAG, "Drawer state: $isOpen")
-                                    if (isClosed)
-                                        open()
-                                    else close()
+                                    if (isClosed) open() else close()
                                 }
                             }
                     }
@@ -335,7 +332,7 @@ fun HomeScreen(
                     })
             }
             when (availability) {
-                HealthConnectAvailability.INSTALLED -> {
+                HealthConnectAvailability.INSTALLED, HealthConnectAvailability.NOT_SUPPORTED -> {
                     if (viewModel.permissionsGranted.value) {
                         drawerIsEnabled = true
                         if (showBottomSheet) {
@@ -346,7 +343,7 @@ fun HomeScreen(
                                 sheetState = sheetState,
                                 modifier = Modifier.fillMaxHeight(fraction = 0.3f)
                             ) {
-                                // Sheet content
+
                                 OutlinedButton(
                                     onClick = {
                                         scope.launch {
@@ -368,7 +365,6 @@ fun HomeScreen(
                                     onClick = {
                                         scope.launch {
                                             sheetState.hide()
-                                            //viewModel.readStepsInterval()
                                         }.invokeOnCompletion {
                                             navigateToBleedingEntry()
                                             if (!sheetState.isVisible) {
@@ -385,7 +381,6 @@ fun HomeScreen(
                                     onClick = {
                                         scope.launch {
                                             sheetState.hide()
-                                            //viewModel.readStepsInterval()
                                         }.invokeOnCompletion {
                                             navigateToAddReminder()
                                             if (!sheetState.isVisible) {
@@ -421,107 +416,27 @@ fun HomeScreen(
                         ) {
                             Box(modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_small))) {
                                 Text(
-                                    text = "Autorizza l'accesso a health connect.",
+                                    text = stringResource(id = R.string.health_connect_permission_required),
                                 )
                             }
                             ElevatedButton(onClick = {
                                 permissionsLauncher.launch(viewModel.permission)
                             }) {
-                                Text(text = "autorizza")
+                                Text(text = stringResource(id = R.string.authorize))
                             }
                         }
                     }
                 }
 
                 HealthConnectAvailability.NOT_INSTALLED -> {
-                    Column(Modifier.padding(innerPadding)) {
+                    Column(
+                        modifier
+                            .padding(innerPadding)
+                            .fillMaxSize()) {
                         NotInstalledMessage()
                     }
-                    Toast.makeText(
-                        LocalContext.current,
-                        "Health connect not installed",
-                        Toast.LENGTH_LONG
-                    ).show()
-                }
-
-                HealthConnectAvailability.NOT_SUPPORTED -> {
-                    drawerIsEnabled = true
-                    if (showBottomSheet) {
-                        ModalBottomSheet(
-                            onDismissRequest = {
-                                showBottomSheet = false
-                            },
-                            sheetState = sheetState,
-                            modifier = Modifier.fillMaxHeight(fraction = 0.3f)
-                        ) {
-                            // Sheet content
-                            OutlinedButton(
-                                onClick = {
-                                    scope.launch {
-                                        sheetState.hide()
-                                    }.invokeOnCompletion {
-                                        navigateToInfusionEntry()
-                                        if (!sheetState.isVisible) {
-                                            showBottomSheet = false
-                                        }
-
-                                    }
-                                }, modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(4.dp)
-                            ) {
-                                Text("Aggiungi infusione")
-                            }
-                            OutlinedButton(
-                                onClick = {
-                                    scope.launch {
-                                        sheetState.hide()
-                                        //viewModel.readStepsInterval()
-                                    }.invokeOnCompletion {
-                                        navigateToBleedingEntry()
-                                        if (!sheetState.isVisible) {
-                                            showBottomSheet = false
-                                        }
-                                    }
-                                }, modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(4.dp)
-                            ) {
-                                Text("Aggiungi Sanguinamento")
-                            }
-
-                            OutlinedButton(
-                                onClick = {
-                                    scope.launch {
-                                        sheetState.hide()
-                                        //viewModel.readStepsInterval()
-                                    }.invokeOnCompletion {
-                                        navigateToAddReminder()
-                                        if (!sheetState.isVisible) {
-                                            showBottomSheet = false
-                                        }
-                                    }
-                                }, modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(4.dp)
-                            ) {
-                                Text(stringResource(id = R.string.reminder))
-                            }
-                        }
-                    }
-                    HomeBody(
-                        homeUiState.bleedingList,
-                        homeUiState.infusionList,
-                        homeUiState.stepsCount,
-                        modifier = modifier
-                            .padding(innerPadding)
-                            .fillMaxSize(),
-                        onInfusionItemClick = navigateToInfusionUpdate,
-                        onBleedingItemClick = navigateToBleedingUpdate
-                    )
                 }
             }
-
         }
     }
 }
