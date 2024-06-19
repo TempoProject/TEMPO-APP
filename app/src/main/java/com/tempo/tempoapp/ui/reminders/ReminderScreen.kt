@@ -482,10 +482,10 @@ private fun ReminderBody(
                 reset()
 
             }) {
-                Text(text = "Reset")
+                Text(text = stringResource(id = R.string.reset))
             }
             OutlinedButton(onClick = onSave, enabled = saveIsEnabled) {
-                Text(text = "Salva")
+                Text(text = stringResource(id = R.string.save))
             }
 
         }

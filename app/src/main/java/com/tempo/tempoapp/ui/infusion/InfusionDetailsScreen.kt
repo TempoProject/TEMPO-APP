@@ -87,7 +87,7 @@ fun InfusionDetailsScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Edit,
-                        contentDescription = null//stringResource(R.string.item_entry_title)
+                        contentDescription = null
                     )
                 }
                 Spacer(modifier = Modifier.padding(4.dp))
@@ -102,7 +102,7 @@ fun InfusionDetailsScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Delete,
-                        contentDescription = null//stringResource(R.string.item_entry_title)
+                        contentDescription = null
                     )
                 }
             }

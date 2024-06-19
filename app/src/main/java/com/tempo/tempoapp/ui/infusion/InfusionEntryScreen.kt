@@ -25,6 +25,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -59,7 +60,7 @@ object InfusionEntryDestination : NavigationDestination {
     override val route: String
         get() = "infusion_entry"
     override val titleRes: Int
-        get() = R.string.infusion
+        get() = R.string.add_infusion
 }
 
 /**
@@ -133,7 +134,7 @@ fun InfusionEventBody(
             onClick = onSave,
             enabled = uiState.isEntryValid
         ) {
-            Text(text = "Salva")
+            Text(text = stringResource(id = R.string.save))
         }
     }
 }
@@ -159,7 +160,7 @@ fun InfusionEventInputForm(
         mutableStateOf(false)
     }
     var date by remember {
-        mutableStateOf(uiState.infusionDetails.date)
+        mutableLongStateOf(uiState.infusionDetails.date)
     }
 
     Column(
@@ -245,6 +246,7 @@ fun InfusionEventInputForm(
             }
 
             if (showDatePickerDialog)
+
                 DatePickerDialog(
                     onDateSelected = { timestamp ->
                         onItemClick(
@@ -255,6 +257,7 @@ fun InfusionEventInputForm(
                         date = timestamp
                     },
                     onDismiss = { showDatePickerDialog = !showDatePickerDialog })
+
 
             if (showTimePickerDialog)
                 TimePickerDialog(
