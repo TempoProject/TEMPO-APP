@@ -170,7 +170,6 @@ fun TempoNavHost(
         ) {
             InfusionEditScreen(
                 onNavigateUp = { navController.navigateUp() },
-                //navigateBack = { navController.popBackStack() },
             )
         }
 
@@ -200,7 +199,6 @@ fun TempoNavHost(
         ) {
             ReminderScreen(
                 onNavigateUp = { navController.navigateUp() },
-                //navigateBack = { navController.popBackStack() },
             )
         }
 
@@ -222,7 +220,6 @@ fun TempoNavHost(
             route = ScanDeviceDestination.route
         ) {
             ScanDevicesScreen(
-                //context = TempoApplication.instance.applicationContext,
                 navigateToMovesense = {
                     navController.navigate(MovesenseDestination.route) {
                         popUpTo(HomeDestination.route) {
