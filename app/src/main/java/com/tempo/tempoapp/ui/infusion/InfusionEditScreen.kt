@@ -30,14 +30,12 @@ object InfusionEditDestination : NavigationDestination {
 /**
  * Composable function for displaying the screen for editing infusion details.
  *
- * @param navigateBack Function to navigate back to the previous screen.
  * @param onNavigateUp Function to handle the Up navigation action.
  * @param viewModel ViewModel for managing the state of the screen.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InfusionEditScreen(
-    navigateBack: () -> Unit,
     onNavigateUp: () -> Unit,
     viewModel: InfusionEditViewModel = viewModel(
         factory = AppViewModelProvider.Factory
@@ -56,7 +54,7 @@ fun InfusionEditScreen(
             uiState, viewModel::updateUiState, onSave = {
                 coroutineScope.launch {
                     viewModel.update()
-                    navigateBack()
+                    onNavigateUp()
                 }
             },
             modifier = Modifier.padding(it)

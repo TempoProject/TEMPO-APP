@@ -66,14 +66,12 @@ object InfusionEntryDestination : NavigationDestination {
 /**
  * Composable function for displaying the infusion entry screen.
  *
- * @param navigateBack Function to navigate back to the previous screen.
  * @param onNavigateUp Function to handle the up navigation.
  * @param viewModel ViewModel for managing the state of the infusion entry screen.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InfusionEventScreen(
-    navigateBack: () -> Unit,
     onNavigateUp: () -> Unit,
     viewModel: InfusionEntryViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
@@ -91,7 +89,7 @@ fun InfusionEventScreen(
             onSave = {
                 coroutineScope.launch {
                     viewModel.onSave()
-                    navigateBack()
+                    onNavigateUp()
                 }
             },
             Modifier

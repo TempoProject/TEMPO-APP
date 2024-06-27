@@ -58,7 +58,6 @@ object BleedingEventDetailsDestination : NavigationDestination {
 @Composable
 fun BleedingDetailsScreen(
     onNavigateUp: () -> Unit,
-    navigateBack: () -> Unit,
     navigateToBleedingEdit: (Int) -> Unit,
     viewModel: BleedingDetailsViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
@@ -94,7 +93,7 @@ fun BleedingDetailsScreen(
                     onClick = {
                         coroutineScope.launch {
                             viewModel.deleteItem()
-                            navigateBack()
+                            onNavigateUp()
                         }
                     },
                     shape = MaterialTheme.shapes.medium,

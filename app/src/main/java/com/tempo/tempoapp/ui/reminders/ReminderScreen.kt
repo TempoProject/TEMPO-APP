@@ -83,7 +83,6 @@ object ReminderDestination : NavigationDestination {
  * @param viewModel The view model for managing reminder functionality.
  * @param lifecycleOwner The lifecycle owner used for observing the lifecycle events.
  * @param onNavigateUp Callback function to navigate up.
- * @param navigateBack Callback function to navigate back.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -91,7 +90,6 @@ fun ReminderScreen(
     viewModel: ReminderViewModel = viewModel(factory = AppViewModelProvider.Factory),
     lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
     onNavigateUp: () -> Unit,
-    navigateBack: () -> Unit
 ) {
 
     val context = LocalContext.current
@@ -187,7 +185,7 @@ fun ReminderScreen(
                     coroutineScope.launch {
                         viewModel.save()
                     }
-                    navigateBack()
+                    onNavigateUp()
                 } else {
                     showDialog = true
                     Toast.makeText(
