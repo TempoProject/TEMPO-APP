@@ -25,6 +25,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -59,20 +60,18 @@ object InfusionEntryDestination : NavigationDestination {
     override val route: String
         get() = "infusion_entry"
     override val titleRes: Int
-        get() = R.string.infusion
+        get() = R.string.add_infusion
 }
 
 /**
  * Composable function for displaying the infusion entry screen.
  *
- * @param navigateBack Function to navigate back to the previous screen.
  * @param onNavigateUp Function to handle the up navigation.
  * @param viewModel ViewModel for managing the state of the infusion entry screen.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InfusionEventScreen(
-    navigateBack: () -> Unit,
     onNavigateUp: () -> Unit,
     viewModel: InfusionEntryViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
@@ -90,7 +89,7 @@ fun InfusionEventScreen(
             onSave = {
                 coroutineScope.launch {
                     viewModel.onSave()
-                    navigateBack()
+                    onNavigateUp()
                 }
             },
             Modifier
@@ -133,7 +132,7 @@ fun InfusionEventBody(
             onClick = onSave,
             enabled = uiState.isEntryValid
         ) {
-            Text(text = "Salva")
+            Text(text = stringResource(id = R.string.save))
         }
     }
 }
@@ -159,7 +158,7 @@ fun InfusionEventInputForm(
         mutableStateOf(false)
     }
     var date by remember {
-        mutableStateOf(uiState.infusionDetails.date)
+        mutableLongStateOf(uiState.infusionDetails.date)
     }
 
     Column(
@@ -245,6 +244,7 @@ fun InfusionEventInputForm(
             }
 
             if (showDatePickerDialog)
+
                 DatePickerDialog(
                     onDateSelected = { timestamp ->
                         onItemClick(
@@ -255,6 +255,7 @@ fun InfusionEventInputForm(
                         date = timestamp
                     },
                     onDismiss = { showDatePickerDialog = !showDatePickerDialog })
+
 
             if (showTimePickerDialog)
                 TimePickerDialog(

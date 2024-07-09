@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.tempo.tempoapp.R
 import com.tempo.tempoapp.data.model.InfusionEvent
@@ -21,6 +22,7 @@ import com.tempo.tempoapp.ui.toStringDate
 
 @Composable
 fun InfusionItem(item: InfusionEvent, modifier: Modifier) {
+
     Card(
         colors = CardDefaults.cardColors(MaterialTheme.colorScheme.secondary),
         modifier = modifier, elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -29,23 +31,60 @@ fun InfusionItem(item: InfusionEvent, modifier: Modifier) {
             modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_large)),
             verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_small))
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = item.treatment,
-                    style = MaterialTheme.typography.titleLarge,
-                )
-                Spacer(Modifier.weight(1f))
-                Text(
-                    text = item.infusionSite,
-                    style = MaterialTheme.typography.titleMedium
-                )
+            Text(
+                text = stringResource(id = R.string.infusion),
+                style = MaterialTheme.typography.titleLarge
+            )
+            Column {
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.treatment),
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                    Spacer(Modifier.weight(1f))
+                    Text(
+                        text = item.treatment,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.infusion_site),
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                    Spacer(Modifier.weight(1f))
+                    Text(
+                        text = item.infusionSite,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.dose_units),
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                    Spacer(Modifier.weight(1f))
+                    Text(
+                        text = item.doseUnits.toString(),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
             }
             Text(
                 text = item.timestamp.toStringDate(),
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.align(alignment = Alignment.End)
             )
         }

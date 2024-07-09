@@ -97,7 +97,6 @@ fun TempoNavHost(
         composable(route = BleedingEntryDestination.route) {
             BleedingEntryScreen(
                 onNavigateUp = { navController.navigateUp() },
-                navigateBack = { navController.popBackStack() },
             )
         }
 
@@ -113,7 +112,6 @@ fun TempoNavHost(
         ) {
             BleedingDetailsScreen(
                 onNavigateUp = { navController.navigateUp() },
-                navigateBack = { navController.popBackStack() },
                 navigateToBleedingEdit =
                 { navController.navigate("${BleedingEventEditDestination.route}/${it}") })
         }
@@ -130,7 +128,6 @@ fun TempoNavHost(
         ) {
             BleedingEditScreen(
                 onNavigateUp = { navController.navigateUp() },
-                navigateBack = { navController.popBackStack() },
             )
         }
 
@@ -140,7 +137,6 @@ fun TempoNavHost(
         composable(route = InfusionEntryDestination.route) {
             InfusionEventScreen(
                 onNavigateUp = { navController.navigateUp() },
-                navigateBack = { navController.popBackStack() },
             )
         }
 
@@ -155,7 +151,6 @@ fun TempoNavHost(
         ) {
             InfusionDetailsScreen(
                 onNavigateUp = { navController.navigateUp() },
-                navigateBack = { navController.popBackStack() },
                 navigateToInfusionEdit = {
                     navController.navigate(
                         "${InfusionEditDestination.route}/${it}"
@@ -175,7 +170,6 @@ fun TempoNavHost(
         ) {
             InfusionEditScreen(
                 onNavigateUp = { navController.navigateUp() },
-                navigateBack = { navController.popBackStack() },
             )
         }
 
@@ -205,7 +199,6 @@ fun TempoNavHost(
         ) {
             ReminderScreen(
                 onNavigateUp = { navController.navigateUp() },
-                navigateBack = { navController.popBackStack() },
             )
         }
 
@@ -227,7 +220,6 @@ fun TempoNavHost(
             route = ScanDeviceDestination.route
         ) {
             ScanDevicesScreen(
-                //context = TempoApplication.instance.applicationContext,
                 navigateToMovesense = {
                     navController.navigate(MovesenseDestination.route) {
                         popUpTo(HomeDestination.route) {
@@ -247,7 +239,6 @@ fun TempoNavHost(
         )
         {
             MovesenseScreen(
-                //context = TempoApplication.instance.applicationContext,
                 onNavigateBack = {
                     navController.popBackStack(
                         route = HomeDestination.route,

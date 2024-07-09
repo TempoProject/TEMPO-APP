@@ -51,7 +51,6 @@ object InfusionDetailsDestination : NavigationDestination {
  * Composable function for displaying the screen to view infusion details.
  *
  * @param onNavigateUp Navigation callback for navigating up.
- * @param navigateBack Navigation callback for navigating back.
  * @param navigateToInfusionEdit Navigation callback for editing infusion details.
  * @param viewModel View model for managing infusion details.
  */
@@ -59,7 +58,6 @@ object InfusionDetailsDestination : NavigationDestination {
 @Composable
 fun InfusionDetailsScreen(
     onNavigateUp: () -> Unit,
-    navigateBack: () -> Unit,
     navigateToInfusionEdit: (Int) -> Unit,
     viewModel: InfusionDetailsViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
@@ -87,7 +85,7 @@ fun InfusionDetailsScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Edit,
-                        contentDescription = null//stringResource(R.string.item_entry_title)
+                        contentDescription = null
                     )
                 }
                 Spacer(modifier = Modifier.padding(4.dp))
@@ -95,14 +93,14 @@ fun InfusionDetailsScreen(
                     onClick = {
                         coroutineScope.launch {
                             viewModel.deleteItem()
-                            navigateBack()
+                            onNavigateUp()
                         }
                     },
                     shape = MaterialTheme.shapes.medium,
                 ) {
                     Icon(
                         imageVector = Icons.Default.Delete,
-                        contentDescription = null//stringResource(R.string.item_entry_title)
+                        contentDescription = null
                     )
                 }
             }

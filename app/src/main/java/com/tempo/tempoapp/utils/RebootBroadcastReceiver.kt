@@ -40,7 +40,7 @@ class RebootBroadcastReceiver :
         val reminderRepository =
             (p0.applicationContext as TempoApplication).container.reminderRepository
 
-        if (p1?.action == "android.intent.action.BOOT_COMPLETED") {
+        if (p1?.action == "android.intent.action.BOOT_COMPLETED" || p1?.action == "android.intent.action.ACTION_POWER_CONNECTED") {
 
             val intent = Intent(p0, StepsReceiver::class.java)
             val instant = Instant.now().toEpochMilli()
@@ -82,15 +82,16 @@ class RebootBroadcastReceiver :
                         )
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                             if (alarmManager.canScheduleExactAlarms())
-                                alarmManager.setExactAndAllowWhileIdle(
-                                    AlarmManager.RTC_WAKEUP,
-                                    reminder.timestamp,
+                                alarmManager.setAlarmClock(
+                                    AlarmManager.AlarmClockInfo(
+                                        reminder.timestamp,
+                                        newPendingIntent
+                                    ),
                                     newPendingIntent
                                 )
                         } else
-                            alarmManager.setExactAndAllowWhileIdle(
-                                AlarmManager.RTC_WAKEUP,
-                                reminder.timestamp,
+                            alarmManager.setAlarmClock(
+                                AlarmManager.AlarmClockInfo(reminder.timestamp, newPendingIntent),
                                 newPendingIntent
                             )
 

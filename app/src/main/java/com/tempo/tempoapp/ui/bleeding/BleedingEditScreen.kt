@@ -31,14 +31,12 @@ object BleedingEventEditDestination : NavigationDestination {
 
 /**
  * Composable function for displaying the screen for editing a bleeding event.
- * @param navigateBack Callback to navigate back to the previous screen.
  * @param onNavigateUp Callback to handle the Up navigation action.
  * @param viewModel The view model for managing the UI logic of the edit screen.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BleedingEditScreen(
-    navigateBack: () -> Unit,
     onNavigateUp: () -> Unit,
     viewModel: BleedingEditViewModel = viewModel(
         factory = AppViewModelProvider.Factory
@@ -62,7 +60,7 @@ fun BleedingEditScreen(
                 uiState, viewModel::updateUiState, onSave = {
                     coroutineScope.launch {
                         viewModel.update()
-                        navigateBack()
+                        onNavigateUp()
                     }
                 },
                 modifier = Modifier.padding(it)

@@ -23,6 +23,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
@@ -57,7 +58,6 @@ object BleedingEventDetailsDestination : NavigationDestination {
 @Composable
 fun BleedingDetailsScreen(
     onNavigateUp: () -> Unit,
-    navigateBack: () -> Unit,
     navigateToBleedingEdit: (Int) -> Unit,
     viewModel: BleedingDetailsViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
@@ -93,7 +93,7 @@ fun BleedingDetailsScreen(
                     onClick = {
                         coroutineScope.launch {
                             viewModel.deleteItem()
-                            navigateBack()
+                            onNavigateUp()
                         }
                     },
                     shape = MaterialTheme.shapes.medium,
@@ -215,9 +215,9 @@ fun BleedingItemDetails(details: BleedingDetails, modifier: Modifier) {
 internal fun ItemDetailsRow(
     @StringRes labelResID: Int, itemDetail: String, modifier: Modifier = Modifier
 ) {
-    Row(modifier = modifier) {
-        Text(text = stringResource(labelResID))
-        Spacer(modifier = Modifier.weight(1f))
-        Text(text = itemDetail, fontWeight = FontWeight.Bold)
+    Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+        Text(text = stringResource(labelResID), style = MaterialTheme.typography.titleLarge)
+        Spacer(Modifier.weight(1f))
+        Text(text = itemDetail, style = MaterialTheme.typography.bodyLarge,fontWeight = FontWeight.Bold)
     }
 }

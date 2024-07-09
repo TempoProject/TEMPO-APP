@@ -7,6 +7,7 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -82,7 +83,6 @@ object ReminderDestination : NavigationDestination {
  * @param viewModel The view model for managing reminder functionality.
  * @param lifecycleOwner The lifecycle owner used for observing the lifecycle events.
  * @param onNavigateUp Callback function to navigate up.
- * @param navigateBack Callback function to navigate back.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -90,7 +90,6 @@ fun ReminderScreen(
     viewModel: ReminderViewModel = viewModel(factory = AppViewModelProvider.Factory),
     lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
     onNavigateUp: () -> Unit,
-    navigateBack: () -> Unit
 ) {
 
     val context = LocalContext.current
@@ -186,7 +185,7 @@ fun ReminderScreen(
                     coroutineScope.launch {
                         viewModel.save()
                     }
-                    navigateBack()
+                    onNavigateUp()
                 } else {
                     showDialog = true
                     Toast.makeText(
@@ -200,9 +199,20 @@ fun ReminderScreen(
         )
 
         if (showDialog) {
+            Log.d(
+                "ReminderScreen", "permission rationale: ${
+                    ActivityCompat.shouldShowRequestPermissionRationale(
+                        context as Activity,
+                        Manifest.permission.WRITE_CALENDAR
+                    ) && ActivityCompat.shouldShowRequestPermissionRationale(
+                        context,
+                        Manifest.permission.WRITE_CALENDAR
+                    )
+                }"
+            )
             val isPermanentlyDeclined =
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) !ActivityCompat.shouldShowRequestPermissionRationale(
-                    context as Activity,
+                    context,
                     Manifest.permission.WRITE_CALENDAR
                 ) && !ActivityCompat.shouldShowRequestPermissionRationale(
                     context,
@@ -212,12 +222,12 @@ fun ReminderScreen(
                     Manifest.permission.POST_NOTIFICATIONS
                 ) else
                     !ActivityCompat.shouldShowRequestPermissionRationale(
-                        context as Activity,
+                        context,
                         Manifest.permission.WRITE_CALENDAR
-                    ) && !ActivityCompat.shouldShowRequestPermissionRationale(
+                    ) /*&& !ActivityCompat.shouldShowRequestPermissionRationale(
                         context,
                         Manifest.permission.READ_CALENDAR
-                    )
+                    )*/
             PermissionDialog(
                 showDialog,
                 permission = CalendarTextProvider(),
@@ -470,10 +480,10 @@ private fun ReminderBody(
                 reset()
 
             }) {
-                Text(text = "Reset")
+                Text(text = stringResource(id = R.string.reset))
             }
             OutlinedButton(onClick = onSave, enabled = saveIsEnabled) {
-                Text(text = "Salva")
+                Text(text = stringResource(id = R.string.save))
             }
 
         }
