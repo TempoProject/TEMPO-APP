@@ -96,25 +96,25 @@ class TempoApplication : Application() {
 
         workManager.enqueueUniquePeriodicWork(
             "StepsRecords",
-            ExistingPeriodicWorkPolicy.UPDATE,
+            ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
             stepsRecords
         )
 
         workManager.enqueueUniquePeriodicWork(
             "BleedingRecords",
-            ExistingPeriodicWorkPolicy.UPDATE,
+            ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
             bleedingRecords
         )
 
         workManager.enqueueUniquePeriodicWork(
             "InfusionRecords",
-            ExistingPeriodicWorkPolicy.UPDATE,
+            ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
             infusionRecords
         )
 
         workManager.enqueueUniquePeriodicWork(
             "AccelerometerRecords",
-            ExistingPeriodicWorkPolicy.UPDATE,
+            ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
             saveAccelerometer
         )
     }
