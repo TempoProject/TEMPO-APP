@@ -51,7 +51,6 @@ class StepsService : Service() {
 
         Log.d(TAG, "Starting foreground service")
         startForegroundService(notificationManager)
-
         CoroutineScope(Dispatchers.IO).launch {
 
             Log.d(TAG, "Fetching steps data")
@@ -103,8 +102,7 @@ class StepsService : Service() {
                         )
                 }
             }
-        }
-        stopForegroundService()
+        }.invokeOnCompletion { stopForegroundService() }
         return START_NOT_STICKY
     }
 
