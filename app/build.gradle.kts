@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
@@ -8,6 +10,10 @@ plugins {
 android {
     namespace = "com.tempo.tempoapp"
     compileSdk = 34
+    // Allow buildConfig to load properties from local.properties file
+    buildFeatures{
+        buildConfig = true
+    }
 
     defaultConfig {
         applicationId = "com.tempo.tempoapp"
@@ -20,6 +26,15 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        // Load properties from local.properties file
+        val properties = Properties()
+        properties.load(project.rootProject.file("local.properties").inputStream())
+        buildConfigField("String", "FIREBASE_URL", "\"${properties.getProperty("FIREBASE_URL")}\"")
+        buildConfigField("String", "API_KEY", "\"${properties.getProperty("API_KEY")}\"")
+        buildConfigField("String", "OPEN_WEATHER_URL", "\"${properties.getProperty("OPEN_WEATHER_URL")}\"")
+
+
     }
 
     buildTypes {
@@ -66,6 +81,7 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.play.services.location)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -98,17 +114,17 @@ dependencies {
     // Retrofit with Scalar Converter
     implementation("com.squareup.retrofit2:converter-scalars:2.9.0")
 
-    implementation ("com.squareup.retrofit2:converter-gson:2.11.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
     implementation("com.google.code.gson:gson:2.10.1")
 
     // Firebase
     implementation(platform("com.google.firebase:firebase-bom:32.8.1"))
     implementation("com.google.firebase:firebase-database")
-    implementation ("com.google.firebase:firebase-installations:17.2.0")
+    implementation("com.google.firebase:firebase-installations:17.2.0")
 
     // RxAndroidBle (movesense)
     implementation(files("libs/mdslib-3.15.0(1)-release.aar"))
-    implementation ("com.polidea.rxandroidble2:rxandroidble:1.10.2")
-    implementation ("io.reactivex.rxjava2:rxandroid:2.1.1")
-    implementation ("io.reactivex.rxjava2:rxjava:2.2.8")
+    implementation("com.polidea.rxandroidble2:rxandroidble:1.10.2")
+    implementation("io.reactivex.rxjava2:rxandroid:2.1.1")
+    implementation("io.reactivex.rxjava2:rxjava:2.2.8")
 }
