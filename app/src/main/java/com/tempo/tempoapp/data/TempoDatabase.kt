@@ -11,6 +11,7 @@ import com.tempo.tempoapp.data.dao.MovesenseDao
 import com.tempo.tempoapp.data.dao.ReminderDao
 import com.tempo.tempoapp.data.dao.StepsRecordDao
 import com.tempo.tempoapp.data.dao.UtilsDao
+import com.tempo.tempoapp.data.dao.WeatherForecastDao
 import com.tempo.tempoapp.data.model.Accelerometer
 import com.tempo.tempoapp.data.model.BleedingEvent
 import com.tempo.tempoapp.data.model.InfusionEvent
@@ -18,6 +19,7 @@ import com.tempo.tempoapp.data.model.Movesense
 import com.tempo.tempoapp.data.model.ReminderEvent
 import com.tempo.tempoapp.data.model.StepsRecord
 import com.tempo.tempoapp.data.model.Utils
+import com.tempo.tempoapp.data.model.WeatherForecast
 
 /**
  * Database class representing the SQLite database for the application.
@@ -35,7 +37,8 @@ import com.tempo.tempoapp.data.model.Utils
         Utils::class,
         Movesense::class,
         Accelerometer::class,
-        ReminderEvent::class
+        ReminderEvent::class,
+        WeatherForecast::class
     ),
     version = 1,
     exportSchema = true
@@ -48,6 +51,7 @@ abstract class TempoDatabase : RoomDatabase() {
     abstract fun movesenseDao(): MovesenseDao
     abstract fun accelerometerDao(): AccelerometerDao
     abstract fun reminderDao(): ReminderDao
+    abstract fun weatherForecastDao(): WeatherForecastDao
 
     companion object {
         @Volatile
