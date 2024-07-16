@@ -97,10 +97,6 @@ class StepsService : Service() {
 
                                 Log.d(TAG, "Location: ${location.latitude}, ${location.longitude}")
 
-                                // check internet connection
-                                // if connected, get weather data
-                                // else save previous weather data with timestamp now
-
 
                                 val response =
                                     WeatherForecastApi.retrofitService.getWeatherForecast(
@@ -136,8 +132,8 @@ class StepsService : Service() {
                         StepsRecordModel(
                             steps = it.count,
                             date = it.startTime.toTimestamp(ChronoUnit.DAYS),
-                            startTime = it.startTime.toTimestamp(ChronoUnit.MILLIS),
-                            endTime = it.endTime.toTimestamp(ChronoUnit.MILLIS)
+                            startTime = it.startTime.toEpochMilli(),
+                            endTime = it.endTime.toEpochMilli()
                         )
                     )
                 }
