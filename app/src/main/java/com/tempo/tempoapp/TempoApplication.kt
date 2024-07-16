@@ -125,6 +125,7 @@ class TempoApplication : Application() {
  * Firebase Realtime Database object.
  */
 object FirebaseRealtimeDatabase {
+
     val instance: DatabaseReference
-        get() = Firebase.database("https://tempo-app-94a6c-default-rtdb.europe-west1.firebasedatabase.app/").reference
+        get() = Firebase.database(BuildConfig.FIREBASE_URL).reference
 }
