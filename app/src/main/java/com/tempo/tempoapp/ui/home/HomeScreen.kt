@@ -80,6 +80,7 @@ import com.tempo.tempoapp.data.healthconnect.HealthConnectAvailability
 import com.tempo.tempoapp.ui.AppViewModelProvider
 import com.tempo.tempoapp.ui.HomeBody
 import com.tempo.tempoapp.ui.common.AlarManagerTextProvider
+import com.tempo.tempoapp.ui.common.LocationTextProvider
 import com.tempo.tempoapp.ui.common.NotificationTextProvider
 import com.tempo.tempoapp.ui.common.PermissionDialog
 import com.tempo.tempoapp.ui.navigation.NavigationDestination
@@ -137,7 +138,11 @@ fun HomeScreen(
     val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
     var canScheduleExactAlarms by remember {
-        mutableStateOf(true)
+        mutableStateOf(
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                alarmManager.canScheduleExactAlarms()
+            } else true
+        )
     }
     var showDialog by remember {
         mutableStateOf(false)
@@ -152,13 +157,61 @@ fun HomeScreen(
 
         }
     var hasNotificationPermission by remember {
-        mutableStateOf(false)
+        mutableStateOf(
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) == PackageManager.PERMISSION_GRANTED
+            } else {
+                true
+            }
+        )
     }
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { granted ->
         hasNotificationPermission = granted
     }
+
+    var hasLocationPermission by remember {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            mutableStateOf(
+                ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED &&
+                        ContextCompat.checkSelfPermission(
+                            context,
+                            Manifest.permission.ACCESS_COARSE_LOCATION
+                        ) == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.ACCESS_BACKGROUND_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED
+            )
+        } else {
+            mutableStateOf(
+                ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED &&
+                        ContextCompat.checkSelfPermission(
+                            context,
+                            Manifest.permission.ACCESS_COARSE_LOCATION
+                        ) == PackageManager.PERMISSION_GRANTED
+            )
+        }
+    }
+
+    val location =
+        rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestMultiplePermissions())
+        { locationPermission ->
+            //check location permission Fine and Coarse
+            hasLocationPermission =
+                locationPermission[Manifest.permission.ACCESS_FINE_LOCATION] == true &&
+                        locationPermission[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+
+        }
 
     fun checkPermissions() {
 
@@ -170,6 +223,15 @@ fun HomeScreen(
         } else {
             true
         }
+
+        hasLocationPermission = ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED
 
         canScheduleExactAlarms = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             alarmManager.canScheduleExactAlarms()
@@ -201,6 +263,7 @@ fun HomeScreen(
             lifecycleOwner.lifecycle.removeObserver(observer)
         }
     }
+
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val homeUiState by viewModel.homeUiState.collectAsState()
     val scope = rememberCoroutineScope()
@@ -298,9 +361,39 @@ fun HomeScreen(
             },
         ) { innerPadding ->
             Log.d(TAG, "Permissions granted: ${viewModel.permissionsGranted.value}")
-            if (showDialog) {
+            if (!hasLocationPermission) {
                 PermissionDialog(
-                    showDialog = showDialog,
+                    showDialog = !hasLocationPermission,
+                    permission = LocationTextProvider(),
+                    isPermanentlyDeclined = false,
+                    onDismiss = { showDialog = !showDialog },
+                    onOkClick = {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                            location.launch(
+                                arrayOf(
+                                    Manifest.permission.ACCESS_FINE_LOCATION,
+                                    Manifest.permission.ACCESS_COARSE_LOCATION,
+                                    Manifest.permission.ACCESS_BACKGROUND_LOCATION
+                                )
+                            )
+                        } else
+                            location.launch(
+                                arrayOf(
+                                    Manifest.permission.ACCESS_FINE_LOCATION,
+                                    Manifest.permission.ACCESS_COARSE_LOCATION
+                                )
+                            )
+                    },
+                    onGoToAppSettings = {
+                        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                        val uri = Uri.parse("package:${context.packageName}")
+                        intent.setData(uri)
+                        settingsLauncher.launch(intent)
+                    })
+            }
+            if (!hasNotificationPermission) {
+                PermissionDialog(
+                    showDialog = !hasNotificationPermission,
                     permission = NotificationTextProvider(),
                     isPermanentlyDeclined = !ActivityCompat.shouldShowRequestPermissionRationale(
                         context as Activity,
@@ -432,7 +525,8 @@ fun HomeScreen(
                     Column(
                         modifier
                             .padding(innerPadding)
-                            .fillMaxSize()) {
+                            .fillMaxSize()
+                    ) {
                         NotInstalledMessage()
                     }
                 }
