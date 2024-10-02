@@ -46,6 +46,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.DpOffset
@@ -54,8 +55,6 @@ import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tempo.tempoapp.R
 import com.tempo.tempoapp.TempoAppBar
-import com.tempo.tempoapp.data.model.BleedingCause
-import com.tempo.tempoapp.data.model.bleedingSite
 import com.tempo.tempoapp.ui.AppViewModelProvider
 import com.tempo.tempoapp.ui.navigation.NavigationDestination
 import com.tempo.tempoapp.ui.toStringDate
@@ -148,7 +147,7 @@ fun BleedingEventBody(
             enabled = uiState.isEntryValid,
             shape = MaterialTheme.shapes.small,
         ) {
-            Text(text = "Salva")
+            Text(text = stringResource(id = R.string.save))
         }
 
     }
@@ -192,13 +191,13 @@ fun BleedingEventInputForm(
     ) {
         DropdownList(
             uiState.bleedingDetails,
-            itemList = bleedingSite.toList(),
+            itemList = stringArrayResource(id = R.array.site_array).toList(),//
             onItemClick = onItemClick,
             label = R.string.site_string_label
         )
 
         Text(
-            text = "Hai avuto un episodio di sanguinamento?",
+            text = stringResource(R.string.is_a_bleeding_event),
             style = MaterialTheme.typography.bodyLarge,
             modifier = modifier.padding(
                 start = dimensionResource(id = R.dimen.padding_small),
@@ -234,7 +233,7 @@ fun BleedingEventInputForm(
         }
         if (isABleedingEpisode == stringResource(id = R.string.no)) {
             Text(
-                text = "Secondo te è sanguinamento?",
+                text = stringResource(R.string.do_you_think_is_a_bleeding),
                 style = MaterialTheme.typography.bodyLarge,
                 modifier = modifier.padding(
                     start = dimensionResource(id = R.dimen.padding_small),
@@ -267,7 +266,7 @@ fun BleedingEventInputForm(
             }
         }
         Text(
-            text = "Ti sei trattato?",
+            text = stringResource(R.string.did_you_treat_yself),
             style = MaterialTheme.typography.bodyLarge,
             modifier = modifier.padding(
                 start = dimensionResource(id = R.dimen.padding_small),
@@ -292,9 +291,7 @@ fun BleedingEventInputForm(
         }
         DropdownList(
             uiState.bleedingDetails,
-            itemList = BleedingCause.entries.map {
-                it.name
-            },
+            itemList = stringArrayResource(id = R.array.cause_array).toList(),
             onItemClick = onItemClick,
             label = R.string.cause_string_label,
         )
@@ -428,12 +425,12 @@ fun DatePickerDialog(
                 state.selectedDateMillis?.let { onDateSelected(it) }
                 onDismiss()
             }) {
-                Text(text = "OK")
+                Text(text = stringResource(id = R.string.save))
             }
         },
         dismissButton = {
             Button(onClick = onDismiss) {
-                Text(text = "Cancel")
+                Text(text = stringResource(id = R.string.cancel))
             }
         }
     ) {
@@ -484,7 +481,7 @@ fun TimePickerDialog(
                     onTimeSelected("${if (state.hour == 0) "00" else state.hour}:${if (state.minute == 0) "00" else state.minute}")
                     onDismiss()
                 }) {
-                    Text(text = "Salva")
+                    Text(text = stringResource(id = R.string.save))
                 }
             }
         }

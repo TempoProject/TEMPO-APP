@@ -520,42 +520,42 @@ fun MovesenseBody(
             onClick = onConnect, enabled = !state.value.movesense.isConnected && hasPermission,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(text = "Connetti")
+            Text(text = stringResource(R.string.connect))
         }
         OutlinedButton(
             onClick = onConfigure,
             enabled = state.value.movesense.isConnected && !state.value.isWorking && hasPermission,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(text = "Configura")
+            Text(text = stringResource(R.string.configure))
         }
         OutlinedButton(
             onClick = onDisconnect,
             enabled = state.value.movesense.isConnected && !state.value.isWorking && hasPermission,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(text = "Disconnetti")
+            Text(text = stringResource(id = R.string.disconnect))
         }
         OutlinedButton(
             onClick = onFlush,
             enabled = state.value.movesense.isConnected && !state.value.isWorking && hasPermission,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(text = "Flush della memoria")
+            Text(text = stringResource(id = R.string.flush))
         }
         OutlinedButton(
             onClick = onDelete,
             enabled = state.value.movesense.isConnected && !state.value.isWorking && hasPermission,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(text = "Cancella dati")
+            Text(text = stringResource(id = R.string.erasedata))
         }
         OutlinedButton(
             onClick = onForget,
             enabled = !state.value.isWorking,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(text = "Dimentica il dispositivo")
+            Text(text = stringResource(id = R.string.forgetdevice))
         }
         if (!hasPermission)
             OutlinedButton(
@@ -563,7 +563,7 @@ fun MovesenseBody(
                 enabled = !state.value.isWorking,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(text = "Concedi i permessi")
+                Text(text = stringResource(id = R.string.getpermission))
             }
     }
 }

@@ -35,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -44,7 +45,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tempo.tempoapp.R
 import com.tempo.tempoapp.TempoAppBar
-import com.tempo.tempoapp.data.model.bleedingSite
 import com.tempo.tempoapp.ui.AppViewModelProvider
 import com.tempo.tempoapp.ui.bleeding.DatePickerDialog
 import com.tempo.tempoapp.ui.bleeding.TextWithIcon
@@ -168,13 +168,13 @@ fun InfusionEventInputForm(
 
         DropdownList(
             infusionDetails = uiState.infusionDetails,
-            itemList = listOf("Profilassi", "On Demand", "Altro"),
+            itemList = stringArrayResource(id = R.array.treatment_array).toList(),
             onItemClick = onItemClick,
             label = R.string.treatment
         )
         DropdownList(
             infusionDetails = uiState.infusionDetails,
-            itemList = bleedingSite.toList(),
+            itemList = stringArrayResource(id = R.array.site_array).toList(),
             onItemClick = onItemClick,
             label = R.string.infusion_site
         )
