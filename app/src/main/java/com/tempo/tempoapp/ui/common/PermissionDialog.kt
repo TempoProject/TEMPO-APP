@@ -28,7 +28,7 @@ fun PermissionDialog(
     onGoToAppSettings: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    if (showDialog)
+    //if (showDialog)
         AlertDialog(
             onDismissRequest = onDismiss,
             title = {
@@ -115,5 +115,14 @@ class BluetoothLegacyTextProvider : PermissionTextProvider {
             "È necessario concedere l'accesso alla posizione del dispositivo per collegare il dispositivo Movesense.\nApri le impostazioni e concedi l'accesso ai alla posizione."
         } else
             "È necessario concedere l'accesso al bluetooth per collegare il dispositivo Movesense."
+    }
+}
+
+class LocationTextProvider : PermissionTextProvider {
+    override fun getDescription(isPermanentlyDeclined: Boolean): String {
+        return if (isPermanentlyDeclined) {
+            "È necessario concedere l'accesso alla posizione del dispositivo per visualizzare i dati relativi alla tua posizione."
+        } else
+            "È necessario concedere l'accesso alla posizione del dispositivo per visualizzare i dati relativi alla tua posizione."
     }
 }

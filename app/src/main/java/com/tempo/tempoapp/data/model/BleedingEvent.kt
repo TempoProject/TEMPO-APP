@@ -6,7 +6,7 @@ import androidx.room.PrimaryKey
 
 /**
  * Enum class representing the various causes of bleeding events.
- */
+
 enum class BleedingCause {
     Spontaneo,
     Lesione,
@@ -15,26 +15,26 @@ enum class BleedingCause {
     Altro
 
 }
-
+ */
 /**
  * Enum class representing the severity levels of bleeding events.
- */
+
 enum class Severity {
     Lieve,
     Moderato,
     Grave
 }
-
+ */
 /**
  * A set of possible bleeding sites.
- */
+
 val bleedingSite: Set<String> = setOf(
     "Braccio destro",
     "Braccio sinistro",
     "Busto",
     "Gamba destra",
     "Gamba sinistra"
-)
+)*/
 
 /**
  * Entity class representing a bleeding event in the database.
