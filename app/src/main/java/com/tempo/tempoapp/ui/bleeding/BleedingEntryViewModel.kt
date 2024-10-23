@@ -132,7 +132,7 @@ fun BleedingDetails.toEntity(): BleedingEvent =
         timestamp = SimpleDateFormat(
             "dd-MM-yyyy HH:mm",
             Locale.getDefault()
-        ).parse(date.toStringDate().plus(" $time")).time
+        ).parse(date.toStringDate().plus(" $time"))?.time ?: Instant.now().toEpochMilli()
     )
 
 /**

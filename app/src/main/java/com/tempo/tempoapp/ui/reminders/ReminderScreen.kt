@@ -45,6 +45,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
@@ -56,7 +57,6 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tempo.tempoapp.R
 import com.tempo.tempoapp.TempoAppBar
-import com.tempo.tempoapp.data.model.events
 import com.tempo.tempoapp.ui.AppViewModelProvider
 import com.tempo.tempoapp.ui.bleeding.DatePickerDialog
 import com.tempo.tempoapp.ui.bleeding.TextWithIcon
@@ -190,7 +190,7 @@ fun ReminderScreen(
                     showDialog = true
                     Toast.makeText(
                         context,
-                        "Concedi l'accesso al calendario",
+                        context.getString(R.string.permission_calendar),
                         Toast.LENGTH_LONG
                     ).show()
                 }
@@ -323,7 +323,7 @@ private fun ReminderBody(
                 )
                 .padding(dimensionResource(id = R.dimen.padding_medium))
         ) {
-            TextWithIcon(text = uiState.event)
+            TextWithIcon(text = stringResource(id = R.string.event))
             DropdownMenu(
                 expanded = showDropdown,
                 onDismissRequest = { showDropdown = !showDropdown },
@@ -332,12 +332,13 @@ private fun ReminderBody(
                     y = dimensionResource(id = R.dimen.padding_small)
                 )
             ) {
-                events.forEach { event ->
+                stringArrayResource(id = R.array.type_of_events).forEach { event ->
                     DropdownMenuItem(
                         text = { Text(text = event) },
                         onClick = {
+                            // TODO fix this, not working with translation
                             updateEvent(event)
-                            saveIsEnabled = event != "Tipo di evento"
+                            saveIsEnabled = event != "Evento"
                             showDropdown = !showDropdown
                         },
                         contentPadding = PaddingValues(8.dp)

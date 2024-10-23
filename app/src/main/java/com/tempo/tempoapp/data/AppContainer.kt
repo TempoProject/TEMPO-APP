@@ -7,6 +7,7 @@ import com.tempo.tempoapp.data.repository.MovesenseRepository
 import com.tempo.tempoapp.data.repository.ReminderRepository
 import com.tempo.tempoapp.data.repository.StepsRecordRepository
 import com.tempo.tempoapp.data.repository.UtilsRepository
+import com.tempo.tempoapp.data.repository.WeatherForecastRepository
 
 /**
  * Interface defining a contract for managing repositories within the Android application.
@@ -20,6 +21,7 @@ interface AppContainer {
     val movesenseRepository: MovesenseRepository
     val accelerometerRepository: AccelerometerRepository
     val reminderRepository: ReminderRepository
+    val weatherForecastRepository: WeatherForecastRepository
 }
 
 /**
@@ -50,5 +52,8 @@ class AppDataContainer(private val context: Context) : AppContainer {
     }
     override val reminderRepository: ReminderRepository by lazy {
         ReminderRepository(TempoDatabase.getDatabase(context).reminderDao())
+    }
+    override val weatherForecastRepository: WeatherForecastRepository by lazy {
+        WeatherForecastRepository(TempoDatabase.getDatabase(context).weatherForecastDao())
     }
 }

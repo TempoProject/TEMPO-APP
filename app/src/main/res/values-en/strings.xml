@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="event">Event</string>
+    <string name="infusion">Infusion</string>
+    <string name="cause_string_label">Cause</string>
+    <string name="pain_scale_string_label">Pain scale</string>
+    <string name="details">Details</string>
+    <string name="date">Date</string>
+    <string name="time">Time</string>
+    <string name="edit">Edit</string>
+    <string name="infusion_site">Infusion site</string>
+    <string name="dose_units">Dose in units</string>
+    <string name="lot_number">Batch number</string>
+    <string name="treatment">Treeatment</string>
+    <string name="history">History</string>
+    <string name="reminder">Reminders</string>
+    <string name="add_infusion">New infusion</string>
+    <string name="add_event">New event</string>
+    <string name="add_reminder">New reminder</string>
+    <string name="not_installed_description">"         Health Connect is supported by this device but is not currently installed     "</string>
+    <string name="not_installed_link_text">"         For the app to work properly, install Health Connect from Google Play.     "</string>
+    <string name="scandevices">Find devices</string>
+    <string name="yes">Yes</string>
+    <string name="bleeding">Bleeding</string>
+    <string name="authorize">Allow</string>
+    <string name="health_connect_permission_required">Grant access to health connect</string>
+    <string name="health_connect_not_installed">Health connect not installed</string>
+    <string name="severity_string_label">Severity of bleeding</string>
+    <string name="site_string_label">Location site</string>
+    <string name="save">Save</string>
+    <string name="is_a_bleeding_event">Have you had a bleeding episode?</string>
+    <string name="do_you_think_is_a_bleeding">Do you think it is a bleeding event?</string>
+    <string name="did_you_treat_yself">Did you treat yourself?</string>
+    <string name="cancel">Cancel</string>
+    <string-array name="treatment_array">
+        <item>Prophylaxis</item>
+        <item>On Demand</item>
+        <item>Therapy</item>
+    </string-array>
+    <string-array name="site_array">
+        <item>Head</item>
+        <item>Neck</item>
+        <item>Left shoulder</item>
+        <item>Right shoulder</item>
+        <item>Left arm</item>
+        <item>Right arm</item>
+        <item>Left elbow</item>
+        <item>Right elbow</item>
+        <item>Left wrist</item>
+        <item>Right wrist</item>
+        <item>Left leg</item>
+        <item>Right leg</item>
+    </string-array>
+    <string-array name="cause_array">
+        <item>Accidental</item>
+        <item>Spontaneous</item>
+        <item>Post-traumatic</item>
+        <item>Post-surgical</item>
+        <item>Post-procedure</item>
+        <item>Other</item>
+    </string-array>
+
+    <string-array name="type_of_events">
+        <item>Doctor\'s visit</item>
+        <item>Infusion</item>
+        <item>Medication refill</item>
+    </string-array>
+
+    <string name="permission_calendar">Grant access to the calendar</string>
+
+    <string name="connect">Connect</string>
+    <string name="configure">Configure</string>
+    <string name="disconnect">Disconnect</string>
+    <string name="flush">Memory flush</string>
+    <string name="erasedata">Erase data</string>
+    <string name="forgetdevice">Forget device</string>
+    <string name="getpermission">Grant permissions\n</string>
+
+</resources>

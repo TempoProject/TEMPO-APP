@@ -111,8 +111,9 @@ fun InfusionDetails.toEntity(): InfusionEvent =
         timestamp = SimpleDateFormat(
             "dd-MM-yyyy HH:mm",
             Locale.getDefault()
-        ).parse(date.toStringDate().plus(" $time")).time
+        ).parse(date.toStringDate().plus(" $time"))?.time ?: Instant.now().toEpochMilli()
     )
+
 
 /**
  * Converts an infusion event to infusion details.

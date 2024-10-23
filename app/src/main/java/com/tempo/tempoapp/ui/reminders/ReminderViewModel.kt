@@ -120,7 +120,9 @@ class ReminderViewModel(
         println(idCalendar)
         reminderRepository.insertItem(data.copy(idCalendar = idCalendar))
         data = data.copy(idCalendar = idCalendar)
-        AlarmManagerHelper(getApplication<Application>().applicationContext).scheduleReminderService(data)
+        AlarmManagerHelper(getApplication<Application>().applicationContext).scheduleReminderService(
+            data
+        )
         /*
                     val task = OneTimeWorkRequest.Builder(NotificationWorker::class.java)
                         .setInputData(Data.Builder().putString("EVENT", uiState.event).build())
@@ -137,6 +139,7 @@ class ReminderViewModel(
 
     }
 }
+
 /**
  * Creates a calendar event based on the provided reminder event data.
  *
@@ -260,5 +263,5 @@ fun ReminderUiState.toReminderEvent(idCalendar: Long): ReminderEvent =
         timestamp = SimpleDateFormat(
             "dd-MM-yyyy HH:mm",
             Locale.getDefault()
-        ).parse(date.plus(" $time")).time
+        ).parse(date.plus(" $time"))?.time ?: Instant.now().toEpochMilli()
     )

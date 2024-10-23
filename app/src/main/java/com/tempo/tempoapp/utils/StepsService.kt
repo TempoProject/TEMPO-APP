@@ -1,19 +1,26 @@
 package com.tempo.tempoapp.utils
 
+import android.Manifest
 import android.app.Notification
 import android.app.NotificationManager
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.content.pm.ServiceInfo
+import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.StepsRecord
+import com.google.android.gms.location.LocationServices
 import com.tempo.tempoapp.R
 import com.tempo.tempoapp.TempoApplication
 import com.tempo.tempoapp.data.model.StepsRecordModel
 import com.tempo.tempoapp.data.model.Utils
+import com.tempo.tempoapp.data.model.WeatherForecast
 import com.tempo.tempoapp.data.model.toTimestamp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -41,6 +48,9 @@ class StepsService : Service() {
 
         val stepsRecordRepository =
             (this.applicationContext as TempoApplication).container.stepsRecordRepository
+
+        val weatherForecastRepository =
+            (this.applicationContext as TempoApplication).container.weatherForecastRepository
 
         val utilsRepository =
             (this.applicationContext as TempoApplication).container.utilsRepository
@@ -70,14 +80,62 @@ class StepsService : Service() {
                     healthConnectManager.readSteps(instantStartTime, instantNow)
                         .toMutableList()
 
+                if (list.isNotEmpty() && (ContextCompat.checkSelfPermission(
+                        applicationContext,
+                        Manifest.permission.ACCESS_FINE_LOCATION
+                    ) == PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(
+                        applicationContext,
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                    ) == PackageManager.PERMISSION_GRANTED) && ContextCompat.checkSelfPermission(
+                        applicationContext,
+                        Manifest.permission.ACCESS_BACKGROUND_LOCATION
+                    ) == PackageManager.PERMISSION_GRANTED
+                ) {
+                    LocationServices.getFusedLocationProviderClient(applicationContext).lastLocation.addOnSuccessListener { location ->
+                        CoroutineScope(Dispatchers.IO).launch {
+                            if (location != null) {
+                                location.latitude
+                                location.longitude
+
+                                Log.d(TAG, "Location: ${location.latitude}, ${location.longitude}")
+
+
+                                val response =
+                                    WeatherForecastApi.retrofitService.getWeatherForecast(
+                                        location.latitude.toString(),
+                                        location.longitude.toString()
+                                    )
+
+                                response.body()?.let { data ->
+                                    val weatherForecast = WeatherForecast(
+                                        Instant.now().epochSecond,
+                                        data.weather[0].main,
+                                        data.weather[0].description,
+                                        data.main.temp,
+                                        data.main.feels_like,
+                                        data.main.temp_min,
+                                        data.main.temp_max,
+                                        data.main.pressure,
+                                        data.main.humidity,
+                                        data.wind.speed,
+                                        data.wind.deg,
+                                        data.wind.gust
+                                    )
+                                    weatherForecastRepository.insertItem(weatherForecast)
+                                }
+                            }
+                        }
+                    }
+                }
+
                 Log.i(TAG, "Fetched ${list.size} steps data")
                 list.forEach {
                     stepsRecordRepository.insertItem(
                         StepsRecordModel(
                             steps = it.count,
                             date = it.startTime.toTimestamp(ChronoUnit.DAYS),
-                            startTime = it.startTime.toTimestamp(ChronoUnit.MILLIS),
-                            endTime = it.endTime.toTimestamp(ChronoUnit.MILLIS)
+                            startTime = it.startTime.toEpochMilli(),
+                            endTime = it.endTime.toEpochMilli()
                         )
                     )
                 }
@@ -111,7 +169,15 @@ class StepsService : Service() {
     }
 
     private fun startForegroundService(notificationManager: NotificationManager) {
-        startForeground(1, sendNotification(notificationManager))
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(
+                1,
+                sendNotification(notificationManager),
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
+            )
+        } else
+            startForeground(1, sendNotification(notificationManager))
     }
 
     private fun sendNotification(notificationManager: NotificationManager): Notification {

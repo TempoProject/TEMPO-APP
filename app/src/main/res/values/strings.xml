@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Tempo App</string>
+    <string name="app_name" translatable="false">Tempo App</string>
     <string name="event">Evento</string>
     <string name="infusion">Infusione</string>
     <string name="severity_string_label">Gravità del sanguinamento</string>
@@ -7,11 +7,11 @@
     <string name="cause_string_label">Causa</string>
     <string name="pain_scale_string_label">Scala del dolore</string>
     <string name="details">Dettagli</string>
-    <string name="movesense">Movesense</string>
+    <string name="movesense" translatable="false">Movesense</string>
     <string name="date">Data</string>
     <string name="time">Ora</string>
     <string name="edit">Modifica</string>
-    <string name="note">Note</string>
+    <string name="note" translatable="false">Note</string>
     <string name="infusion_site">Sede infusione</string>
     <string name="dose_units">Dose in unità</string>
     <string name="lot_number">Numero di lotto</string>
@@ -22,29 +22,70 @@
     <string name="add_event">Aggiungi evento</string>
     <string name="add_reminder">Aggiungi promemoria</string>
 
-    <string name="market_url">market://details</string>
-    <string name="health_connect_package">com.google.android.apps.healthdata</string>
-    <string name="onboarding_url">healthconnect://onboarding</string>
-    <string name="not_installed_description">
-        Health Connect è supportato da questo dispositivo ma non è attualmente installato
-    </string>
-    <string name="not_installed_link_text">
-        Per un corretto funzionamento dell"'"applicazione, installa Health Connect da Google Play.
-    </string>
-    <string name="not_installed_tag">not_installed_tag</string>
+    <string name="market_url" translatable="false">market://details</string>
+    <string name="health_connect_package" translatable="false">com.google.android.apps.healthdata</string>
+    <string name="onboarding_url" translatable="false">healthconnect://onboarding</string>
+    <string name="not_installed_description">"         Health Connect è supportato da questo dispositivo ma non è attualmente installato     "</string>
+    <string name="not_installed_link_text">"         Per un corretto funzionamento dell'applicazione, installa Health Connect da Google Play.     "</string>
+    <string name="not_installed_tag" translatable="false">not_installed_tag</string>
     <string name="scandevices">Cerca dispositivi</string>
-    <string name="steps_notification_channel_id">Passi</string>
-    <string name="steps_notification_channel_name">Invio passi</string>
-    <string name="reminder_notification_channel_id">Promemoria</string>
-    <string name="reminder_notification_channel_name">Promemoria evento</string>
-    <string name="movesense_notification_channel_id">Movesense</string>
-    <string name="movesense_notification_channel_name">Movesense</string>
+    <string name="steps_notification_channel_id" translatable="false">Passi</string>
+    <string name="steps_notification_channel_name" translatable="false">Invio passi</string>
+    <string name="reminder_notification_channel_id" translatable="false">Promemoria</string>
+    <string name="reminder_notification_channel_name" translatable="false">Promemoria evento</string>
+    <string name="movesense_notification_channel_id" translatable="false">Movesense</string>
+    <string name="movesense_notification_channel_name" translatable="false">Movesense</string>
     <string name="yes">Si</string>
-    <string name="no">No</string>
+    <string name="no" translatable="false">No</string>
     <string name="bleeding">Sanguinamento</string>
     <string name="authorize">Autorizza</string>
     <string name="health_connect_permission_required">Concedi l\'accesso a health connect</string>
     <string name="health_connect_not_installed">Health connect non installato</string>
     <string name="save">Salva</string>
-    <string name="reset">Reset</string>
+    <string name="reset" translatable="false">Reset</string>
+    <string name="is_a_bleeding_event">Hai avuto un episodio di sanguinamento?</string>
+    <string name="do_you_think_is_a_bleeding">Secondo te è sanguinamento?</string>
+    <string name="did_you_treat_yself">Ti sei trattato?</string>
+    <string-array name="site_array">
+        <item>Testa</item>
+        <item>Collo</item>
+        <item>Spalla sinitra</item>
+        <item>Spalla destra</item>
+        <item>Braccio sinistro</item>
+        <item>Braccio destro</item>
+        <item>Gomito sinistro</item>
+        <item>Gomito destro</item>
+        <item>Polso sinsitro</item>
+        <item>Polso destro</item>
+        <item>Gamba sinistra</item>
+        <item>Gamba destra</item>
+    </string-array>
+    <string-array name="treatment_array">
+        <item>Profilassi</item>
+        <item>On Demand</item>
+        <item>Terapia</item>
+    </string-array>
+    <string-array name="cause_array">
+        <item>Accidentale</item>
+        <item>Spontaneo</item>
+        <item>Post-traumatico</item>
+        <item>Post-chirurgico</item>
+        <item>Post-procedura</item>
+        <item>Altro</item>
+    </string-array>
+    <string-array name="type_of_events">
+        <item>Visita dal medico</item>
+        <item>Infusione</item>
+        <item>Refill farmaco</item>
+    </string-array>
+    <string name="permission_calendar">Concedi l\'accesso al calendario</string>
+    <string name="cancel">Cancella</string>
+    <string name="connect">Connetti</string>
+    <string name="configure">Configura</string>
+    <string name="disconnect">Disconnetti</string>
+    <string name="flush">Flush della memoria</string>
+    <string name="erasedata">Cancella dati\n</string>
+    <string name="forgetdevice">Dimentica il dispositivo</string>
+    <string name="getpermission">Concedi i permessi\n</string>
+
 </resources>

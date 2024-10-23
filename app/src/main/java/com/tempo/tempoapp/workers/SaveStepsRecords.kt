@@ -8,6 +8,7 @@ import com.google.firebase.installations.FirebaseInstallations
 import com.tempo.tempoapp.FirebaseRealtimeDatabase
 import com.tempo.tempoapp.TempoApplication
 import com.tempo.tempoapp.data.model.toStepsRecordToJson
+import com.tempo.tempoapp.data.model.toWeatherForecastToJson
 import kotlinx.coroutines.tasks.await
 
 /**
@@ -24,9 +25,13 @@ class SaveStepsRecords(appContext: Context, params: WorkerParameters) :
         private val TAG = SaveStepsRecords::class.java.simpleName
     }
 
+    private val context = appContext
+
     // Steps record repository to access steps records
     private val stepsRecordRepository =
         (appContext.applicationContext as TempoApplication).container.stepsRecordRepository
+    private val weatherForecastRepository =
+        (appContext.applicationContext as TempoApplication).container.weatherForecastRepository
 
     // Firebase database reference
     private val databaseRef =
@@ -116,15 +121,34 @@ class SaveStepsRecords(appContext: Context, params: WorkerParameters) :
 
          */
 
+        // Get Firebase installation ID
+        val id = FirebaseInstallations.getInstance().id.await()
+
+        // Get weather forecasts to be sent
+        val weatherForecasts = weatherForecastRepository.getAllUnsentWeatherForecasts()
+        Log.d(TAG, "Weather forecasts to be sent: ${weatherForecasts.size}")
+
+        // Save weather forecasts to Firebase
+        weatherForecasts.forEach { forecast ->
+            /* try {
+                 val response = PostgresApi.retrofitService.postWeatherForecast(it.toWeatherForecastToJson(it.timestamp))
+                 Log.d(TAG, response.toString())
+             } catch (err: Exception) {
+                 Log.e(TAG, err.message!!)
+                 return Result.failure()
+             }*/
+            databaseRef.child("weather_forecast").child(id).child(forecast.timestamp.toString())
+                .setValue(forecast.toWeatherForecastToJson(forecast.timestamp))
+            weatherForecastRepository.updateItem(forecast.copy(isSent = true))
+        }
+
+
         // Get steps records to be sent
         val stepsRecords = stepsRecordRepository.getAllDaySteps(
             isSent = false
         )
 
         Log.d(TAG, "Steps records to be sent: ${stepsRecords.size}")
-        // Get Firebase installation ID
-        val id = FirebaseInstallations.getInstance().id.await()
-
         // Save steps records to Firebase
         stepsRecords.forEach { record ->
             /* try {
