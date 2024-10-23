@@ -7,6 +7,8 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.pm.ServiceInfo
+import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
@@ -167,7 +169,15 @@ class StepsService : Service() {
     }
 
     private fun startForegroundService(notificationManager: NotificationManager) {
-        startForeground(1, sendNotification(notificationManager))
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(
+                1,
+                sendNotification(notificationManager),
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
+            )
+        } else
+            startForeground(1, sendNotification(notificationManager))
     }
 
     private fun sendNotification(notificationManager: NotificationManager): Notification {
