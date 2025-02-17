@@ -21,7 +21,7 @@ interface LogbookDao<T> {
      * @param item The item to be inserted.
      * @return The row ID of the newly inserted item, or -1 if the insertion failed.
      */
-    @Insert(onConflict = OnConflictStrategy.ABORT)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(item: T): Long
 
     /**

@@ -2,6 +2,7 @@ package com.tempo.tempoapp.data.model
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import java.time.Instant
 import java.time.temporal.ChronoUnit
@@ -18,10 +19,13 @@ import java.time.temporal.ChronoUnit
  */
 
 typealias StepsRecordModel = StepsRecord
-@Entity(tableName = "steps")
+
+@Entity(tableName = "steps", indices = [Index(value = ["record_id"], unique = true)])
 data class StepsRecord(
-    @PrimaryKey(true)
+    @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
+    @ColumnInfo(name = "record_id")
+    val recordId: String,
     @ColumnInfo(name = "steps")
     val steps: Long,
     @ColumnInfo(name = "date")
@@ -57,7 +61,7 @@ data class StepsRecordToJson(
  * @param id The unique identifier of the steps record, default is 0.
  * @return The [StepsRecordToJson] representation of the steps record.
  */
-fun StepsRecord.toStepsRecordToJson(id: Int = 0): StepsRecordToJson =
+fun StepsRecord.toStepsRecordToJson(id: Int): StepsRecordToJson =
     StepsRecordToJson(id, steps, date, startTime, endTime)
 
 /**
