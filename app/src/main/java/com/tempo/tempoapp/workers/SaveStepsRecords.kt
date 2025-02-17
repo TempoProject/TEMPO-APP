@@ -7,8 +7,22 @@ import androidx.work.WorkerParameters
 import com.google.firebase.installations.FirebaseInstallations
 import com.tempo.tempoapp.FirebaseRealtimeDatabase
 import com.tempo.tempoapp.TempoApplication
+import com.tempo.tempoapp.data.model.toBloodGlucoseToJson
+import com.tempo.tempoapp.data.model.toBloodPressureToJson
+import com.tempo.tempoapp.data.model.toBodyFatToJson
+import com.tempo.tempoapp.data.model.toBodyWaterMassToJson
+import com.tempo.tempoapp.data.model.toBoneMassToJson
+import com.tempo.tempoapp.data.model.toDistanceToJson
+import com.tempo.tempoapp.data.model.toElevationGainedToJson
+import com.tempo.tempoapp.data.model.toFloorsClimbedToJson
+import com.tempo.tempoapp.data.model.toHeartRateToJson
+import com.tempo.tempoapp.data.model.toOxygenSaturationToJson
+import com.tempo.tempoapp.data.model.toRespiratoryRateToJson
+import com.tempo.tempoapp.data.model.toSleepSessionToJson
 import com.tempo.tempoapp.data.model.toStepsRecordToJson
+import com.tempo.tempoapp.data.model.toTotalCaloriesBurnedToJson
 import com.tempo.tempoapp.data.model.toWeatherForecastToJson
+import com.tempo.tempoapp.data.model.toWeightToJson
 import kotlinx.coroutines.tasks.await
 
 /**
@@ -32,6 +46,49 @@ class SaveStepsRecords(appContext: Context, params: WorkerParameters) :
         (appContext.applicationContext as TempoApplication).container.stepsRecordRepository
     private val weatherForecastRepository =
         (appContext.applicationContext as TempoApplication).container.weatherForecastRepository
+
+    private val totalCaloriesBurnedRepository =
+        (this.applicationContext as TempoApplication).container.totalCaloriesBurnedRepository
+
+    private val bloodGlucoseRepository =
+        (this.applicationContext as TempoApplication).container.bloodGlucoseRepository
+
+    private val bloodPressureRepository =
+        (this.applicationContext as TempoApplication).container.bloodPressureRepository
+
+    private val heartRateRepository =
+        (this.applicationContext as TempoApplication).container.heartRateRepository
+
+    private val bodyFatRepository =
+        (this.applicationContext as TempoApplication).container.bodyFatRepository
+
+    private val bodyWaterMassRepository =
+        (this.applicationContext as TempoApplication).container.bodyWaterMassRepository
+
+    private val boneMassRepository =
+        (this.applicationContext as TempoApplication).container.boneMassRepository
+
+    private val distanceRepository =
+        (this.applicationContext as TempoApplication).container.distanceRepository
+
+    private val elevationGainedRepository =
+        (this.applicationContext as TempoApplication).container.elevationGainedRepository
+
+    private val floorsClimbedRepository =
+        (this.applicationContext as TempoApplication).container.floorsClimbedRepository
+
+    private val oxygenSaturationRepository =
+        (this.applicationContext as TempoApplication).container.oxygenSaturationRepository
+
+    private val respiratoryRateRepository =
+        (this.applicationContext as TempoApplication).container.respiratoryRateRepository
+
+    private val sleepSessionRepository =
+        (this.applicationContext as TempoApplication).container.sleepSessionRepository
+
+    private val weightRepository =
+        (this.applicationContext as TempoApplication).container.weightRepository
+
 
     // Firebase database reference
     private val databaseRef =
@@ -161,6 +218,91 @@ class SaveStepsRecords(appContext: Context, params: WorkerParameters) :
             databaseRef.child("steps").child(id).child(record.id.toString())
                 .setValue(record.toStepsRecordToJson(record.id))
             stepsRecordRepository.updateItem(record.copy(isSent = true))
+        }
+
+        totalCaloriesBurnedRepository.getAllDayTotalCaloriesBurned(isSent = false)
+            .forEach { record ->
+                databaseRef.child("total_calories_burned").child(id).child(record.id.toString())
+                    .setValue(record.toTotalCaloriesBurnedToJson(record.id))
+                totalCaloriesBurnedRepository.updateItem(record.copy(isSent = true))
+            }
+
+        bloodGlucoseRepository.getAllDayBloodGlucose(isSent = false).forEach { record ->
+            databaseRef.child("blood_glucose").child(id).child(record.id.toString())
+                .setValue(record.toBloodGlucoseToJson(record.id))
+            bloodGlucoseRepository.updateItem(record.copy(isSent = true))
+        }
+
+        bloodPressureRepository.getAllDayBloodPressure(isSent = false).forEach { record ->
+            databaseRef.child("blood_pressure").child(id).child(record.id.toString())
+                .setValue(record.toBloodPressureToJson(record.id))
+            bloodPressureRepository.updateItem(record.copy(isSent = true))
+        }
+
+        bodyFatRepository.getAllDayBodyFat(isSent = false).forEach { record ->
+            databaseRef.child("body_fat").child(id).child(record.id.toString())
+                .setValue(record.toBodyFatToJson(record.id))
+            bodyFatRepository.updateItem(record.copy(isSent = true))
+        }
+
+        bodyWaterMassRepository.getAllDayBodyWaterMass(isSent = false).forEach { record ->
+            databaseRef.child("body_water_mass").child(id).child(record.id.toString())
+                .setValue(record.toBodyWaterMassToJson(record.id))
+            bodyWaterMassRepository.updateItem(record.copy(isSent = true))
+        }
+
+        boneMassRepository.getAllDayBoneMass(isSent = false).forEach { record ->
+            databaseRef.child("bone_mass").child(id).child(record.id.toString())
+                .setValue(record.toBoneMassToJson(record.id))
+            boneMassRepository.updateItem(record.copy(isSent = true))
+        }
+
+        distanceRepository.getAllDayDistance(isSent = false).forEach { record ->
+            databaseRef.child("distance").child(id).child(record.id.toString())
+                .setValue(record.toDistanceToJson(record.id))
+            distanceRepository.updateItem(record.copy(isSent = true))
+        }
+
+        elevationGainedRepository.getAllDayElevationGained(isSent = false).forEach { record ->
+            databaseRef.child("elevation_gained").child(id).child(record.id.toString())
+                .setValue(record.toElevationGainedToJson(record.id))
+            elevationGainedRepository.updateItem(record.copy(isSent = true))
+        }
+
+        floorsClimbedRepository.getAllDayFloorsClimbed(isSent = false).forEach { record ->
+            databaseRef.child("floors_climbed").child(id).child(record.id.toString())
+                .setValue(record.toFloorsClimbedToJson(record.id))
+            floorsClimbedRepository.updateItem(record.copy(isSent = true))
+        }
+
+        oxygenSaturationRepository.getAllDayOxygenSaturation(isSent = false).forEach { record ->
+            databaseRef.child("oxygen_saturation").child(id).child(record.id.toString())
+                .setValue(record.toOxygenSaturationToJson(record.id))
+            oxygenSaturationRepository.updateItem(record.copy(isSent = true))
+        }
+
+        respiratoryRateRepository.getAllDayRespiratoryRate(isSent = false).forEach { record ->
+            databaseRef.child("respiratory_rate").child(id).child(record.id.toString())
+                .setValue(record.toRespiratoryRateToJson(record.id))
+            respiratoryRateRepository.updateItem(record.copy(isSent = true))
+        }
+
+        sleepSessionRepository.getAllDaySleepSessions(isSent = false).forEach { record ->
+            databaseRef.child("sleep_session").child(id).child(record.id.toString())
+                .setValue(record.toSleepSessionToJson(record.id))
+            sleepSessionRepository.updateItem(record.copy(isSent = true))
+        }
+
+        weightRepository.getAllDayWeight(isSent = false).forEach { record ->
+            databaseRef.child("weight").child(id).child(record.id.toString())
+                .setValue(record.toWeightToJson(record.id))
+            weightRepository.updateItem(record.copy(isSent = true))
+        }
+
+        heartRateRepository.getAllDayHeartRate(isSent = false).forEach { record ->
+            databaseRef.child("heart_rate").child(id).child(record.id.toString())
+                .setValue(record.toHeartRateToJson(record.id))
+            heartRateRepository.updateItem(record.copy(isSent = true))
         }
 
         return Result.success()
