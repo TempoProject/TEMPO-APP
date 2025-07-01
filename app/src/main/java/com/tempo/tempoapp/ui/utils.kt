@@ -1,6 +1,7 @@
 package com.tempo.tempoapp.ui
 
 import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -24,12 +25,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.tempo.tempoapp.R
 import com.tempo.tempoapp.data.model.BleedingEvent
 import com.tempo.tempoapp.data.model.InfusionEvent
+import com.tempo.tempoapp.data.model.ProphylaxisResponse
 import com.tempo.tempoapp.ui.common.BleedingItem
 import com.tempo.tempoapp.ui.common.InfusionItem
+import com.tempo.tempoapp.ui.common.ProphylaxisItem
+import com.tempo.tempoapp.ui.home.HomeEvent
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -56,7 +61,7 @@ fun Long.toStringTime(): String =
  * Composable function representing a loading indicator.
  */
 @Composable
-fun Loading(){
+fun Loading() {
     Column(
         modifier = Modifier
             .fillMaxSize(),
@@ -82,8 +87,13 @@ fun Loading(){
  * @param modifier The modifier for the item count.
  */
 @Composable
-fun <T> ItemCount(count: T, @DrawableRes iconId: Int, modifier: Modifier = Modifier) {
-    Column{
+fun <T> ItemCount(
+    count: T,
+    @DrawableRes iconId: Int,
+    @StringRes stringId: Int,
+    modifier: Modifier = Modifier
+) {
+    Column {
         Box(
             modifier = Modifier
                 .size(100.dp)
@@ -103,6 +113,11 @@ fun <T> ItemCount(count: T, @DrawableRes iconId: Int, modifier: Modifier = Modif
                 Text(
                     text = count.toString(),
                     style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
+                Text(
+                    text = stringResource(stringId),
+                    style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onPrimary
                 )
             }
@@ -126,9 +141,11 @@ fun HomeBody(
     bleedingEventList: List<BleedingEvent>,
     infusionEventList: List<InfusionEvent>,
     stepsCount: Int,
+    combinedEvent: List<HomeEvent>,
     modifier: Modifier = Modifier,
     onInfusionItemClick: (Int) -> Unit,
-    onBleedingItemClick: (Int) -> Unit
+    onBleedingItemClick: (Int) -> Unit,
+    onProphylaxisItemClick: (Int) -> Unit
 ) {
 
     Column(modifier) {
@@ -141,59 +158,61 @@ fun HomeBody(
             ItemCount(
                 count = bleedingEventList.count(),
                 iconId = R.drawable.baseline_bloodtype_24,
+                stringId = R.string.bleeding,
                 modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_medium))
             )
             ItemCount(
                 count = infusionEventList.count(),
                 iconId = R.drawable.baseline_medication_24,
+                stringId = R.string.infusion,
                 modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_medium))
             )
             ItemCount(
                 count = stepsCount,
                 iconId = R.drawable.baseline_directions_walk_24,
+                stringId = R.string.steps,
                 modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_medium))
             )
         }
         EventsList(
-            bleedingEventList,
-            infusionEventList,
+            //bleedingEventList,
+            //infusionEventList,
+            combinedEvent,
             onInfusionItemClick = { onInfusionItemClick(it.id) },
             onBleedingItemClick = { onBleedingItemClick(it.id) },
+            onProphylaxisItemClick = { onProphylaxisItemClick(it.id) },
             modifier = Modifier.padding(horizontal = dimensionResource(id = R.dimen.padding_small))
         )
     }
 }
 
-/**
- * Composable function representing a list of events.
- *
- * @param bleedingEventList The list of bleeding events.
- * @param infusionEventList The list of infusion events.
- * @param onInfusionItemClick Callback for when an infusion item is clicked.
- * @param onBleedingItemClick Callback for when a bleeding item is clicked.
- * @param modifier The modifier for the events list.
- */
 @Composable
 fun EventsList(
-    bleedingEventList: List<BleedingEvent>,
-    infusionEventList: List<InfusionEvent>,
+    combinedEvents: List<HomeEvent>,
     onInfusionItemClick: (InfusionEvent) -> Unit,
     onBleedingItemClick: (BleedingEvent) -> Unit,
+    onProphylaxisItemClick: (ProphylaxisResponse) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    LazyColumn(modifier = modifier) {
-        items(infusionEventList) {
-            InfusionItem(item = it, modifier = Modifier
-                .padding(dimensionResource(id = R.dimen.padding_small))
-                .clickable { onInfusionItemClick(it) })
-        }
-        items(bleedingEventList) {
-            BleedingItem(
-                item = it,
-                modifier = Modifier
-                    .padding(dimensionResource(id = R.dimen.padding_small))
-                    .clickable { onBleedingItemClick(it) }
-            )
+    LazyColumn {
+        items(combinedEvents) { event ->
+            when (event) {
+                is HomeEvent.Bleeding -> BleedingItem(
+                    event.event, modifier = Modifier
+                        .padding(dimensionResource(id = R.dimen.padding_small))
+                        .clickable { onBleedingItemClick(event.event) })
+
+                is HomeEvent.Infusion -> InfusionItem(
+                    event.event, modifier = Modifier
+                        .padding(dimensionResource(id = R.dimen.padding_small))
+                        .clickable { onInfusionItemClick(event.event) })
+
+                is HomeEvent.Prophylaxis -> ProphylaxisItem(
+                    event.event, modifier = Modifier
+                        .padding(dimensionResource(id = R.dimen.padding_small))
+                        .clickable { onProphylaxisItemClick(event.event) }
+                )
+            }
         }
     }
 }
