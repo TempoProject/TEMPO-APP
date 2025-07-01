@@ -1,24 +1,23 @@
 package com.tempo.tempoapp.utils
 
-import android.app.AlarmManager
-import android.app.PendingIntent
+import AppPreferencesManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.util.Log
-import com.tempo.tempoapp.TempoApplication
+import com.tempo.tempoapp.ui.onboarding.SchedulingMode
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers.Main
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
-import java.time.Instant
+import java.time.LocalDate
 
 /**
  * RebootBroadcastReceiver is a BroadcastReceiver responsible for scheduling alarms
  * after the device is rebooted.
  *
  */
-
 class RebootBroadcastReceiver :
     BroadcastReceiver() {
 
@@ -26,78 +25,57 @@ class RebootBroadcastReceiver :
         private val TAG = RebootBroadcastReceiver::class.java.simpleName
     }
 
-    /**
-     * Receives the broadcast when the device is rebooted and schedules alarms for reminders.
-     *
-     * @param p0 The context in which the receiver is running.
-     * @param p1 The Intent being received.
-     */
-    //@RequiresApi(Build.VERSION_CODES.S)
-    override fun onReceive(p0: Context?, p1: Intent?) {
-        Log.d(TAG, "onReceive: ${p1?.action}")
+    override fun onReceive(context: Context, intent: Intent) {
+        if (intent.action == Intent.ACTION_BOOT_COMPLETED ||
+            intent.action == Intent.ACTION_MY_PACKAGE_REPLACED
+        ) {
 
-        val alarmManager = p0?.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val reminderRepository =
-            (p0.applicationContext as TempoApplication).container.reminderRepository
+            Log.d(TAG, "Dispositivo riavviato, ripristino allarmi")
+            CoroutineScope(Dispatchers.Default).launch {
+                restoreAlarms(context)
+            }
+        }
+    }
 
-        if (p1?.action == "android.intent.action.BOOT_COMPLETED" || p1?.action == "android.intent.action.ACTION_POWER_CONNECTED") {
+    private suspend fun restoreAlarms(context: Context) {
+        try {
+            val appPreferencesManager = AppPreferencesManager(context)
+            val config = appPreferencesManager.prophylaxisConfig.firstOrNull()
+            val isActive = appPreferencesManager.isActiveProphylaxis.first()
 
-            val intent = Intent(p0, StepsReceiver::class.java)
-            val instant = Instant.now().toEpochMilli()
-            intent.putExtra("instant", instant)
-            val pendingIntent = PendingIntent.getBroadcast(
-                p0,
-                instant.toInt(),
-                intent,
-                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-            )
-            /* if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                 if (alarmManager.canScheduleExactAlarms())
-                     alarmManager.setExactAndAllowWhileIdle(
-                         AlarmManager.RTC_WAKEUP,
-                         instant,
-                         pendingIntent
-                     )
-             } else
-                 alarmManager.setExactAndAllowWhileIdle(
-                     AlarmManager.RTC_WAKEUP,
-                     instant,
-                     pendingIntent
-                 )*/
-            Log.d(TAG, "scheduled steps service with instant: $instant")
-            AlarmManagerHelper(p0).scheduleStepsService(pendingIntent, instant)
-            CoroutineScope(Main).launch {
+            if (config != null && isActive) {
+                Log.d(TAG, "Ripristino configurazione: $config")
 
-                Log.d(TAG, "scheduling alarms after reboot")
-                reminderRepository.getAll().collect { reminders ->
-                    for (reminder in reminders) {
-                        val newIntent = Intent(p0, AlarmReceiver::class.java)
-                        newIntent.putExtra("id", reminder.id)
-                        newIntent.putExtra("REMINDER", reminder)
-                        val newPendingIntent = PendingIntent.getBroadcast(
-                            p0,
-                            reminder.timestamp.toInt(),
-                            newIntent,
-                            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-                        )
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                            if (alarmManager.canScheduleExactAlarms())
-                                alarmManager.setAlarmClock(
-                                    AlarmManager.AlarmClockInfo(
-                                        reminder.timestamp,
-                                        newPendingIntent
-                                    ),
-                                    newPendingIntent
-                                )
-                        } else
-                            alarmManager.setAlarmClock(
-                                AlarmManager.AlarmClockInfo(reminder.timestamp, newPendingIntent),
-                                newPendingIntent
+                val scheduler = ProphylaxisScheduler(context)
+
+                when (config.schedulingMode) {
+                    SchedulingMode.DaysOfWeek -> {
+                        config.selectedDays?.let { day ->
+                            scheduler.scheduleWeeklyAlarms(
+                                selectedDays = setOf(day), // Converti in Set
+                                hour = config.hour,
+                                minute = config.minute
                             )
+                        }
+                    }
 
+                    SchedulingMode.Recurring -> {
+                        scheduler.scheduleRecurringAlarm(
+                            interval = config.recurrenceInterval,
+                            unit = config.recurrenceUnit,
+                            startDate = config.startDate ?: LocalDate.now(),
+                            hour = config.hour,
+                            minute = config.minute
+                        )
                     }
                 }
+
+                Log.d(TAG, "Allarmi ripristinati con successo")
+            } else {
+                Log.d(TAG, "Nessuna configurazione attiva da ripristinare")
             }
+        } catch (e: Exception) {
+            Log.e(TAG, "Errore nel ripristino degli allarmi", e)
         }
     }
 }
