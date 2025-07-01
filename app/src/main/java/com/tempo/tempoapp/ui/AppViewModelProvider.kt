@@ -17,6 +17,8 @@ import com.tempo.tempoapp.ui.infusion.InfusionEditViewModel
 import com.tempo.tempoapp.ui.infusion.InfusionEntryViewModel
 import com.tempo.tempoapp.ui.movesense.MovesenseViewModel
 import com.tempo.tempoapp.ui.movesense.ScanDevicesViewModel
+import com.tempo.tempoapp.ui.onboarding.LoginViewModel
+import com.tempo.tempoapp.ui.onboarding.ProphylaxisViewModel
 import com.tempo.tempoapp.ui.reminders.ReminderListViewModel
 import com.tempo.tempoapp.ui.reminders.ReminderViewModel
 
@@ -38,10 +40,19 @@ object AppViewModelProvider {
                 tempoApplication().container.bleedingRepository,
                 tempoApplication().container.infusionRepository,
                 tempoApplication().container.stepsRecordRepository,
+                tempoApplication().container.prophylaxisResponseRepository,
+                tempoApplication().container.movesenseRepository,
+
+            )
+
+            /*HomeViewModel(
+                tempoApplication().container.bleedingRepository,
+                tempoApplication().container.infusionRepository,
+                tempoApplication().container.stepsRecordRepository,
                 tempoApplication().container.movesenseRepository,
                 tempoApplication().healthConnectManager,
                 tempoApplication()
-            )
+            )*/
         }
         initializer {
             BleedingDetailsViewModel(
@@ -104,6 +115,15 @@ object AppViewModelProvider {
             MovesenseViewModel(
                 tempoApplication().container.movesenseRepository
             )
+        }
+
+        initializer {
+            // TODO: update with actual login logic
+            LoginViewModel(tempoApplication().preferences)
+        }
+
+        initializer {
+            ProphylaxisViewModel(tempoApplication().preferences)
         }
     }
 }
