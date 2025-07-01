@@ -127,4 +127,6 @@ dependencies {
     implementation("com.polidea.rxandroidble2:rxandroidble:1.10.2")
     implementation("io.reactivex.rxjava2:rxandroid:2.1.1")
     implementation("io.reactivex.rxjava2:rxjava:2.2.8")
+
+    implementation("androidx.datastore:datastore-preferences:1.1.7")
 }
