@@ -6,48 +6,23 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.tempo.tempoapp.data.dao.AccelerometerDao
 import com.tempo.tempoapp.data.dao.BleedingEventDao
-import com.tempo.tempoapp.data.dao.BloodGlucoseDao
-import com.tempo.tempoapp.data.dao.BloodPressureDao
-import com.tempo.tempoapp.data.dao.BodyFatDao
-import com.tempo.tempoapp.data.dao.BodyWaterMassDao
-import com.tempo.tempoapp.data.dao.BoneMassDao
-import com.tempo.tempoapp.data.dao.DistanceDao
-import com.tempo.tempoapp.data.dao.ElevationGainedDao
-import com.tempo.tempoapp.data.dao.FloorsClimbedDao
-import com.tempo.tempoapp.data.dao.HeartRateDao
 import com.tempo.tempoapp.data.dao.InfusionEventDao
 import com.tempo.tempoapp.data.dao.MovesenseDao
-import com.tempo.tempoapp.data.dao.OxygenSaturationDao
+import com.tempo.tempoapp.data.dao.ProphylaxisResponseDao
 import com.tempo.tempoapp.data.dao.ReminderDao
-import com.tempo.tempoapp.data.dao.RespiratoryRateDao
-import com.tempo.tempoapp.data.dao.SleepSessionDao
 import com.tempo.tempoapp.data.dao.StepsRecordDao
-import com.tempo.tempoapp.data.dao.TotalCaloriesBurnedDao
 import com.tempo.tempoapp.data.dao.UtilsDao
 import com.tempo.tempoapp.data.dao.WeatherForecastDao
-import com.tempo.tempoapp.data.dao.WeightDao
 import com.tempo.tempoapp.data.model.Accelerometer
 import com.tempo.tempoapp.data.model.BleedingEvent
-import com.tempo.tempoapp.data.model.BloodGlucose
-import com.tempo.tempoapp.data.model.BloodPressure
-import com.tempo.tempoapp.data.model.BodyFat
-import com.tempo.tempoapp.data.model.BodyWaterMass
-import com.tempo.tempoapp.data.model.BoneMass
-import com.tempo.tempoapp.data.model.Distance
-import com.tempo.tempoapp.data.model.ElevationGained
-import com.tempo.tempoapp.data.model.FloorsClimbed
-import com.tempo.tempoapp.data.model.HeartRate
 import com.tempo.tempoapp.data.model.InfusionEvent
 import com.tempo.tempoapp.data.model.Movesense
-import com.tempo.tempoapp.data.model.OxygenSaturation
+import com.tempo.tempoapp.data.model.ProphylaxisResponse
 import com.tempo.tempoapp.data.model.ReminderEvent
-import com.tempo.tempoapp.data.model.RespiratoryRate
-import com.tempo.tempoapp.data.model.SleepSession
 import com.tempo.tempoapp.data.model.StepsRecord
 import com.tempo.tempoapp.data.model.TotalCaloriesBurned
 import com.tempo.tempoapp.data.model.Utils
 import com.tempo.tempoapp.data.model.WeatherForecast
-import com.tempo.tempoapp.data.model.Weight
 
 /**
  * Database class representing the SQLite database for the application.
@@ -68,7 +43,8 @@ import com.tempo.tempoapp.data.model.Weight
         ReminderEvent::class,
         WeatherForecast::class,
         TotalCaloriesBurned::class,
-        BloodGlucose::class,
+        ProphylaxisResponse::class
+        /*BloodGlucose::class,
         BloodPressure::class,
         HeartRate::class,
         BodyFat::class,
@@ -80,7 +56,7 @@ import com.tempo.tempoapp.data.model.Weight
         OxygenSaturation::class,
         RespiratoryRate::class,
         SleepSession::class,
-        Weight::class
+        Weight::class,*/
 
     ),
     version = 1,
@@ -95,7 +71,8 @@ abstract class TempoDatabase : RoomDatabase() {
     abstract fun accelerometerDao(): AccelerometerDao
     abstract fun reminderDao(): ReminderDao
     abstract fun weatherForecastDao(): WeatherForecastDao
-    abstract fun totalCaloriesBurnedDao(): TotalCaloriesBurnedDao
+    abstract fun prophylaxisResponseDao(): ProphylaxisResponseDao
+    /*abstract fun totalCaloriesBurnedDao(): TotalCaloriesBurnedDao
     abstract fun bloodGlucoseDao(): BloodGlucoseDao
     abstract fun bloodPressureDao(): BloodPressureDao
     abstract fun bodyFatDao(): BodyFatDao
@@ -108,7 +85,8 @@ abstract class TempoDatabase : RoomDatabase() {
     abstract fun respiratoryRateDao(): RespiratoryRateDao
     abstract fun sleepSessionDao(): SleepSessionDao
     abstract fun weightDao(): WeightDao
-    abstract fun heartRateDao(): HeartRateDao
+    abstract fun heartRateDao(): HeartRateDao*/
+
 
     companion object {
         @Volatile
