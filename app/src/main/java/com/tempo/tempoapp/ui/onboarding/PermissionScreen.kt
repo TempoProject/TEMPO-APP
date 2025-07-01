@@ -52,7 +52,6 @@ import androidx.health.connect.client.records.StepsRecord
 import androidx.navigation.NavController
 import com.tempo.tempoapp.R
 import com.tempo.tempoapp.preferences
-import com.tempo.tempoapp.ui.home.HomeDestination
 import com.tempo.tempoapp.ui.navigation.NavigationDestination
 import kotlinx.coroutines.launch
 
@@ -99,7 +98,6 @@ fun PermissionScreen(
     var permissionAttempts by remember { mutableIntStateOf(0) }
     var healthPermissionAttempts by remember { mutableIntStateOf(0) }
 
-    // Funzione per controllare i permessi
     fun checkPermissions() {
         missingPermissions = permissions.filter {
             ContextCompat.checkSelfPermission(context, it) != PackageManager.PERMISSION_GRANTED
@@ -149,21 +147,16 @@ fun PermissionScreen(
             }
         }
 
-    // Controlla i permessi all'avvio
+
     LaunchedEffect(Unit) {
         checkPermissions()
     }
 
-    // Naviga quando tutti i permessi sono concessi
     LaunchedEffect(missingPermissions, areHealthPermissionsGranted) {
         if (missingPermissions.isEmpty() && areHealthPermissionsGranted) {
-            navController.navigate(HomeDestination.route) {
+            coroutine.launch { context.preferences.setFirstLaunch(false) }
+            navController.navigate("splash_screen") {
                 popUpTo(PermissionScreen.route) { inclusive = true }
-
-                // Update
-
-                coroutine.launch { context.preferences.setFirstLaunch(false) }
-
             }
         }
     }
@@ -243,7 +236,7 @@ fun PermissionScreen(
                             else -> {
                                 // Tutti i permessi sono concessi, naviga alla home
 
-                                // TODO se l'utente è loggato vai alla home, altrimenti al login.
+                                // se l'utente è loggato vai alla home, altrimenti al login.
 
                                 navController.navigate("splash_screen") {
                                     popUpTo(PermissionScreen.route) { inclusive = true }
