@@ -42,16 +42,28 @@ import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.StepsRecord
 import androidx.navigation.NavController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
+import com.tempo.tempoapp.ui.bleeding.BleedingDetailsScreen
+import com.tempo.tempoapp.ui.bleeding.BleedingEditScreen
 import com.tempo.tempoapp.ui.bleeding.BleedingEntryDestination
 import com.tempo.tempoapp.ui.bleeding.BleedingEntryScreen
+import com.tempo.tempoapp.ui.bleeding.BleedingEventDetailsDestination
+import com.tempo.tempoapp.ui.bleeding.BleedingEventEditDestination
+import com.tempo.tempoapp.ui.history.HistoryDestination
+import com.tempo.tempoapp.ui.history.HistoryScreen
 import com.tempo.tempoapp.ui.home.HomeDestination
 import com.tempo.tempoapp.ui.home.HomeScreen
+import com.tempo.tempoapp.ui.infusion.InfusionDetailsDestination
+import com.tempo.tempoapp.ui.infusion.InfusionDetailsScreen
+import com.tempo.tempoapp.ui.infusion.InfusionEditDestination
+import com.tempo.tempoapp.ui.infusion.InfusionEditScreen
 import com.tempo.tempoapp.ui.infusion.InfusionEntryDestination
 import com.tempo.tempoapp.ui.infusion.InfusionEventScreen
 import com.tempo.tempoapp.ui.onboarding.LoginScreen
@@ -135,6 +147,32 @@ class MainActivity : ComponentActivity() {
                     composable(HomeDestination.route) {
                         HomeScreen(navController = navController)
                     }
+                    composable(
+                        route = BleedingEventDetailsDestination.routeWithArgs,
+                        arguments = listOf(navArgument(BleedingEventDetailsDestination.itemIdArg) {
+                            type = NavType.IntType
+                        })
+                    ) {
+                        BleedingDetailsScreen(
+                            navController
+                        )
+                    }
+                    composable(
+                        route = BleedingEventEditDestination.routeWithArgs,
+                        arguments = listOf(navArgument(BleedingEventEditDestination.itemIdArg) {
+                            type = NavType.IntType
+                        })
+                    ) {
+                        BleedingEditScreen(
+                            onNavigateUp = { navController.navigateUp() },
+                        )
+                    }
+                    composable(HistoryDestination.route) {
+                        HistoryScreen(
+                            navController = navController,
+                            onNavigateUp = { navController.navigateUp() },
+                        )
+                    }
 
                     composable(route = BleedingEntryDestination.route) {
                         BleedingEntryScreen(
@@ -147,7 +185,27 @@ class MainActivity : ComponentActivity() {
                             onNavigateUp = { navController.navigateUp() },
                         )
                     }
+                    composable(
+                        route = InfusionDetailsDestination.routeWithArgs,
+                        arguments = listOf(navArgument(InfusionDetailsDestination.itemIdArg) {
+                            type = NavType.IntType
+                        })
+                    ) {
+                        InfusionDetailsScreen(
+                            navController
+                        )
+                    }
 
+                    composable(
+                        route = InfusionEditDestination.routeWithArgs,
+                        arguments = listOf(navArgument(InfusionEditDestination.itemIdArg) {
+                            type = NavType.IntType
+                        })
+                    ) {
+                        InfusionEditScreen(
+                            navController
+                        )
+                    }
                     composable(LoginScreen.route) {
                         LoginScreen(navController = navController)
                     }
