@@ -25,37 +25,36 @@ class BleedingDetailsViewModel(
 
     // State flow representing the UI state of the bleeding details screen
     val uiState: StateFlow<BleedingDetailsUiState> =
-        bleedingRepository.getItemFromId(itemId).filterNotNull().map {
-            BleedingDetailsUiState(
-                bleedingDetails = it.toBleedingDetails(),
-                itemId,
-                isLoading = false
+        bleedingRepository.getItemFromId(itemId)
+            .filterNotNull()
+            .map { bleedingEvent ->
+                BleedingDetailsUiState(
+                    bleedingDetails = bleedingEvent.toBleedingDetails(),
+                    id = bleedingEvent.id,
+                    isLoading = false
+                )
+            }.stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
+                initialValue = BleedingDetailsUiState(isLoading = true)
             )
-        }.stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
-            initialValue = BleedingDetailsUiState(isLoading = true)
-        )
 
     /**
      * Deletes the currently displayed bleeding event item.
      */
     suspend fun deleteItem() {
-        bleedingRepository.deleteItem(uiState.value.bleedingDetails.toEntity())
+        val currentState = uiState.value
+        if (!currentState.isLoading && currentState.id != -1) {
+            bleedingRepository.deleteItem(currentState.bleedingDetails.toEntity())
+        }
     }
 
     companion object {
         private const val TIMEOUT_MILLIS = 5_000L
     }
-
 }
 
-/**
- * Represents the UI state of the Bleeding Event Details screen.
- * @param bleedingDetails The bleeding details to be displayed.
- * @param id The ID of the bleeding event.
- * @param isLoading Flag indicating whether the data is being loaded.
- */
+
 data class BleedingDetailsUiState(
     val bleedingDetails: BleedingDetails = BleedingDetails(),
     val id: Int = -1,

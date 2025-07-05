@@ -4,8 +4,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import com.tempo.tempoapp.R
 import com.tempo.tempoapp.data.model.BleedingEvent
 import com.tempo.tempoapp.data.repository.BleedingRepository
+import com.tempo.tempoapp.ui.DosageUnit
 import com.tempo.tempoapp.ui.toStringDate
 import com.tempo.tempoapp.ui.toStringTime
 import java.text.SimpleDateFormat
@@ -33,16 +35,13 @@ class BleedingEntryViewModel(private val bleedingRepository: BleedingRepository)
      * @param bleedingDetails Details of the bleeding event.
      */
     fun updateUiState(bleedingDetails: BleedingDetails) {
-        uiState = BleedingEventUiState(bleedingDetails, validateInput(bleedingDetails))
+        val validationErrors = validateInput(bleedingDetails)
+        uiState = BleedingEventUiState(
+            bleedingDetails = bleedingDetails,
+            isEntryValid = validationErrors.isEmpty(),
+            validationErrors = validationErrors
+        )
     }
-
-    /**
-     * Resets the UI state to default.
-     */
-    fun reset() {
-        uiState = BleedingEventUiState(BleedingDetails())
-    }
-
 
     /**
      * Validates the input fields of the bleeding event.
@@ -50,24 +49,80 @@ class BleedingEntryViewModel(private val bleedingRepository: BleedingRepository)
      * @param bleedingDetails Details of the bleeding event to validate.
      * @return True if all required fields are not blank, false otherwise.
      */
-    private fun validateInput(bleedingDetails: BleedingDetails = uiState.bleedingDetails): Boolean {
-        return with(bleedingDetails) {
-            site.isNotBlank()
-                    && cause.isNotBlank()
-                    && painScale.isNotBlank()
-                    //&& severity.isNotBlank()
-                    //&& date.isNotBlank()
-                    && time.isNotBlank()
+    private fun validateInput(
+        bleedingDetails: BleedingDetails = uiState.bleedingDetails,
+    ): Map<String, Int> {
+        val errors = mutableMapOf<String, Int>()
 
+        with(bleedingDetails) {
+
+            if (eventType.isBlank()) {
+                errors["eventType"] = R.string.error_event_type_required
+            }
+
+
+            if (cause.isBlank()) {
+                errors["cause"] = R.string.error_cause_required
+            }
+
+
+            if (site.isBlank()) {
+                errors["site"] = R.string.error_site_required
+            }
+
+
+            if (site == "Other" && note.isNullOrBlank()) {
+                errors["note"] = R.string.error_notes_required_for_other
+            }
+
+
+            if (treatment.isBlank()) {
+                errors["treatment"] = R.string.error_treatment_required
+            }
+
+
+            if (treatment == "Sì") {
+                if (medicationType.isBlank()) {
+                    errors["medicationType"] = R.string.error_medication_type_required
+                }
+                if (dose.isBlank()) {
+                    errors["dose"] = R.string.error_dose_required
+                }
+
+            }
+
+
+            if (painScale.isBlank() || painScale == "0.0") {
+                errors["painScale"] = R.string.error_pain_scale_required
+            }
+
+
+            if (time.isBlank()) {
+                errors["time"] = R.string.error_time_required
+            }
         }
+
+        return errors
     }
 
     /**
      * Saves the bleeding event if the input is valid.
      */
-    suspend fun onSave() {
-        if (validateInput())
+    suspend fun onSave(): Boolean {
+        val validationErrors = validateInput()
+
+        uiState = uiState.copy(
+            isEntryValid = validationErrors.isEmpty(),
+            validationErrors = validationErrors,
+            hasAttemptedSave = true
+        )
+
+        return if (validationErrors.isEmpty()) {
             bleedingRepository.insertItem(uiState.bleedingDetails.toEntity())
+            true
+        } else {
+            false
+        }
     }
 }
 
@@ -81,87 +136,84 @@ class BleedingEntryViewModel(private val bleedingRepository: BleedingRepository)
 data class BleedingEventUiState(
     val bleedingDetails: BleedingDetails = BleedingDetails(),
     val isEntryValid: Boolean = false,
+    val validationErrors: Map<String, Int> = emptyMap(),
+    val hasAttemptedSave: Boolean = false,
     val isLoading: Boolean = false
-)
+) {
+    /**
+     * Checks if a specific field has an error and user has attempted save
+     */
+    fun hasError(fieldName: String): Boolean =
+        hasAttemptedSave && validationErrors.containsKey(fieldName)
 
-/**
- * Represents the details of a bleeding event.
- *
- * @property id Identifier of the bleeding event.
- * @property site Site of the bleeding event.
- * @property cause Cause of the bleeding event.
- * @property severity Severity of the bleeding event.
- * @property painScale Pain scale of the bleeding event.
- * @property note Additional note for the bleeding event.
- * @property date Date of the bleeding event.
- * @property time Time of the bleeding event.
- */
+    /**
+     * Gets the error message for a specific field
+     */
+    fun getError(fieldName: String): Int? =
+        if (hasAttemptedSave) validationErrors[fieldName] else null
+
+    /**
+     * Should show errors only if user has attempted to save
+     */
+    fun shouldShowErrors(): Boolean = hasAttemptedSave && validationErrors.isNotEmpty()
+}
+
 data class BleedingDetails(
     val id: Int = 0,
-    val site: String = "",
+    val eventType: String = "",
     val cause: String = "",
-    //val severity: String = "",
-    val painScale: String = "".ifEmpty { "0.0" },
-    val isABleedingEpisode: String = "".ifEmpty { "No" },
-    val questionBleedingEpisode: String = "".ifEmpty { "No" },
-    val treatment: String = "".ifEmpty { "No" },
-    val note: String? = null,
+    val site: String = "",
+    val treatment: String = "",
+    val medicationType: String = "",
+    val dose: String = "",
+    val dosageUnit: DosageUnit = DosageUnit.MG_KG,
+    val lotNumber: String = "",
+    val painScale: String = "",
+    val note: String? = null, // Note (facoltativo, ma obbligatorio se site = "Other")
     val date: Long = Instant.now().truncatedTo(ChronoUnit.DAYS).toEpochMilli(),
     val time: String = Instant.now().truncatedTo(ChronoUnit.MILLIS).toEpochMilli().toStringTime(),
 )
 
-/**
- * Extension function to convert BleedingDetails to BleedingEvent entity.
- *
- * @receiver BleedingDetails object.
- * @return Corresponding BleedingEvent entity.
- */
-fun BleedingDetails.toEntity(): BleedingEvent =
-    BleedingEvent(
-        id = id,
-        bleedingSite = site,
-        bleedingCause = cause,
-        //severity = severity,
-        painScale = painScale,
-        note = note,
-        date = date,
-        isSent = false,
-        questionBleedingEpisode = questionBleedingEpisode,
-        isABleedingEpisode = isABleedingEpisode,
-        treatment = treatment,
-        timestamp = SimpleDateFormat(
-            "dd-MM-yyyy HH:mm",
-            Locale.getDefault()
-        ).parse(date.toStringDate().plus(" $time"))?.time ?: Instant.now().toEpochMilli()
-    )
-
-/**
- * Extension function to convert BleedingEvent to BleedingDetails.
- *
- * @receiver BleedingEvent object.
- * @return Corresponding BleedingDetails object.
- */
 fun BleedingEvent.toBleedingDetails(): BleedingDetails =
     BleedingDetails(
         id = id,
         site = bleedingSite,
         cause = bleedingCause,
-        //severity = severity,
+        eventType = eventType ?: "",
         painScale = painScale,
-        questionBleedingEpisode = questionBleedingEpisode,
-        isABleedingEpisode = isABleedingEpisode,
+        medicationType = medicationType ?: "",
+        dose = dose ?: "",
+        dosageUnit = DosageUnit.valueOf(
+            dosageUnit ?: DosageUnit.MG_KG.name
+        ),
+        lotNumber = lotNumber ?: "",
         treatment = treatment,
         note = note,
         date = date,
         time = timestamp.toStringTime()
     )
 
-/**
- * Extension function to convert BleedingEvent to BleedingEventUiState.
- *
- * @receiver BleedingEvent object.
- * @return Corresponding BleedingEventUiState object.
- */
+fun BleedingDetails.toEntity(): BleedingEvent =
+    BleedingEvent(
+        id = id,
+        eventType = eventType,
+        bleedingSite = site,
+        bleedingCause = cause,
+        treatment = treatment,
+        medicationType = medicationType.ifBlank { null },
+        dose = dose.ifBlank { null },
+        dosageUnit = dosageUnit.name,
+        lotNumber = lotNumber.ifBlank { null },
+        painScale = painScale,
+        note = note,
+        date = date,
+        isSent = false,
+        timestamp = SimpleDateFormat(
+            "dd-MM-yyyy HH:mm",
+            Locale.getDefault()
+        ).parse(date.toStringDate().plus(" $time"))?.time ?: Instant.now().toEpochMilli()
+    )
+
 fun BleedingEvent.toBleedingUiState(): BleedingEventUiState =
     BleedingEventUiState(
         bleedingDetails = this.toBleedingDetails(),

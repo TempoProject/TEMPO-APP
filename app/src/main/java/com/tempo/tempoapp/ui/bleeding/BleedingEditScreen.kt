@@ -1,10 +1,13 @@
 package com.tempo.tempoapp.ui.bleeding
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -38,12 +41,13 @@ object BleedingEventEditDestination : NavigationDestination {
 @Composable
 fun BleedingEditScreen(
     onNavigateUp: () -> Unit,
-    viewModel: BleedingEditViewModel = viewModel(
+    ) {
+    val viewModel: BleedingEditViewModel = viewModel(
         factory = AppViewModelProvider.Factory
     )
-) {
     val uiState = viewModel.uiState
     val coroutineScope = rememberCoroutineScope()
+
     Scaffold(
         topBar = {
             TempoAppBar(
@@ -52,18 +56,30 @@ fun BleedingEditScreen(
                 navigateUp = onNavigateUp
             )
         }
-    ) {
+    ) { innerPadding ->
         if (uiState.isLoading) {
-            Loading()
-        } else
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
+                contentAlignment = Alignment.Center
+            ) {
+                Loading()
+            }
+        } else {
             BleedingEventBody(
-                uiState, viewModel::updateUiState, onSave = {
+                uiState = uiState,
+                onItemClick = viewModel::updateUiState,
+                onSave = {
                     coroutineScope.launch {
-                        viewModel.update()
-                        onNavigateUp()
+                        val success = viewModel.update()
+                        if (success) {
+                            onNavigateUp()
+                        }
                     }
                 },
-                modifier = Modifier.padding(it)
+                modifier = Modifier.padding(innerPadding)
             )
+        }
     }
 }
