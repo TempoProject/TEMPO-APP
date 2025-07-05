@@ -8,11 +8,11 @@ import androidx.room.PrimaryKey
  * Enum class representing the various causes of bleeding events.
 
 enum class BleedingCause {
-    Spontaneo,
-    Lesione,
-    Intervento,
-    Infortunio,
-    Altro
+Spontaneo,
+Lesione,
+Intervento,
+Infortunio,
+Altro
 
 }
  */
@@ -20,20 +20,20 @@ enum class BleedingCause {
  * Enum class representing the severity levels of bleeding events.
 
 enum class Severity {
-    Lieve,
-    Moderato,
-    Grave
+Lieve,
+Moderato,
+Grave
 }
  */
 /**
  * A set of possible bleeding sites.
 
 val bleedingSite: Set<String> = setOf(
-    "Braccio destro",
-    "Braccio sinistro",
-    "Busto",
-    "Gamba destra",
-    "Gamba sinistra"
+"Braccio destro",
+"Braccio sinistro",
+"Busto",
+"Gamba destra",
+"Gamba sinistra"
 )*/
 
 /**
@@ -57,14 +57,18 @@ data class BleedingEvent(
     val bleedingSite: String,
     @ColumnInfo(name = "cause")
     val bleedingCause: String,
-    //@ColumnInfo(name = "severity")
-    //val severity: String,
     @ColumnInfo(name = "pain_scale")
     val painScale: String,
-    @ColumnInfo(name = "is_a_bleeding_episode")
-    val isABleedingEpisode: String,
-    @ColumnInfo(name = "question_bleeding_episode")
-    val questionBleedingEpisode: String,
+    @ColumnInfo("event_type")
+    val eventType: String?,
+    @ColumnInfo("medication_type")
+    val medicationType: String?,
+    @ColumnInfo("dose")
+    val dose: String?,
+    @ColumnInfo(name = "dosage_unit")
+    val dosageUnit: String?,
+    @ColumnInfo("lot_number")
+    val lotNumber: String?,
     @ColumnInfo(name = "treatment")
     val treatment: String,
     @ColumnInfo(name = "date")
@@ -89,14 +93,13 @@ data class BleedingEvent(
  * @property timestamp The timestamp of when the bleeding event was recorded in milliseconds.
  * @property note Any additional notes regarding the bleeding event.
  */
+
+// TODO edit if needed (add missing fields, etc.)
 data class BleedingEventJson(
     val id: Int,
-    val bleeding_site: String,
+    val bleedingSite: String,
     val cause: String,
-    //val severity: String,
-    val pain_scale: String,
-    val isABleedingEpisode: String,
-    val questionBleedingEpisode: String,
+    val painScale: String,
     val treatment: String,
     val date: Long,
     val timestamp: Long,
@@ -116,8 +119,7 @@ fun BleedingEvent.toBleedingEventJson(id: Int = 0): BleedingEventJson =
         bleedingCause,
         //severity,
         painScale,
-        questionBleedingEpisode,
-        isABleedingEpisode,
+
         treatment,
         date,
         timestamp,
