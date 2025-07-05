@@ -12,6 +12,7 @@ import com.tempo.tempoapp.data.repository.InfusionRepository
 import com.tempo.tempoapp.data.repository.MovesenseRepository
 import com.tempo.tempoapp.data.repository.ProphylaxisResponseRepository
 import com.tempo.tempoapp.data.repository.StepsRecordRepository
+import com.tempo.tempoapp.ui.BodyEvent
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -150,15 +151,9 @@ data class HomeUiState(
     val stepsCount: Int = 0,
     val movesense: Movesense? = null
 ) {
-    val combinedEvents: List<HomeEvent>
-        get() = (bleedingList.map { HomeEvent.Bleeding(it) } +
-                infusionList.map { HomeEvent.Infusion(it) }) +
-                prophylaxisList.map { HomeEvent.Prophylaxis(it) }
+    val combinedEvents: List<BodyEvent>
+        get() = (bleedingList.map { BodyEvent.Bleeding(it) } +
+                infusionList.map { BodyEvent.Infusion(it) }) +
+                prophylaxisList.map { BodyEvent.Prophylaxis(it) }
                     .sortedByDescending { it.dateTime }
-}
-
-sealed class HomeEvent(val dateTime: Long) {
-    data class Bleeding(val event: BleedingEvent) : HomeEvent(event.timestamp)
-    data class Infusion(val event: InfusionEvent) : HomeEvent(event.timestamp)
-    data class Prophylaxis(val event: ProphylaxisResponse) : HomeEvent(event.reminderDateTime)
 }

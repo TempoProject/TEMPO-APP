@@ -374,7 +374,9 @@ fun HomeScreen(
                             scope.launch {
                                 sheetState.hide()
                             }.invokeOnCompletion {
-                                //navigateToBleedingEntry()
+                                navController?.navigate(
+                                    route = BleedingEntryDestination.route
+                                )
                                 if (!sheetState.isVisible) {
                                     showBottomSheet = false
                                 }
