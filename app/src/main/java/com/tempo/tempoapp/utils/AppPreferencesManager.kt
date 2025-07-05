@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.tempo.tempoapp.ui.DosageUnit
 import com.tempo.tempoapp.ui.onboarding.RecurrenceUnit
 import com.tempo.tempoapp.ui.onboarding.SchedulingMode
 import kotlinx.coroutines.flow.Flow
@@ -33,6 +34,7 @@ class AppPreferencesManager(private val context: Context) {
         val MINUTE = intPreferencesKey("minute")
         val DRUG_NAME = stringPreferencesKey("drug_name")
         val DOSAGE = stringPreferencesKey("dosage")
+        val PROPHYLAXIS_DOSAGE_UNIT = stringPreferencesKey("prophylaxis_dosage_unit")
         val DRUG_NAME_EXTRA =
             stringPreferencesKey("drug_name_extra")
 
@@ -87,6 +89,7 @@ class AppPreferencesManager(private val context: Context) {
         minute: Int,
         drugName: String,
         dosage: String,
+        dosageUnit: DosageUnit,
         drugNameExtra: String
     ) {
         Log.d("AppPreferences", "Chiamato saveProphylaxisConfig con startDate: $startDate")
@@ -102,6 +105,7 @@ class AppPreferencesManager(private val context: Context) {
             preferences[DRUG_NAME] = drugName
             preferences[DOSAGE] = dosage
             preferences[DRUG_NAME_EXTRA] = drugNameExtra
+            preferences[PROPHYLAXIS_DOSAGE_UNIT] = dosageUnit.name
             preferences[ACTIVE_PROPHYLAXIS] = true
         }
         Log.d("AppPreferences", "Configurazione salvata!")
@@ -118,6 +122,7 @@ class AppPreferencesManager(private val context: Context) {
         val minute: Int,
         val drugName: String,
         val dosage: String,
+        val dosageUnit: String?,
         val drugNameExtra: String,
         val isActive: Boolean = true
     )
@@ -134,6 +139,7 @@ class AppPreferencesManager(private val context: Context) {
                 val minute = preferences[MINUTE] ?: 0
                 val drug = preferences[DRUG_NAME] ?: ""
                 val dose = preferences[DOSAGE] ?: ""
+                val dosageUnit = preferences[PROPHYLAXIS_DOSAGE_UNIT] ?: ""
                 val drugNameExtra = preferences[DRUG_NAME_EXTRA] ?: ""
 
                 // AGGIUNGI questo parsing per startDate:
@@ -154,6 +160,13 @@ class AppPreferencesManager(private val context: Context) {
                     minute = minute,
                     drugName = drug,
                     dosage = dose,
+                    dosageUnit = preferences[PROPHYLAXIS_DOSAGE_UNIT]?.let {
+                        try {
+                            DosageUnit.valueOf(it).name
+                        } catch (e: IllegalArgumentException) {
+                            DosageUnit.MG_KG.name
+                        }
+                    } ?: DosageUnit.MG_KG.name,
                     drugNameExtra = drugNameExtra
                 )
             } catch (e: Exception) {
@@ -174,6 +187,7 @@ class AppPreferencesManager(private val context: Context) {
             preferences.remove(MINUTE)
             preferences.remove(DRUG_NAME)
             preferences.remove(DOSAGE)
+            preferences.remove(PROPHYLAXIS_DOSAGE_UNIT)
             preferences.remove(DRUG_NAME_EXTRA)
             preferences.remove(ACTIVE_PROPHYLAXIS)
         }
