@@ -24,6 +24,7 @@ class ProphylaxisResponseReceiver : BroadcastReceiver() {
         const val EXTRA_REMINDER_TYPE = "reminder_type"
         const val EXTRA_DRUG_NAME = "drug_name"
         const val EXTRA_DOSAGE = "dosage"
+        const val EXTRA_DOSAGE_UNITS = "dosage_units"
     }
 
     override fun onReceive(context: Context, intent: Intent) {
@@ -43,6 +44,7 @@ class ProphylaxisResponseReceiver : BroadcastReceiver() {
         val reminderType = intent.getStringExtra(EXTRA_REMINDER_TYPE) ?: "unknown"
         val drugName = intent.getStringExtra(EXTRA_DRUG_NAME) ?: ""
         val dosage = intent.getStringExtra(EXTRA_DOSAGE) ?: ""
+        val dosageUnit = intent.getStringExtra(EXTRA_DOSAGE_UNITS) ?: ""
 
         try {
             // BUG notificationID
@@ -64,6 +66,7 @@ class ProphylaxisResponseReceiver : BroadcastReceiver() {
                     reminderType = reminderType,
                     drugName = drugName,
                     dosage = dosage,
+                    dosageUnit = dosageUnit,
                     date = Instant.now().atZone(ZoneId.systemDefault()).toInstant().truncatedTo(
                         ChronoUnit.DAYS
                     ).toEpochMilli()

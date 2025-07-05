@@ -13,5 +13,6 @@ data class ProphylaxisResponse(
     val date: Long = -1,
     val reminderType: String,
     val drugName: String,
-    val dosage: String
+    val dosage: String,
+    val dosageUnit: String
 )

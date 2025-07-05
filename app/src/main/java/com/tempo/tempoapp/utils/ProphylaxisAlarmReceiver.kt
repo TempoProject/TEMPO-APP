@@ -59,7 +59,8 @@ class ProphylaxisAlarmReceiver : BroadcastReceiver() {
                     reminderDateTime = System.currentTimeMillis(),
                     reminderType = reminderType,
                     drugName = config?.drugName ?: "N/A",
-                    dosage = config?.dosage ?: "N/A"
+                    dosage = config?.dosage ?: "N/A",
+                    dosageUnits = config?.dosageUnit ?: "N/A"
                 )
 
                 Log.d("AlarmReceiver", "Risposta inserita con ID: $notificationId")
@@ -72,7 +73,8 @@ class ProphylaxisAlarmReceiver : BroadcastReceiver() {
                     responseId,
                     reminderType,
                     drugName = config?.drugName ?: "N/A",
-                    dosage = config?.dosage ?: "N/A"
+                    dosage = config?.dosage ?: "N/A",
+                    dosageUnits = config?.dosageUnit ?: "N/A"
                 )
 
                 rescheduleAlarm(context)
@@ -87,7 +89,8 @@ class ProphylaxisAlarmReceiver : BroadcastReceiver() {
         reminderDateTime: Long,
         reminderType: String,
         drugName: String,
-        dosage: String
+        dosage: String,
+        dosageUnits: String
     ): Long = withContext(Dispatchers.IO) {
         val prophylaxisResponseRepository =
             (context.applicationContext as TempoApplication).container.prophylaxisResponseRepository
@@ -98,6 +101,7 @@ class ProphylaxisAlarmReceiver : BroadcastReceiver() {
                 reminderType = reminderType,
                 drugName = drugName,
                 dosage = dosage,
+                dosageUnit = dosageUnits,
                 responded = -1, // -1 = non ancora risposto, 0 = No, 1 = Sì
                 responseDateTime = 0L, // Sarà aggiornato quando l'utente risponde
                 date = Instant.now().atZone(ZoneId.systemDefault()).toInstant().truncatedTo(
@@ -201,7 +205,7 @@ class ProphylaxisAlarmReceiver : BroadcastReceiver() {
     private fun showNotification(
         context: Context, title: String, message: String,
         notificationId: Int, responseId: Long, reminderType: String,
-        drugName: String, dosage: String
+        drugName: String, dosage: String, dosageUnits: String
     ) {
         Log.d("AlarmReceiver", "Mostro notifica: $title - $message")
 
@@ -215,6 +219,7 @@ class ProphylaxisAlarmReceiver : BroadcastReceiver() {
             putExtra(ProphylaxisResponseReceiver.EXTRA_REMINDER_TYPE, reminderType)
             putExtra(ProphylaxisResponseReceiver.EXTRA_DRUG_NAME, drugName)
             putExtra(ProphylaxisResponseReceiver.EXTRA_DOSAGE, dosage)
+            putExtra(ProphylaxisResponseReceiver.EXTRA_DOSAGE_UNITS, dosageUnits)
         }
 
         val yesPendingIntent = PendingIntent.getBroadcast(
@@ -232,6 +237,7 @@ class ProphylaxisAlarmReceiver : BroadcastReceiver() {
             putExtra(ProphylaxisResponseReceiver.EXTRA_REMINDER_TYPE, reminderType)
             putExtra(ProphylaxisResponseReceiver.EXTRA_DRUG_NAME, drugName)
             putExtra(ProphylaxisResponseReceiver.EXTRA_DOSAGE, dosage)
+            putExtra(ProphylaxisResponseReceiver.EXTRA_DOSAGE_UNITS, dosageUnits)
         }
         val noPendingIntent = PendingIntent.getBroadcast(
             context,
@@ -271,7 +277,7 @@ class ProphylaxisAlarmReceiver : BroadcastReceiver() {
             .setStyle(NotificationCompat.BigTextStyle().bigText(detailedMessage))
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)
-            .setOngoing(false)
+            .setOngoing(true)
             .setContentIntent(pendingIntent)
             .addAction(
                 R.drawable.ic_check,
