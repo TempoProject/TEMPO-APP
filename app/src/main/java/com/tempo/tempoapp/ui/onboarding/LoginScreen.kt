@@ -33,7 +33,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.tempo.tempoapp.R
 import com.tempo.tempoapp.ui.AppViewModelProvider
-import com.tempo.tempoapp.ui.home.HomeDestination
 import com.tempo.tempoapp.ui.navigation.NavigationDestination
 
 object LoginScreen : NavigationDestination {
@@ -133,10 +132,9 @@ fun LoginScreen(navController: NavController?) {
 
                     Button(
                         onClick = {
-                            // TODO: Handle login
                             viewModel.login {
                                 navController?.navigate(
-                                    HomeDestination.route
+                                    ProphylaxisScreen.route
                                 ) {
                                     popUpTo(LoginScreen.route) {
                                         inclusive = true
