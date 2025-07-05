@@ -43,16 +43,7 @@ object AppViewModelProvider {
                 tempoApplication().container.prophylaxisResponseRepository,
                 tempoApplication().container.movesenseRepository,
 
-            )
-
-            /*HomeViewModel(
-                tempoApplication().container.bleedingRepository,
-                tempoApplication().container.infusionRepository,
-                tempoApplication().container.stepsRecordRepository,
-                tempoApplication().container.movesenseRepository,
-                tempoApplication().healthConnectManager,
-                tempoApplication()
-            )*/
+                )
         }
         initializer {
             BleedingDetailsViewModel(
@@ -89,7 +80,8 @@ object AppViewModelProvider {
             HistoryViewModel(
                 tempoApplication().container.bleedingRepository,
                 tempoApplication().container.infusionRepository,
-                tempoApplication().container.stepsRecordRepository
+                tempoApplication().container.stepsRecordRepository,
+                tempoApplication().container.prophylaxisResponseRepository,
             )
         }
         initializer {
