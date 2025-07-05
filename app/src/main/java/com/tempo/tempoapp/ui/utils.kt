@@ -34,7 +34,6 @@ import com.tempo.tempoapp.data.model.ProphylaxisResponse
 import com.tempo.tempoapp.ui.common.BleedingItem
 import com.tempo.tempoapp.ui.common.InfusionItem
 import com.tempo.tempoapp.ui.common.ProphylaxisItem
-import com.tempo.tempoapp.ui.home.HomeEvent
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -141,7 +140,7 @@ fun HomeBody(
     bleedingEventList: List<BleedingEvent>,
     infusionEventList: List<InfusionEvent>,
     stepsCount: Int,
-    combinedEvent: List<HomeEvent>,
+    combinedEvent: List<BodyEvent>,
     modifier: Modifier = Modifier,
     onInfusionItemClick: (Int) -> Unit,
     onBleedingItemClick: (Int) -> Unit,
@@ -158,7 +157,7 @@ fun HomeBody(
             ItemCount(
                 count = bleedingEventList.count(),
                 iconId = R.drawable.baseline_bloodtype_24,
-                stringId = R.string.bleeding,
+                stringId = R.string.event,
                 modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_medium))
             )
             ItemCount(
@@ -180,34 +179,32 @@ fun HomeBody(
             combinedEvent,
             onInfusionItemClick = { onInfusionItemClick(it.id) },
             onBleedingItemClick = { onBleedingItemClick(it.id) },
-            onProphylaxisItemClick = { onProphylaxisItemClick(it.id) },
-            modifier = Modifier.padding(horizontal = dimensionResource(id = R.dimen.padding_small))
+            onProphylaxisItemClick = { onProphylaxisItemClick(it.id) }
         )
     }
 }
 
 @Composable
 fun EventsList(
-    combinedEvents: List<HomeEvent>,
+    combinedEvents: List<BodyEvent>,
     onInfusionItemClick: (InfusionEvent) -> Unit,
     onBleedingItemClick: (BleedingEvent) -> Unit,
-    onProphylaxisItemClick: (ProphylaxisResponse) -> Unit = {},
-    modifier: Modifier = Modifier
+    onProphylaxisItemClick: (ProphylaxisResponse) -> Unit = {}
 ) {
     LazyColumn {
         items(combinedEvents) { event ->
             when (event) {
-                is HomeEvent.Bleeding -> BleedingItem(
+                is BodyEvent.Bleeding -> BleedingItem(
                     event.event, modifier = Modifier
                         .padding(dimensionResource(id = R.dimen.padding_small))
                         .clickable { onBleedingItemClick(event.event) })
 
-                is HomeEvent.Infusion -> InfusionItem(
+                is BodyEvent.Infusion -> InfusionItem(
                     event.event, modifier = Modifier
                         .padding(dimensionResource(id = R.dimen.padding_small))
                         .clickable { onInfusionItemClick(event.event) })
 
-                is HomeEvent.Prophylaxis -> ProphylaxisItem(
+                is BodyEvent.Prophylaxis -> ProphylaxisItem(
                     event.event, modifier = Modifier
                         .padding(dimensionResource(id = R.dimen.padding_small))
                         .clickable { onProphylaxisItemClick(event.event) }
@@ -215,4 +212,15 @@ fun EventsList(
             }
         }
     }
+}
+
+sealed class BodyEvent(val dateTime: Long) {
+    data class Bleeding(val event: BleedingEvent) : BodyEvent(event.timestamp)
+    data class Infusion(val event: InfusionEvent) : BodyEvent(event.timestamp)
+    data class Prophylaxis(val event: ProphylaxisResponse) : BodyEvent(event.reminderDateTime)
+}
+
+enum class DosageUnit {
+    MG_KG, // mg/kg
+    IU     // International Units
 }
