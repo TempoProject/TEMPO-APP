@@ -14,8 +14,8 @@
     <string name="treatment">Treeatment</string>
     <string name="history">History</string>
     <string name="reminder">Reminders</string>
-    <string name="add_infusion">New infusion</string>
-    <string name="add_event">New event</string>
+    <string name="add_infusion">Registers extra prophylaxis infusion</string>
+    <string name="add_event">Register a new event</string>
     <string name="add_reminder">New reminder</string>
     <string name="not_installed_description">"         Health Connect is supported by this device but is not currently installed     "</string>
     <string name="not_installed_link_text">"         For the app to work properly, install Health Connect from Google Play.     "</string>
@@ -75,5 +75,7 @@
     <string name="erasedata">Erase data</string>
     <string name="forgetdevice">Forget device</string>
     <string name="getpermission">Grant permissions\n</string>
+
+    <string name="steps">Steps</string>
 
 </resources>

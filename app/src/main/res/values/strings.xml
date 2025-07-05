@@ -18,7 +18,7 @@
     <string name="treatment">Trattamento</string>
     <string name="history">Storico eventi</string>
     <string name="reminder">Lista promemoria</string>
-    <string name="add_infusion">Aggiungi infusione</string>
+    <string name="add_infusion">Registra infusione extra profilassi</string>
     <string name="add_event">Aggiungi evento</string>
     <string name="add_reminder">Aggiungi promemoria</string>
 
@@ -59,6 +59,12 @@
         <item>Polso destro</item>
         <item>Gamba sinistra</item>
         <item>Gamba destra</item>
+        <item>Ginocchio Destro</item>
+        <item>Ginocchio Sinistro</item>
+        <item>Caviglia Destra</item>
+        <item>Caviglia Sinistra</item>
+        <item>Anca</item>
+        <item>Other</item>
     </string-array>
     <string-array name="treatment_array">
         <item>Profilassi</item>
@@ -87,5 +93,41 @@
     <string name="erasedata">Cancella dati\n</string>
     <string name="forgetdevice">Dimentica il dispositivo</string>
     <string name="getpermission">Concedi i permessi\n</string>
+    <string name="welcome_screen_title">Benvenuto in Tempo!</string>
+    <string name="permission_screen_title">Concedi i permessi</string>
+    <string name="login_screen_title">Accedi</string>
+    <string name="insert_id">Inserisci ID</string>
+    <string name="login">Accedi</string>
+    <string name="logout">Esci</string>
+    <string name="steps">Passi</string>
+    <string name="profylaxis_screen_title">Aggiungi profilassi</string>
+    <string name="prophylaxis_notification_channel_id">prophylaxis_channel</string>
+    <string name="prophylaxis_notification_channel_name">Profilassi</string>
+    <string name="drug_name">Farmaco</string>
+    <string name="error_event_type_required">Tipo di evento obbligatorio</string>
+    <string name="error_cause_required">Causa dell\'evento obbligatoria</string>
+    <string name="error_site_required">Location site obbligatorio</string>
+    <string name="error_notes_required_for_other">Note obbligatorie quando si seleziona \'Other\'</string>
+    <string name="error_treatment_required">Campo trattamento obbligatorio</string>
+    <string name="error_medication_type_required">Tipo di farmaco obbligatorio</string>
+    <string name="error_dose_required">Dose obbligatoria</string>
+    <string name="error_pain_scale_required">Pain Scale obbligatorio (selezionare un valore maggiore di 0)</string>
+    <string name="error_time_required">Orario obbligatorio</string>
+    <string name="error_validation_header">Correggere i seguenti errori:</string>
+    <string name="dummy_value"> </string>
+
+    <string name="reason">Motivo</string>
+    <string name="dose_iu_mg">Dose in IU/Mg per Kg</string>
+    <string name="batch_number">Batch number</string>
+
+    <!-- Infusion validation errors -->
+    <string name="error_reason_required">Motivo obbligatorio</string>
+
+    <!-- Infusion reason options -->
+    <string name="reason_trauma">Trauma</string>
+    <string name="reason_procedure_surgery">Procedure/Chirurgia</string>
+    <string name="reason_physical_activity">Previsione attività fisica</string>
+    <string name="reason_regular_prophylaxis">Recupero regolare profilassi</string>
+
 
 </resources>
