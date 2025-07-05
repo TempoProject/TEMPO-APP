@@ -25,19 +25,27 @@ class InfusionDetailsViewModel(
 
     // UI state representing infusion details
     val uiState: StateFlow<InfusionDetailsUiState> =
-        infusionRepository.getItemFromId(itemId).filterNotNull().map {
-            InfusionDetailsUiState(it.toInfusionDetails(), itemId)
-        }.stateIn(
-            viewModelScope,
-            started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
-            initialValue = InfusionDetailsUiState()
-        )
-
+        infusionRepository.getItemFromId(itemId)
+            .filterNotNull()
+            .map { infusionEvent ->
+                InfusionDetailsUiState(
+                    infusionDetails = infusionEvent.toInfusionDetails(),
+                    id = infusionEvent.id,
+                    isLoading = false
+                )
+            }.stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
+                initialValue = InfusionDetailsUiState(isLoading = true)
+            )
     /**
      * Deletes the infusion item.
      */
     suspend fun deleteItem() {
-        infusionRepository.deleteItem(uiState.value.infusionDetails.toEntity())
+        val currentState = uiState.value
+        if (!currentState.isLoading && currentState.id != -1) {
+            infusionRepository.deleteItem(currentState.infusionDetails.toEntity())
+        }
     }
 
     companion object {
@@ -45,13 +53,8 @@ class InfusionDetailsViewModel(
     }
 }
 
-/**
- * Represents the UI state for infusion details.
- *
- * @param infusionDetails Details of the infusion.
- * @param id ID of the infusion item.
- */
 data class InfusionDetailsUiState(
     val infusionDetails: InfusionDetails = InfusionDetails(),
-    val id: Int = -1
+    val id: Int = -1,
+    val isLoading: Boolean = false
 )

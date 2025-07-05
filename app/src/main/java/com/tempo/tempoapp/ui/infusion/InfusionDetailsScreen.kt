@@ -13,22 +13,27 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.tempo.tempoapp.R
 import com.tempo.tempoapp.TempoAppBar
 import com.tempo.tempoapp.ui.AppViewModelProvider
+import com.tempo.tempoapp.ui.Loading
 import com.tempo.tempoapp.ui.bleeding.ItemDetailsRow
 import com.tempo.tempoapp.ui.navigation.NavigationDestination
 import com.tempo.tempoapp.ui.toStringDate
@@ -57,10 +62,9 @@ object InfusionDetailsDestination : NavigationDestination {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InfusionDetailsScreen(
-    onNavigateUp: () -> Unit,
-    navigateToInfusionEdit: (Int) -> Unit,
-    viewModel: InfusionDetailsViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    navController: NavController? = null,
 ) {
+    val viewModel: InfusionDetailsViewModel = viewModel(factory = AppViewModelProvider.Factory)
     val uiState = viewModel.uiState.collectAsState()
     val coroutineScope = rememberCoroutineScope()
 
@@ -69,7 +73,9 @@ fun InfusionDetailsScreen(
             TempoAppBar(
                 title = stringResource(id = InfusionDetailsDestination.titleRes),
                 canNavigateBack = true,
-                navigateUp = onNavigateUp
+                navigateUp = {
+                    navController?.navigateUp()
+                }
             )
         },
         floatingActionButton = {
@@ -80,12 +86,19 @@ fun InfusionDetailsScreen(
                 )
             ) {
                 FloatingActionButton(
-                    onClick = { navigateToInfusionEdit(uiState.value.id) },
+                    onClick = {
+                        navController?.navigate(
+                            InfusionEditDestination.routeWithArgs.replace(
+                                "{${InfusionEditDestination.itemIdArg}}",
+                                uiState.value.id.toString()
+                            )
+                        )
+                    },
                     shape = MaterialTheme.shapes.medium,
                 ) {
                     Icon(
                         imageVector = Icons.Default.Edit,
-                        contentDescription = null
+                        contentDescription = "Modifica infusione"
                     )
                 }
                 Spacer(modifier = Modifier.padding(4.dp))
@@ -93,25 +106,25 @@ fun InfusionDetailsScreen(
                     onClick = {
                         coroutineScope.launch {
                             viewModel.deleteItem()
-                            onNavigateUp()
+                        }.invokeOnCompletion {
+                            navController?.navigateUp()
                         }
                     },
                     shape = MaterialTheme.shapes.medium,
                 ) {
                     Icon(
                         imageVector = Icons.Default.Delete,
-                        contentDescription = null
+                        contentDescription = "Elimina infusione"
                     )
                 }
             }
         }
-    ) {
+    ) { innerPadding ->
         InfusionDetailsBody(
-            uiState = uiState.value, modifier = Modifier
-                .padding(it)
-                .verticalScroll(
-                    rememberScrollState()
-                )
+            uiState = uiState.value,
+            modifier = Modifier
+                .padding(innerPadding)
+                .verticalScroll(rememberScrollState())
         )
     }
 }
@@ -128,10 +141,14 @@ fun InfusionDetailsBody(uiState: InfusionDetailsUiState, modifier: Modifier = Mo
         modifier = modifier.padding(dimensionResource(id = R.dimen.padding_medium)),
         verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_medium))
     ) {
-        InfusionItemDetails(
-            uiState.infusionDetails,
-            modifier = Modifier.fillMaxWidth()
-        )
+        if (uiState.isLoading) {
+            Loading()
+        } else {
+            InfusionItemDetails(
+                uiState.infusionDetails,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
     }
 }
 
@@ -143,68 +160,112 @@ fun InfusionDetailsBody(uiState: InfusionDetailsUiState, modifier: Modifier = Mo
  */
 @Composable
 fun InfusionItemDetails(details: InfusionDetails, modifier: Modifier) {
-    Card(
-        modifier = modifier, colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
-            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-        )
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_medium))
     ) {
-        ItemDetailsRow(
-            labelResID = R.string.infusion_site,
-            itemDetail = details.infusionSite,
-            modifier = Modifier.padding(
-                horizontal = dimensionResource(
-                    id = R.dimen
-                        .padding_medium
-                )
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
             )
-        )
-        ItemDetailsRow(
-            labelResID = R.string.treatment,
-            itemDetail = details.treatment,
-            modifier = Modifier.padding(
-                horizontal = dimensionResource(
-                    id = R.dimen
-                        .padding_medium
+        ) {
+            Column(
+                modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_medium)),
+                verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_small))
+            ) {
+                Text(
+                    text = "Dettagli Infusione",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
                 )
-            )
-        )
-        ItemDetailsRow(
-            labelResID = R.string.dose_units,
-            itemDetail = details.doseUnits,
-            modifier = Modifier.padding(
-                horizontal = dimensionResource(
-                    id = R.dimen
-                        .padding_medium
-                )
-            )
-        )
-        ItemDetailsRow(
-            labelResID = R.string.lot_number,
-            itemDetail = details.lotNumber,
-            modifier = Modifier.padding(
-                horizontal = dimensionResource(
-                    id = R.dimen
-                        .padding_medium
-                )
-            )
-        )
-        ItemDetailsRow(
-            labelResID = R.string.date, itemDetail = details.date.toStringDate(), modifier = Modifier.padding(
-                horizontal = dimensionResource(
-                    id = R.dimen
-                        .padding_medium
-                )
-            )
-        )
-        ItemDetailsRow(
-            labelResID = R.string.time, itemDetail = details.time, modifier = Modifier.padding(
-                horizontal = dimensionResource(
-                    id = R.dimen
-                        .padding_medium
-                )
-            )
-        )
 
+                Divider()
+
+                ItemDetailsRow(
+                    label = stringResource(R.string.reason),
+                    itemDetail = details.reason.ifBlank { "Non specificato" }
+                )
+
+
+                ItemDetailsRow(
+                    label = stringResource(R.string.drug_name),
+                    itemDetail = details.drugName.ifBlank { "Non specificato" }
+                )
+
+                ItemDetailsRow(
+                    label = stringResource(R.string.dose_iu_mg),
+                    itemDetail = details.dose.ifBlank { "Non specificata" }
+                )
+
+                ItemDetailsRow(
+                    label = stringResource(R.string.date),
+                    itemDetail = details.date.toStringDate()
+                )
+
+                ItemDetailsRow(
+                    label = stringResource(R.string.time),
+                    itemDetail = details.time
+                )
+            }
+        }
+
+        if (details.batchNumber.isNotBlank()) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                )
+            ) {
+                Column(
+                    modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_medium)),
+                    verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_small))
+                ) {
+                    Text(
+                        text = "Informazioni Batch",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Divider()
+
+                    ItemDetailsRow(
+                        label = "Batch Number",
+                        itemDetail = details.batchNumber
+                    )
+                }
+            }
+        }
+
+
+        if (!details.note.isNullOrBlank()) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onTertiaryContainer
+                )
+            ) {
+                Column(
+                    modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_medium))
+                ) {
+                    Text(
+                        text = "Note",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Divider()
+
+                    Text(
+                        text = details.note,
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.padding(top = dimensionResource(id = R.dimen.padding_small))
+                    )
+                }
+            }
+        }
     }
 }

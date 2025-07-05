@@ -8,9 +8,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.tempo.tempoapp.R
 import com.tempo.tempoapp.TempoAppBar
 import com.tempo.tempoapp.ui.AppViewModelProvider
+import com.tempo.tempoapp.ui.Loading
 import com.tempo.tempoapp.ui.navigation.NavigationDestination
 import kotlinx.coroutines.launch
 
@@ -27,37 +29,45 @@ object InfusionEditDestination : NavigationDestination {
     val routeWithArgs = "$route/{$itemIdArg}"
 }
 
-/**
- * Composable function for displaying the screen for editing infusion details.
- *
- * @param onNavigateUp Function to handle the Up navigation action.
- * @param viewModel ViewModel for managing the state of the screen.
- */
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InfusionEditScreen(
-    onNavigateUp: () -> Unit,
-    viewModel: InfusionEditViewModel = viewModel(
+    navController: NavController? = null,
+) {
+    val viewModel: InfusionEditViewModel = viewModel(
         factory = AppViewModelProvider.Factory
     )
-) {
     val uiState = viewModel.uiState
     val coroutineScope = rememberCoroutineScope()
-    Scaffold(topBar = {
-        TempoAppBar(
-            title = stringResource(id = InfusionEditDestination.titleRes),
-            canNavigateBack = true,
-            navigateUp = onNavigateUp
-        )
-    }) {
-        InfusionEventBody(
-            uiState, viewModel::updateUiState, onSave = {
-                coroutineScope.launch {
-                    viewModel.update()
-                    onNavigateUp()
+
+    Scaffold(
+        topBar = {
+            TempoAppBar(
+                title = stringResource(id = InfusionEditDestination.titleRes),
+                canNavigateBack = true,
+                navigateUp = {
+                    navController?.navigateUp()
                 }
-            },
-            modifier = Modifier.padding(it)
-        )
+            )
+        }
+    ) { innerPadding ->
+        if (uiState.isLoading) {
+            Loading()
+        } else {
+            InfusionEventBody(
+                uiState = uiState,
+                onItemClick = viewModel::updateUiState,
+                onSave = {
+                    coroutineScope.launch {
+                        val success = viewModel.update()
+                        if (success) {
+                            navController?.navigateUp()
+                        }
+                    }
+                },
+                modifier = Modifier.padding(innerPadding)
+            )
+        }
     }
 }

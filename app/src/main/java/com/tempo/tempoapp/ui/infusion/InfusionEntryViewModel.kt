@@ -4,8 +4,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import com.tempo.tempoapp.R
 import com.tempo.tempoapp.data.model.InfusionEvent
 import com.tempo.tempoapp.data.repository.InfusionRepository
+import com.tempo.tempoapp.ui.DosageUnit
 import com.tempo.tempoapp.ui.toStringDate
 import com.tempo.tempoapp.ui.toStringTime
 import java.text.SimpleDateFormat
@@ -28,7 +30,7 @@ class InfusionEntryViewModel(private val infusionRepository: InfusionRepository)
      * @param infusionDetails Details of the infusion event.
      */
     fun updateUiState(infusionDetails: InfusionDetails) {
-        uiState = InfusionUiState(infusionDetails, validateInput(infusionDetails))
+        uiState = uiState.copy(infusionDetails = infusionDetails)
     }
 
     /**
@@ -37,23 +39,53 @@ class InfusionEntryViewModel(private val infusionRepository: InfusionRepository)
      * @param infusionDetails Details of the infusion event.
      * @return True if the input is valid, false otherwise.
      */
-    private fun validateInput(infusionDetails: InfusionDetails = uiState.infusionDetails): Boolean {
-        return with(infusionDetails) {
-            treatment.isNotBlank() &&
-                    infusionSite.isNotBlank() &&
-                    doseUnits.isNotBlank() &&
-                    lotNumber.isNotBlank() &&
-                    //date.isNotBlank() &&
-                    time.isNotBlank()
+    private fun validateInput(infusionDetails: InfusionDetails = uiState.infusionDetails): Map<String, Int> {
+        val errors = mutableMapOf<String, Int>()
+
+        with(infusionDetails) {
+            if (reason.isBlank()) {
+                errors["reason"] = R.string.error_reason_required
+            }
+
+
+            if (drugName.isBlank()) {
+                errors["drugName"] =
+                    R.string.error_medication_type_required
+            }
+
+
+            if (dose.isBlank()) {
+                errors["dose"] = R.string.error_dose_required
+            }
+
+
+            if (time.isBlank()) {
+                errors["time"] = R.string.error_time_required
+            }
+
         }
+
+        return errors
     }
 
     /**
      * Saves the infusion event if the input is valid.
      */
-    suspend fun onSave() {
-        if (validateInput())
+    suspend fun onSave(): Boolean {
+        val validationErrors = validateInput()
+
+        uiState = uiState.copy(
+            isEntryValid = validationErrors.isEmpty(),
+            validationErrors = validationErrors,
+            hasAttemptedSave = true
+        )
+
+        return if (validationErrors.isEmpty()) {
             infusionRepository.insertItem(uiState.infusionDetails.toEntity())
+            true
+        } else {
+            false
+        }
     }
 
 }
@@ -66,31 +98,29 @@ class InfusionEntryViewModel(private val infusionRepository: InfusionRepository)
  */
 data class InfusionUiState(
     val infusionDetails: InfusionDetails = InfusionDetails(),
-    val isEntryValid: Boolean = false
-)
+    val isEntryValid: Boolean = false,
+    val validationErrors: Map<String, Int> = emptyMap(),
+    val hasAttemptedSave: Boolean = false,
+    val isLoading: Boolean = false
+) {
+    /**
+     * Checks if a specific field has an error and user has attempted save
+     */
+    fun hasError(fieldName: String): Boolean =
+        hasAttemptedSave && validationErrors.containsKey(fieldName)
 
-/**
- * Model class representing details of an infusion event.
- *
- * @property id Unique identifier of the infusion event.
- * @property treatment Type of treatment for the infusion.
- * @property infusionSite Site of the infusion.
- * @property doseUnits Units of dose for the infusion.
- * @property lotNumber Lot number of the infusion.
- * @property note Additional note for the infusion.
- * @property date Date of the infusion event.
- * @property time Time of the infusion event.
- */
-data class InfusionDetails(
-    val id: Int = 0,
-    val treatment: String = "",
-    val infusionSite: String = "",
-    val doseUnits: String = "",
-    val lotNumber: String = "",
-    val note: String? = null,
-    val date: Long = Instant.now().truncatedTo(ChronoUnit.DAYS).toEpochMilli(),
-    val time: String = Instant.now().truncatedTo(ChronoUnit.MILLIS).toEpochMilli().toStringTime(),
-)
+    /**
+     * Gets the error message for a specific field
+     */
+    fun getError(fieldName: String): Int? =
+        if (hasAttemptedSave) validationErrors[fieldName] else null
+
+    /**
+     * Should show errors only if user has attempted to save
+     */
+    fun shouldShowErrors(): Boolean = hasAttemptedSave && validationErrors.isNotEmpty()
+}
+
 
 /**
  * Converts infusion details to an entity for database operations.
@@ -101,10 +131,11 @@ data class InfusionDetails(
 fun InfusionDetails.toEntity(): InfusionEvent =
     InfusionEvent(
         id = id,
-        treatment = treatment,
-        infusionSite = infusionSite,
-        doseUnits = doseUnits.toInt(),
-        lotNumber = lotNumber.toInt(),
+        reason = reason,
+        drugName = drugName,
+        dose = dose,
+        dosageUnit = dosageUnit.name,
+        batchNumber = batchNumber.ifBlank { null },
         note = note,
         date = date,
         isSent = false,
@@ -124,10 +155,13 @@ fun InfusionDetails.toEntity(): InfusionEvent =
 fun InfusionEvent.toInfusionDetails(): InfusionDetails =
     InfusionDetails(
         id = id,
-        infusionSite = infusionSite,
-        treatment = treatment,
-        lotNumber = lotNumber.toString(),
-        doseUnits = doseUnits.toString(),
+        reason = reason ?: "",
+        drugName = drugName ?: "",
+        dose = dose ?: "",
+        dosageUnit = DosageUnit.valueOf(
+            dosageUnit ?: DosageUnit.MG_KG.name
+        ),
+        batchNumber = batchNumber ?: "",
         note = note,
         date = date,
         time = timestamp.toStringTime()
@@ -143,3 +177,15 @@ fun InfusionEvent.toInfusionUiState(): InfusionUiState =
     InfusionUiState(
         this.toInfusionDetails()
     )
+
+data class InfusionDetails(
+    val id: Int = 0,
+    val reason: String = "",
+    val drugName: String = "",
+    val dose: String = "",
+    val dosageUnit: DosageUnit = DosageUnit.MG_KG,
+    val batchNumber: String = "",
+    val note: String? = null,
+    val date: Long = Instant.now().truncatedTo(ChronoUnit.DAYS).toEpochMilli(),
+    val time: String = Instant.now().truncatedTo(ChronoUnit.MILLIS).toEpochMilli().toStringTime(),
+)
