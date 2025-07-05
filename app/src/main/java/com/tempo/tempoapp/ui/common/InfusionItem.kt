@@ -47,7 +47,7 @@ fun InfusionItem(item: InfusionEvent, modifier: Modifier) {
                     )
                     Spacer(Modifier.weight(1f))
                     Text(
-                        text = item.treatment,
+                        text = item.drugName ?: stringResource(id = R.string.dummy_value),
                         style = MaterialTheme.typography.bodyLarge
                     )
                 }
@@ -62,7 +62,7 @@ fun InfusionItem(item: InfusionEvent, modifier: Modifier) {
                     )
                     Spacer(Modifier.weight(1f))
                     Text(
-                        text = item.infusionSite,
+                        text = item.drugName ?: stringResource(id = R.string.dummy_value),
                         style = MaterialTheme.typography.bodyLarge
                     )
                 }
@@ -77,7 +77,7 @@ fun InfusionItem(item: InfusionEvent, modifier: Modifier) {
                     )
                     Spacer(Modifier.weight(1f))
                     Text(
-                        text = item.doseUnits.toString(),
+                        text = item.dose.toString(),
                         style = MaterialTheme.typography.bodyLarge
                     )
                 }

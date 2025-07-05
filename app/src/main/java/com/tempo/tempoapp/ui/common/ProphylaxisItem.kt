@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import com.tempo.tempoapp.R
 import com.tempo.tempoapp.data.model.ProphylaxisResponse
 import com.tempo.tempoapp.ui.toStringDate
+import com.tempo.tempoapp.ui.toStringTime
 
 @Composable
 fun ProphylaxisItem(item: ProphylaxisResponse, modifier: Modifier = Modifier) {
@@ -81,12 +82,34 @@ fun ProphylaxisItem(item: ProphylaxisResponse, modifier: Modifier = Modifier) {
                         style = MaterialTheme.typography.bodyLarge
                     )
                 }
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = "Risposta",
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                    Spacer(Modifier.weight(1f))
+                    Text(
+                        text = stringResource(item.responded.mapResponse()),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
             }
             Text(
-                text = item.date.toStringDate(),
+                text = item.date.toStringDate() + " " + item.responseDateTime.toStringTime(),
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.align(alignment = Alignment.End)
             )
         }
     }
+}
+
+fun Int.mapResponse(): Int = when (this) {
+    0 -> R.string.no
+    1 -> R.string.yes
+    // TODO handle other cases if needed
+    else -> R.string.no
 }
