@@ -6,6 +6,7 @@ import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.tempo.tempoapp.ui.DosageUnit
 import com.tempo.tempoapp.utils.ProphylaxisScheduler
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
@@ -35,12 +36,14 @@ class ProphylaxisViewModel(val appPreferencesManager: AppPreferencesManager) : V
                         currentState.copy(
                             schedulingMode = savedConfig.schedulingMode,
                             selectedDays = savedConfig.selectedDays,
+                            isActiveProphylaxis = savedConfig.isActive,
                             recurrenceIntervalText = savedConfig.recurrenceInterval.toString(),
                             recurrenceUnit = savedConfig.recurrenceUnit,
                             reminderTime = LocalTime.of(savedConfig.hour, savedConfig.minute),
                             startDate = savedConfig.startDate ?: LocalDate.now(),
                             drugName = savedConfig.drugName,
                             dosage = savedConfig.dosage,
+                            dosageUnit = DosageUnit.valueOf(savedConfig.dosageUnit!!),
                             drugNameExtra = savedConfig.drugNameExtra,
                             isLoading = false
                         )
@@ -131,6 +134,11 @@ class ProphylaxisViewModel(val appPreferencesManager: AppPreferencesManager) : V
         }
     }
 
+    fun onDosageUnitChange(unit: DosageUnit) {
+        updateUiState { it.copy(dosageUnit = unit) }
+        Log.d("ViewModel", "Unità di dosaggio cambiata a: $unit")
+    }
+
     private fun validateFields(): Boolean {
         val currentState = uiState.value
 
@@ -177,6 +185,7 @@ class ProphylaxisViewModel(val appPreferencesManager: AppPreferencesManager) : V
                 minute = currentState.reminderTime.minute,
                 drugName = currentState.drugName,
                 dosage = currentState.dosage,
+                dosageUnit = currentState.dosageUnit,
                 drugNameExtra = currentState.drugNameExtra
             )
 
@@ -221,7 +230,10 @@ class ProphylaxisViewModel(val appPreferencesManager: AppPreferencesManager) : V
 }
 
 data class ProphylaxisUiState(
+    // TODO CHECK VALORI CONSENTITI
+
     val isLoading: Boolean = false,
+    val isActiveProphylaxis: Boolean = false,
     val schedulingMode: SchedulingMode = SchedulingMode.DaysOfWeek,
     val selectedDays: DayOfWeek? = null,
     val recurrenceUnit: RecurrenceUnit = RecurrenceUnit.Days,
@@ -229,6 +241,7 @@ data class ProphylaxisUiState(
     val startDate: LocalDate? = LocalDate.now(),
     val drugName: String = "",
     val dosage: String = "",
+    val dosageUnit: DosageUnit = DosageUnit.MG_KG,
     val reminderTime: LocalTime = LocalTime.of(8, 0),
     val drugNameExtra: String = "",
 
@@ -241,6 +254,13 @@ data class ProphylaxisUiState(
 ) {
     val recurrenceInterval: Int
         get() = recurrenceIntervalText.toIntOrNull()?.coerceAtLeast(1) ?: 1
+
+    // Inutilizzato
+    val dosageUnitText: String
+        get() = when (dosageUnit) {
+            DosageUnit.MG_KG -> "mg/kg"
+            DosageUnit.IU -> "IU"
+        }
 
     // inutilizzato
     val isValid: Boolean

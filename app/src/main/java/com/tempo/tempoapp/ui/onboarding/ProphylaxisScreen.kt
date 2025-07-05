@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.provider.Settings
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,6 +27,8 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -46,6 +49,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -59,6 +63,7 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.tempo.tempoapp.R
 import com.tempo.tempoapp.ui.AppViewModelProvider
+import com.tempo.tempoapp.ui.DosageUnit
 import com.tempo.tempoapp.ui.home.HomeDestination
 import com.tempo.tempoapp.ui.navigation.NavigationDestination
 import com.tempo.tempoapp.workers.GetStepsRecord
@@ -78,12 +83,14 @@ object ProphylaxisScreen : NavigationDestination {
 fun ProphylaxisScreen(
     navController: NavController? = null,
 ) {
+    val context = LocalContext.current
     val viewModel: ProphylaxisViewModel = viewModel(factory = AppViewModelProvider.Factory)
     val uiState by viewModel.uiState
+
     LaunchedEffect(Unit) {
         viewModel.loadSavedConfig()
     }
-    val context = LocalContext.current
+
 
     val focusManager = LocalFocusManager.current
 
@@ -98,6 +105,18 @@ fun ProphylaxisScreen(
     Scaffold(
         topBar = {
             TopAppBar(
+                navigationIcon =
+                    {
+                        if (uiState.isActiveProphylaxis)
+                            IconButton(
+                                onClick = { navController?.navigateUp() }
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.outline_arrow_back_24),
+                                    contentDescription = null
+                                )
+                            }
+                    },
                 title = {
                     Text(
                         stringResource(R.string.profylaxis_screen_title),
@@ -123,6 +142,7 @@ fun ProphylaxisScreen(
             DatePickerDialog(
                 initialDate = uiState.startDate ?: LocalDate.now(),
                 onDateSelected = {
+                    Log.d("ProphylaxisScreen", "Selected date: $it")
                     viewModel.updateStartDate(it)
                     showDatePicker = false
                 },
@@ -250,25 +270,35 @@ fun ProphylaxisScreen(
 
                     Spacer(Modifier.height(16.dp))
 
-                    OutlinedTextField(
-                        value = uiState.dosage,
-                        onValueChange = viewModel::onDosageChange,
-                        label = { Text("Dosaggio profilassi (mg/kg)") },
-                        keyboardOptions = KeyboardOptions.Default.copy(
-                            keyboardType = KeyboardType.Number,
-                            imeAction = ImeAction.Next
-                        ),
-                        keyboardActions = KeyboardActions(
-                            onNext = { drugNameExtraFocusRequester.requestFocus() }
-                        ),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .focusRequester(dosageFocusRequester),
-                        isError = uiState.dosageError,
-                        supportingText = if (uiState.dosageError) {
-                            { Text("Campo richiesto") }
-                        } else null
-                    )
+                    Row(
+                        verticalAlignment = Alignment.Top,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        OutlinedTextField(
+                            value = uiState.dosage,
+                            onValueChange = viewModel::onDosageChange,
+                            label = { Text("Dosaggio profilassi") },
+                            keyboardOptions = KeyboardOptions.Default.copy(
+                                keyboardType = KeyboardType.Number,
+                                imeAction = ImeAction.Next
+                            ),
+                            keyboardActions = KeyboardActions(
+                                onNext = { drugNameExtraFocusRequester.requestFocus() }
+                            ),
+                            modifier = Modifier
+                                .weight(1f)
+                                .focusRequester(dosageFocusRequester),
+                            isError = uiState.dosageError,
+                            supportingText = if (uiState.dosageError) {
+                                { Text("Campo richiesto") }
+                            } else null
+                        )
+                        DropdownMenuDosageUnit(
+                            selectedUnit = uiState.dosageUnit,
+                            onSelect = viewModel::onDosageUnitChange,
+                            modifier = Modifier.padding(top = 8.dp)
+                        )
+                    }
 
                     Spacer(Modifier.height(16.dp))
 
@@ -307,7 +337,10 @@ fun ProphylaxisScreen(
                                         workManager.enqueueUniquePeriodicWork(
                                             "GetStepsRecord",
                                             ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
-                                            PeriodicWorkRequestBuilder<GetStepsRecord>(15, TimeUnit.MINUTES)
+                                            PeriodicWorkRequestBuilder<GetStepsRecord>(
+                                                15,
+                                                TimeUnit.MINUTES
+                                            )
                                                 .build()
                                         )
 
@@ -381,6 +414,51 @@ fun DropdownMenuUnit(
         }
     }
 }
+@Composable
+fun DropdownMenuDosageUnit(
+    selectedUnit: DosageUnit,
+    onSelect: (DosageUnit) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Box(modifier = modifier) {
+        OutlinedButton(
+            onClick = { expanded = true },
+            modifier = Modifier.width(80.dp)
+        ) {
+            Text(
+                text = when (selectedUnit) {
+                    DosageUnit.MG_KG -> "mg/kg"
+                    DosageUnit.IU -> "IU"
+                },
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
+
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            DosageUnit.entries.forEach { unit ->
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = when (unit) {
+                                DosageUnit.MG_KG -> "mg/kg"
+                                DosageUnit.IU -> "IU (International Units)"
+                            }
+                        )
+                    },
+                    onClick = {
+                        onSelect(unit)
+                        expanded = false
+                    }
+                )
+            }
+        }
+    }
+}
 
 @Composable
 fun TimePickerDialog(
@@ -399,6 +477,9 @@ fun TimePickerDialog(
             initialTime.minute,
             true
         )
+    }.apply {
+        setOnDismissListener { onDismiss() }
+        setOnCancelListener { onDismiss() }
     }
 
     DisposableEffect(Unit) {
@@ -454,6 +535,8 @@ fun DatePickerDialog(
             initialDate.dayOfMonth
         ).apply {
             datePicker.minDate = System.currentTimeMillis()
+            setOnDismissListener { onDismiss() }
+            setOnCancelListener { onDismiss() }
         }
     }
 
