@@ -32,7 +32,7 @@ fun ProphylaxisItem(item: ProphylaxisResponse, modifier: Modifier = Modifier) {
             verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_small))
         ) {
             Text(
-                text = stringResource(id = R.string.profylaxis_screen_title).removePrefix("Aggiungi ")
+                text = stringResource(id = R.string.profylaxis_screen_title).removePrefix("Aggiungi ").removePrefix("Add ")
                     .replaceFirst("p", "P"),
                 style = MaterialTheme.typography.titleLarge
             )

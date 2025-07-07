@@ -165,18 +165,18 @@ fun ProphylaxisScreen(
                         .padding(16.dp)
                         .verticalScroll(rememberScrollState())
                 ) {
-                    Text("Tipo di schedulazione:")
+                    Text(stringResource(R.string.scheduling_type))
                     Row {
                         FilterChip(
                             selected = uiState.schedulingMode == SchedulingMode.DaysOfWeek,
                             onClick = { viewModel.onSchedulingModeChange(SchedulingMode.DaysOfWeek) },
-                            label = { Text("Giorni della settimana") }
+                            label = { Text(stringResource(R.string.days_of_week)) }
                         )
                         Spacer(Modifier.width(8.dp))
                         FilterChip(
                             selected = uiState.schedulingMode == SchedulingMode.Recurring,
                             onClick = { viewModel.onSchedulingModeChange(SchedulingMode.Recurring) },
-                            label = { Text("Ogni N giorni/settimane") }
+                            label = { Text(stringResource(R.string.custom)) }
                         )
                     }
 
@@ -184,14 +184,14 @@ fun ProphylaxisScreen(
 
                     when (uiState.schedulingMode) {
                         SchedulingMode.DaysOfWeek -> {
-                            Text("Seleziona il giorno:")
+                            Text(stringResource(R.string.select_day))
                             WeekdaySelector(
                                 selectedDays = uiState.selectedDays,
                                 onDayToggle = viewModel::onDayToggle
                             )
                             if (uiState.selectedDaysError) {
                                 Text(
-                                    text = "Seleziona almeno un giorno",
+                                    text = stringResource(R.string.select_at_least_one_day),
                                     color = MaterialTheme.colorScheme.error,
                                     style = MaterialTheme.typography.bodySmall,
                                     modifier = Modifier.padding(top = 4.dp)
@@ -204,7 +204,7 @@ fun ProphylaxisScreen(
                                 OutlinedTextField(
                                     value = uiState.recurrenceIntervalText,
                                     onValueChange = viewModel::onRecurrenceIntervalTextChange,
-                                    label = { Text("Ogni") },
+                                    label = { Text(stringResource(R.string.every)) },
                                     keyboardOptions = KeyboardOptions.Default.copy(
                                         keyboardType = KeyboardType.Number,
                                         imeAction = ImeAction.Done
@@ -215,7 +215,7 @@ fun ProphylaxisScreen(
                                     modifier = Modifier.width(100.dp),
                                     isError = uiState.recurrenceIntervalError,
                                     supportingText = if (uiState.recurrenceIntervalError) {
-                                        { Text("Campo richiesto") }
+                                        { Text(stringResource(R.string.required_field)) }
                                     } else null
                                 )
                                 Spacer(Modifier.width(8.dp))
@@ -227,7 +227,7 @@ fun ProphylaxisScreen(
 
                             Spacer(Modifier.height(16.dp))
 
-                            Text("Data di inizio ricorrenza:")
+                            Text(stringResource(R.string.recurrence_start_date))
                             OutlinedButton(
                                 onClick = { showDatePicker = true },
                                 modifier = Modifier.fillMaxWidth()
@@ -239,7 +239,7 @@ fun ProphylaxisScreen(
 
                     Spacer(Modifier.height(16.dp))
 
-                    Text("Ora promemoria:")
+                    Text(stringResource(R.string.reminder_time))
                     OutlinedButton(
                         onClick = { showTimePicker = true },
                         modifier = Modifier.fillMaxWidth()
@@ -252,13 +252,13 @@ fun ProphylaxisScreen(
                     OutlinedTextField(
                         value = uiState.drugName,
                         onValueChange = viewModel::onDrugNameChange,
-                        label = { Text("Nome farmaco profilassi") },
+                        label = { Text(stringResource(R.string.prophylaxis_drug_name)) },
                         modifier = Modifier
                             .fillMaxWidth()
                             .focusRequester(drugNameFocusRequester),
                         isError = uiState.drugNameError,
                         supportingText = if (uiState.drugNameError) {
-                            { Text("Campo richiesto") }
+                            { Text(stringResource(R.string.required_field)) }
                         } else null,
                         keyboardOptions = KeyboardOptions.Default.copy(
                             imeAction = ImeAction.Next
@@ -277,7 +277,7 @@ fun ProphylaxisScreen(
                         OutlinedTextField(
                             value = uiState.dosage,
                             onValueChange = viewModel::onDosageChange,
-                            label = { Text("Dosaggio profilassi") },
+                            label = { Text(stringResource(R.string.prophylaxis_dosage)) },
                             keyboardOptions = KeyboardOptions.Default.copy(
                                 keyboardType = KeyboardType.Number,
                                 imeAction = ImeAction.Next
@@ -290,7 +290,7 @@ fun ProphylaxisScreen(
                                 .focusRequester(dosageFocusRequester),
                             isError = uiState.dosageError,
                             supportingText = if (uiState.dosageError) {
-                                { Text("Campo richiesto") }
+                                { Text(stringResource(R.string.required_field)) }
                             } else null
                         )
                         DropdownMenuDosageUnit(
@@ -305,7 +305,7 @@ fun ProphylaxisScreen(
                     OutlinedTextField(
                         value = uiState.drugNameExtra,
                         onValueChange = viewModel::onDrugExtraInfusionNameChange,
-                        label = { Text("Inserisci farmaco infusioni on-demand") },
+                        label = { Text(stringResource(R.string.on_demand_infusion_drug)) },
                         keyboardOptions = KeyboardOptions.Default.copy(
                             imeAction = ImeAction.Done
                         ),
@@ -317,7 +317,7 @@ fun ProphylaxisScreen(
                             .focusRequester(drugNameExtraFocusRequester),
                         isError = uiState.drugNameExtraError,
                         supportingText = if (uiState.drugNameExtraError) {
-                            { Text("Campo richiesto") }
+                            { Text(stringResource(R.string.required_field)) }
                         } else null
                     )
 
@@ -353,7 +353,7 @@ fun ProphylaxisScreen(
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Conferma profilassi")
+                        Text(stringResource(R.string.confirm_prophylaxis))
                     }
                 }
             }
@@ -414,6 +414,7 @@ fun DropdownMenuUnit(
         }
     }
 }
+
 @Composable
 fun DropdownMenuDosageUnit(
     selectedUnit: DosageUnit,
@@ -495,22 +496,20 @@ fun ExactAlarmPermissionDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Autorizzazione necessaria") },
+        title = { Text(stringResource(R.string.confirm_prophylaxis)) },
         text = {
             Text(
-                "Per garantire la corretta esecuzione dei promemoria programmati, " +
-                        "l'app richiede il permesso di impostare allarmi precisi. " +
-                        "Premi 'Continua' per concedere l'autorizzazione."
+                stringResource(R.string.alarm_permission_message)
             )
         },
         confirmButton = {
             TextButton(onClick = onConfirm) {
-                Text("Continua")
+                Text(stringResource(R.string.continue_action))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Annulla")
+                Text(stringResource(R.string.cancel_action))
             }
         }
     )
