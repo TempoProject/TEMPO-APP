@@ -94,7 +94,7 @@ fun BleedingDetailsScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Edit,
-                        contentDescription = "Modifica evento"
+                        contentDescription = stringResource(R.string.edit_event)
                     )
                 }
                 Spacer(modifier = Modifier.padding(4.dp))
@@ -109,7 +109,7 @@ fun BleedingDetailsScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Delete,
-                        contentDescription = "Elimina evento"
+                        contentDescription = stringResource(R.string.delete_event)
                     )
                 }
             }
@@ -162,7 +162,7 @@ fun BleedingItemDetails(details: BleedingDetails, modifier: Modifier) {
                 verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_small))
             ) {
                 Text(
-                    text = "Dettagli Evento",
+                    text = stringResource(R.string.event_details),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
@@ -170,18 +170,18 @@ fun BleedingItemDetails(details: BleedingDetails, modifier: Modifier) {
                 Divider()
 
                 ItemDetailsRow(
-                    label = "Tipo di evento",
-                    itemDetail = details.eventType.ifBlank { "Non specificato" }
+                    label = stringResource(R.string.event),
+                    itemDetail = details.eventType.ifBlank { stringResource(R.string.not_specified) }
                 )
 
                 ItemDetailsRow(
                     label = stringResource(R.string.site_string_label),
-                    itemDetail = details.site.ifBlank { "Non specificato" }
+                    itemDetail = details.site.ifBlank { stringResource(R.string.not_specified) }
                 )
 
                 ItemDetailsRow(
                     label = stringResource(R.string.cause_string_label),
-                    itemDetail = details.cause.ifBlank { "Non specificata" }
+                    itemDetail = details.cause.ifBlank { stringResource(R.string.not_specified) }
                 )
 
                 ItemDetailsRow(
@@ -213,7 +213,7 @@ fun BleedingItemDetails(details: BleedingDetails, modifier: Modifier) {
                 verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_small))
             ) {
                 Text(
-                    text = "Trattamento",
+                    text = stringResource(R.string.treatment),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
@@ -221,36 +221,36 @@ fun BleedingItemDetails(details: BleedingDetails, modifier: Modifier) {
                 Divider()
 
                 ItemDetailsRow(
-                    label = "Ti sei curato?",
-                    itemDetail = details.treatment.ifBlank { "Non specificato" }
+                    label = stringResource(R.string.did_you_treat_yself),
+                    itemDetail = details.treatment.ifBlank { stringResource(R.string.not_specified) }
                 )
 
                 if (details.treatment == "Sì") {
                     Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.padding_small)))
 
                     Text(
-                        text = "Dettagli Farmaco",
+                        text = stringResource(R.string.details),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold
                     )
 
                     if (details.medicationType.isNotBlank()) {
                         ItemDetailsRow(
-                            label = "Tipo di farmaco",
+                            label = stringResource(R.string.drug_name),
                             itemDetail = details.medicationType
                         )
                     }
 
                     if (details.dose.isNotBlank()) {
                         ItemDetailsRow(
-                            label = "Dose (IU/Mg per Kg)",
+                            label = stringResource(R.string.dose_units),
                             itemDetail = details.dose
                         )
                     }
 
                     if (details.lotNumber.isNotBlank()) {
                         ItemDetailsRow(
-                            label = "Lot Number",
+                            label = stringResource(R.string.lot_number),
                             itemDetail = details.lotNumber
                         )
                     }

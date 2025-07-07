@@ -154,7 +154,7 @@ fun BleedingEventBody(
                     modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_medium))
                 ) {
                     Text(
-                        text = "Correggere i seguenti errori:",
+                        text = stringResource(R.string.error_validation_header),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onErrorContainer
                     )
@@ -206,12 +206,12 @@ fun BleedingEventInputForm(
         verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_small))
     ) {
 
-        // Tipo di evento (obbligatorio)
+
         DropdownListWithError(
             value = uiState.bleedingDetails.eventType,
-            itemList = listOf("Sanguamento", "Solo dolore"),
+            itemList = stringArrayResource(R.array.type_of_events).asList(),
             onItemSelected = { onItemClick(uiState.bleedingDetails.copy(eventType = it)) },
-            label = "Tipo di evento *",
+            label = stringResource(R.string.event),
             hasError = uiState.hasError("eventType"),
             errorMessage = stringResource(uiState.getError("eventType") ?: R.string.dummy_value),
             modifier = Modifier.fillMaxWidth()
@@ -220,9 +220,9 @@ fun BleedingEventInputForm(
         // Causa dell'evento (obbligatorio)
         DropdownListWithError(
             value = uiState.bleedingDetails.cause,
-            itemList = listOf("Post traumatic", "Spontaneous", "Post-surgical", "Post procedure"),
+            itemList = stringArrayResource(R.array.cause_array).asList(),
             onItemSelected = { onItemClick(uiState.bleedingDetails.copy(cause = it)) },
-            label = "Causa dell'evento *",
+            label = stringResource(R.string.cause_string_label),
             hasError = uiState.hasError("cause"),
             errorMessage = stringResource(uiState.getError("cause") ?: R.string.dummy_value),
             modifier = Modifier.fillMaxWidth()
@@ -233,7 +233,7 @@ fun BleedingEventInputForm(
             value = uiState.bleedingDetails.site,
             itemList = stringArrayResource(id = R.array.site_array).toList(),
             onItemSelected = { onItemClick(uiState.bleedingDetails.copy(site = it)) },
-            label = "Location site *",
+            label = stringResource(R.string.site_string_label),
             hasError = uiState.hasError("site"),
             errorMessage = stringResource(uiState.getError("site") ?: R.string.dummy_value),
             modifier = Modifier.fillMaxWidth()
@@ -244,7 +244,7 @@ fun BleedingEventInputForm(
             selectedValue = uiState.bleedingDetails.treatment,
             options = listOf(stringResource(R.string.yes), stringResource(R.string.no)),
             onSelectionChanged = { onItemClick(uiState.bleedingDetails.copy(treatment = it)) },
-            label = "Did you treat yourself? *",
+            label = stringResource(R.string.did_you_treat_yself),
             hasError = uiState.hasError("treatment"),
             errorMessage = stringResource(uiState.getError("treatment") ?: R.string.dummy_value),
         )
@@ -259,7 +259,7 @@ fun BleedingEventInputForm(
                     verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_small))
                 ) {
                     Text(
-                        text = "Dettagli farmaco",
+                        text = stringResource(R.string.details),
                         style = MaterialTheme.typography.titleMedium
                     )
 
@@ -267,7 +267,7 @@ fun BleedingEventInputForm(
                     OutlinedTextFieldWithError(
                         value = uiState.bleedingDetails.medicationType,
                         onValueChange = { onItemClick(uiState.bleedingDetails.copy(medicationType = it)) },
-                        label = "Tipo di farmaco *",
+                        label = stringResource(R.string.drug_name),
                         hasError = uiState.hasError("medicationType"),
                         keyboardType = KeyboardType.Text,
                         errorMessage = stringResource(
@@ -284,7 +284,7 @@ fun BleedingEventInputForm(
                         OutlinedTextFieldWithError(
                             value = uiState.bleedingDetails.dose,
                             onValueChange = { onItemClick(uiState.bleedingDetails.copy(dose = it)) },
-                            label = "Dose in IU/Mg per Kg *",
+                            label = stringResource(R.string.dose_units),
                             hasError = uiState.hasError("dose"),
                             keyboardType = KeyboardType.Number,
                             errorMessage = stringResource(
@@ -305,7 +305,7 @@ fun BleedingEventInputForm(
                     OutlinedTextField(
                         value = uiState.bleedingDetails.lotNumber,
                         onValueChange = { onItemClick(uiState.bleedingDetails.copy(lotNumber = it)) },
-                        label = { Text("Lot Number") },
+                        label = { Text(stringResource(R.string.batch_number)) },
                         modifier = Modifier.fillMaxWidth(),
                         keyboardOptions = KeyboardOptions.Default.copy(
                             keyboardType = KeyboardType.Number,
@@ -326,7 +326,7 @@ fun BleedingEventInputForm(
 
         Column {
             Text(
-                text = "Pain Scale *: ${sliderPosition.toInt()}",
+                text = stringResource(R.string.pain_scale_string_label) + " ${sliderPosition.toInt()}",
                 style = MaterialTheme.typography.bodyLarge,
                 color = if (uiState.hasError("painScale")) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
             )
@@ -406,12 +406,12 @@ fun BleedingEventInputForm(
             )
         }
 
-        // Note (facoltativo, ma obbligatorio se site = "Other")
+
         val isNoteRequired = uiState.bleedingDetails.site == "Other"
         OutlinedTextFieldWithError(
             value = uiState.bleedingDetails.note ?: "",
             onValueChange = { onItemClick(uiState.bleedingDetails.copy(note = it)) },
-            label = if (isNoteRequired) "Inserisci qui il luogo dell'evento: " else "Note:",
+            label = if (isNoteRequired) stringResource(R.string.event_location_placeholder) else stringResource(R.string.note),
             hasError = uiState.hasError("note"),
             errorMessage = stringResource(uiState.getError("note") ?: R.string.dummy_value),
             modifier = Modifier.fillMaxWidth(),
@@ -467,12 +467,11 @@ fun BleedingDatePickerDialog(
             initialDate.monthValue - 1,
             initialDate.dayOfMonth
         ).apply {
-            // Imposta la data massima ad oggi (non permettere date future)
+
             datePicker.maxDate = today.atStartOfDay(ZoneId.systemDefault())
                 .toInstant()
                 .toEpochMilli()
 
-            // Aggiungi i listener per dismiss/cancel
             setOnDismissListener { onDismiss() }
             setOnCancelListener { onDismiss() }
         }
