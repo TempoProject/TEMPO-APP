@@ -118,12 +118,9 @@ fun PermissionScreen(
             val allGranted = results.values.all { it }
 
             if (allGranted) {
-                // Reset contatore se i permessi sono stati concessi
                 permissionAttempts = 0
             } else {
-                // Incrementa contatore solo se ci sono stati rifiuti
                 permissionAttempts++
-                // Mostra dialog solo dopo 2 tentativi
                 if (permissionAttempts >= 2) {
                     showSettingsDialog = true
                 }
@@ -165,11 +162,10 @@ fun PermissionScreen(
     if (showSettingsDialog) {
         AlertDialog(
             onDismissRequest = { showSettingsDialog = false },
-            title = { Text("Permessi richiesti") },
+            title = { Text(stringResource(R.string.permissions_required_title)) },
             text = {
                 Text(
-                    "Per funzionare correttamente, Tempo ha bisogno di alcuni permessi. " +
-                            "Puoi abilitarli manualmente nelle impostazioni dell'app."
+                    stringResource(R.string.permissions_manual_setup_message)
                 )
             },
             confirmButton = {
@@ -179,7 +175,7 @@ fun PermissionScreen(
                         openAppSettings()
                     }
                 ) {
-                    Text("Apri Impostazioni")
+                    Text(stringResource(R.string.open_settings))
                 }
             },
             dismissButton = {
@@ -191,7 +187,7 @@ fun PermissionScreen(
                         healthPermissionAttempts = 0
                     }
                 ) {
-                    Text("Riprova")
+                    Text(stringResource(R.string.retry))
                 }
             }
         )
@@ -249,7 +245,7 @@ fun PermissionScreen(
                     .align(Alignment.End)
                     .padding(16.dp)
             ) {
-                Text("Autorizza e continua")
+                Text(stringResource(R.string.authorize_and_continue))
             }
         }
     }
@@ -261,7 +257,7 @@ fun PermissionsList() {
         modifier = Modifier.fillMaxWidth()
     ) {
         Text(
-            text = "Per funzionare correttamente, Tempo richiede le seguenti autorizzazioni:",
+            text = stringResource(R.string.permissions_list_intro),
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(bottom = 16.dp)
         )
@@ -269,8 +265,8 @@ fun PermissionsList() {
         PermissionItem(
             image = Icons.Default.LocationOn,
             iconDescription = "Icona localizzazione",
-            title = "Localizzazione",
-            description = "Ci serve per prendere dati contestuali come le informazioni meteorologiche"
+            title = stringResource(R.string.permission_location),
+            description = stringResource(R.string.permission_location_description)
         )
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -278,8 +274,8 @@ fun PermissionsList() {
         PermissionItem(
             image = ImageVector.vectorResource(R.drawable.outline_health_metrics_24),
             iconDescription = "Icona Health Connect",
-            title = "Health Connect",
-            description = "Per collezionare dati relativi alla salute del paziente"
+            title = stringResource(R.string.permission_health_connect),
+            description = stringResource(R.string.permission_health_connect_description)
         )
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -287,8 +283,8 @@ fun PermissionsList() {
         PermissionItem(
             image = ImageVector.vectorResource(R.drawable.outline_bluetooth_24),
             iconDescription = "Icona Bluetooth",
-            title = "Bluetooth",
-            description = "Per l'utilizzo di dispositivi esterni come Movesense"
+            title = stringResource(R.string.permission_bluetooth),
+            description = stringResource(R.string.permission_bluetooth_description)
         )
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -296,8 +292,8 @@ fun PermissionsList() {
         PermissionItem(
             image = Icons.Default.Notifications,
             iconDescription = "Icona Notifica",
-            title = "Notifiche",
-            description = "Per ricevere promemoria e notifiche importanti"
+            title = stringResource(R.string.permission_notifications),
+            description = stringResource(R.string.permission_notifications_description)
         )
     }
 }
