@@ -142,7 +142,7 @@ class AppPreferencesManager(private val context: Context) {
                 val dosageUnit = preferences[PROPHYLAXIS_DOSAGE_UNIT] ?: ""
                 val drugNameExtra = preferences[DRUG_NAME_EXTRA] ?: ""
 
-                // AGGIUNGI questo parsing per startDate:
+
                 val startDate = try {
                     if (startDateString.isNullOrEmpty()) null
                     else LocalDate.parse(startDateString)
@@ -160,13 +160,7 @@ class AppPreferencesManager(private val context: Context) {
                     minute = minute,
                     drugName = drug,
                     dosage = dose,
-                    dosageUnit = preferences[PROPHYLAXIS_DOSAGE_UNIT]?.let {
-                        try {
-                            DosageUnit.valueOf(it).name
-                        } catch (e: IllegalArgumentException) {
-                            DosageUnit.MG_KG.name
-                        }
-                    } ?: DosageUnit.MG_KG.name,
+                    dosageUnit = dosageUnit,
                     drugNameExtra = drugNameExtra
                 )
             } catch (e: Exception) {
