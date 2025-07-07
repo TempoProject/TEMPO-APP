@@ -69,8 +69,7 @@ fun LoginScreen(navController: NavController?) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        //.background(Color.Black.copy(alpha = 0.3f)) // semi-trasparente
-                        .clickable(enabled = false) {} // blocca interazioni sotto
+                        .clickable(enabled = false) {}
                 ) {
                     CircularProgressIndicator(
                         modifier = Modifier.align(Alignment.Center)
@@ -85,7 +84,7 @@ fun LoginScreen(navController: NavController?) {
                 verticalArrangement = Arrangement.Center
             ) {
                 Text(
-                    text = "Tempo app aiuta le persone con emofilia in profilassi a tener traccia dei trattamenti e degli eventi rilevanti.",
+                    text = stringResource(R.string.app_description),
                     style = MaterialTheme.typography.bodyLarge,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -93,7 +92,7 @@ fun LoginScreen(navController: NavController?) {
                 )
 
                 Text(
-                    text = "Per funzionare correttamente è necessario registrarsi e inserire l'ID fornito.",
+                    text = stringResource(R.string.registration_required_message),
                     style = MaterialTheme.typography.bodyLarge,
                     modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 24.dp)
                 )
@@ -119,7 +118,7 @@ fun LoginScreen(navController: NavController?) {
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = "Non hai un account?",
+                        text = stringResource(R.string.no_account_question),
                         color = MaterialTheme.colorScheme.primary,
                         style = MaterialTheme.typography.bodyMedium.copy(
                             textDecoration = TextDecoration.Underline,
@@ -153,7 +152,7 @@ fun LoginScreen(navController: NavController?) {
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Text(
-                    text = "Password dimenticata?",
+                    text = stringResource(R.string.recover_id),
                     color = MaterialTheme.colorScheme.primary,
                     style = MaterialTheme.typography.bodyMedium.copy(
                         textDecoration = TextDecoration.Underline,
