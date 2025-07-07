@@ -48,21 +48,19 @@ fun WelcomeScreen(navController: NavController?) {
                 .padding(horizontal = 16.dp, vertical = 24.dp)
         ) {
             Text(
-                text = "Tempo app aiuta le persone con emofilia in profilassi a tener traccia dei trattamenti e degli eventi rilevanti.",
+                text = stringResource(R.string.app_description),
                 style = MaterialTheme.typography.bodyLarge,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
 
             Text(
-                text = "Per funzionare correttamente, Tempo app necessita di alcune autorizzazioni che ti verranno ora chieste.",
+                text = stringResource(R.string.permissions_intro_message),
                 style = MaterialTheme.typography.bodyLarge,
                 modifier = Modifier.padding(bottom = 24.dp)
             )
 
-            //PermissionsList()
             Spacer(modifier = Modifier.weight(1f))
 
-            // Bottone per procedere
             Button(
                 onClick = {
                     navController?.navigate(PermissionScreen.route) {
@@ -81,7 +79,7 @@ fun WelcomeScreen(navController: NavController?) {
                     .align(Alignment.End)
                     .padding(16.dp)
             ) {
-                Text("Continua")
+                Text(stringResource(R.string.continue_action))
             }
         }
     }
