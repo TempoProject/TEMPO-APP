@@ -98,7 +98,7 @@ fun InfusionDetailsScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Edit,
-                        contentDescription = "Modifica infusione"
+                        contentDescription = stringResource(R.string.edit_infusion)
                     )
                 }
                 Spacer(modifier = Modifier.padding(4.dp))
@@ -114,7 +114,7 @@ fun InfusionDetailsScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Delete,
-                        contentDescription = "Elimina infusione"
+                        contentDescription = stringResource(R.string.delete_infusion)
                     )
                 }
             }
@@ -176,7 +176,7 @@ fun InfusionItemDetails(details: InfusionDetails, modifier: Modifier) {
                 verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_small))
             ) {
                 Text(
-                    text = "Dettagli Infusione",
+                    text = stringResource(R.string.infusion_details),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
@@ -185,18 +185,18 @@ fun InfusionItemDetails(details: InfusionDetails, modifier: Modifier) {
 
                 ItemDetailsRow(
                     label = stringResource(R.string.reason),
-                    itemDetail = details.reason.ifBlank { "Non specificato" }
+                    itemDetail = details.reason.ifBlank { stringResource(R.string.not_specified) }
                 )
 
 
                 ItemDetailsRow(
                     label = stringResource(R.string.drug_name),
-                    itemDetail = details.drugName.ifBlank { "Non specificato" }
+                    itemDetail = details.drugName.ifBlank { stringResource(R.string.not_specified) }
                 )
 
                 ItemDetailsRow(
                     label = stringResource(R.string.dose_iu_mg),
-                    itemDetail = details.dose.ifBlank { "Non specificata" }
+                    itemDetail = details.dose.ifBlank { stringResource(R.string.not_specified) }
                 )
 
                 ItemDetailsRow(
@@ -224,7 +224,7 @@ fun InfusionItemDetails(details: InfusionDetails, modifier: Modifier) {
                     verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_small))
                 ) {
                     Text(
-                        text = "Informazioni Batch",
+                        text = stringResource(R.string.batch_information),
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold
                     )
@@ -232,7 +232,7 @@ fun InfusionItemDetails(details: InfusionDetails, modifier: Modifier) {
                     Divider()
 
                     ItemDetailsRow(
-                        label = "Batch Number",
+                        label = stringResource(R.string.batch_number),
                         itemDetail = details.batchNumber
                     )
                 }
@@ -252,7 +252,7 @@ fun InfusionItemDetails(details: InfusionDetails, modifier: Modifier) {
                     modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_medium))
                 ) {
                     Text(
-                        text = "Note",
+                        text = stringResource(R.string.note),
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold
                     )

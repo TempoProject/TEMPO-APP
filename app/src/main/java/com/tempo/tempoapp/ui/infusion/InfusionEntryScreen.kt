@@ -149,7 +149,7 @@ fun InfusionEventBody(
                     modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_medium))
                 ) {
                     Text(
-                        text = "Correggere i seguenti errori:",
+                        text = stringResource(R.string.error_validation_header),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onErrorContainer
                     )
@@ -203,26 +203,20 @@ fun InfusionEventInputForm(
         // Motivo (obbligatorio)
         InfusionDropdownWithError(
             value = uiState.infusionDetails.reason,
-            itemList = listOf(
-                "Trauma",
-                "Procedure/Chirurgia",
-                "Previsione attività fisica",
-                "Recupero regolare profilassi"
-            ),
+            itemList = listOf(stringResource(R.string.reason_trauma), stringResource(R.string.reason_procedure_surgery), stringResource(R.string.reason_physical_activity), stringResource(R.string.reason_regular_prophylaxis)),
             onItemSelected = { onItemClick(uiState.infusionDetails.copy(reason = it)) },
-            label = "Motivo *",
+            label = stringResource(R.string.reason),
             hasError = uiState.hasError("reason"),
             errorMessage = stringResource(uiState.getError("reason") ?: R.string.dummy_value),
             modifier = Modifier.fillMaxWidth()
         )
 
-        // Nome del farmaco (obbligatorio)
         OutlinedTextFieldWithError(
             value = uiState.infusionDetails.drugName,
             onValueChange = { onItemClick(uiState.infusionDetails.copy(drugName = it)) },
-            label = "Nome del farmaco *",
+            label = stringResource(R.string.drug_name),
             hasError = uiState.hasError("drugName"),
-            errorMessage = stringResource(uiState.getError("drugName")?: R.string.dummy_value),
+            errorMessage = stringResource(uiState.getError("drugName") ?: R.string.dummy_value),
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -235,9 +229,11 @@ fun InfusionEventInputForm(
             OutlinedTextFieldWithError(
                 value = uiState.infusionDetails.dose,
                 onValueChange = { onItemClick(uiState.infusionDetails.copy(dose = it)) },
-                label = "Dose *",
+                label = stringResource(R.string.dose_units),
                 hasError = uiState.hasError("dose"),
-                errorMessage = if (uiState.hasError("dose")) stringResource(uiState.getError("dose") ?: R.string.dummy_value) else null,
+                errorMessage = if (uiState.hasError("dose")) stringResource(
+                    uiState.getError("dose") ?: R.string.dummy_value
+                ) else null,
                 modifier = Modifier.weight(1f),
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Number,
@@ -258,7 +254,7 @@ fun InfusionEventInputForm(
         OutlinedTextField(
             value = uiState.infusionDetails.batchNumber,
             onValueChange = { onItemClick(uiState.infusionDetails.copy(batchNumber = it)) },
-            label = { Text("Batch number") },
+            label = { Text(stringResource(R.string.batch_number)) },
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(dimensionResource(id = R.dimen.padding_small)),
             keyboardOptions = KeyboardOptions(
@@ -311,11 +307,10 @@ fun InfusionEventInputForm(
             )
         }
 
-        // Note (facoltativo)
         OutlinedTextField(
             value = uiState.infusionDetails.note ?: "",
             onValueChange = { onItemClick(uiState.infusionDetails.copy(note = it)) },
-            label = { Text("Note") },
+            label = { Text(stringResource(R.string.note)) },
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(dimensionResource(id = R.dimen.padding_small)),
             minLines = 3
@@ -493,7 +488,6 @@ fun InfusionDatePickerDialog(
             initialDate.monthValue - 1,
             initialDate.dayOfMonth
         ).apply {
-            // Imposta la data massima ad oggi
             datePicker.maxDate = today.atStartOfDay(ZoneId.systemDefault())
                 .toInstant()
                 .toEpochMilli()
@@ -520,7 +514,8 @@ fun InfusionTimePickerDialog(
         android.app.TimePickerDialog(
             context,
             { _, hour, minute ->
-                val formattedTime = "${if (hour < 10) "0$hour" else hour}:${if (minute < 10) "0$minute" else minute}"
+                val formattedTime =
+                    "${if (hour < 10) "0$hour" else hour}:${if (minute < 10) "0$minute" else minute}"
                 onTimeSelected(formattedTime)
             },
             initialTime.hour,
