@@ -6,6 +6,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.util.Log
+import com.tempo.tempoapp.R
 import com.tempo.tempoapp.ui.onboarding.RecurrenceUnit
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -57,9 +58,9 @@ class ProphylaxisScheduler(private val context: Context) {
             scheduleAlarm(
                 alarmId = WEEKLY_ALARM_BASE_ID, // ID fisso per singolo giorno
                 triggerAtMillis = millis,
-                title = "Profilassi settimanale",
-                message = "È il momento della profilassi per il giorno ${
-                    getDayName(day)
+                title = context.getString(R.string.weekly_prophylaxis),
+                message = "${context.getString(R.string.prophylaxis_time_notification)} ${
+                    context.getString(getDayName(day))
                 }"
             )
         }
@@ -99,8 +100,8 @@ class ProphylaxisScheduler(private val context: Context) {
         scheduleAlarm(
             alarmId = RECURRING_ALARM_ID,
             triggerAtMillis = millis,
-            title = "Profilassi ricorrente",
-            message = "È il momento della profilassi"
+            title = context.getString(R.string.recurring_prophylaxis),
+            message = context.getString(R.string.prophylaxis_time)
         )
     }
 
@@ -171,15 +172,15 @@ class ProphylaxisScheduler(private val context: Context) {
         }
     }
 
-    private fun getDayName(day: DayOfWeek): String {
+    private fun getDayName(day: DayOfWeek): Int {
         return when (day) {
-            DayOfWeek.MONDAY -> "Lunedì"
-            DayOfWeek.TUESDAY -> "Martedì"
-            DayOfWeek.WEDNESDAY -> "Mercoledì"
-            DayOfWeek.THURSDAY -> "Giovedì"
-            DayOfWeek.FRIDAY -> "Venerdì"
-            DayOfWeek.SATURDAY -> "Sabato"
-            DayOfWeek.SUNDAY -> "Domenica"
+            DayOfWeek.MONDAY -> R.string.monday
+            DayOfWeek.TUESDAY -> R.string.tuesday
+            DayOfWeek.WEDNESDAY -> R.string.wednesday
+            DayOfWeek.THURSDAY -> R.string.thursday
+            DayOfWeek.FRIDAY -> R.string.friday
+            DayOfWeek.SATURDAY -> R.string.saturday
+            DayOfWeek.SUNDAY -> R.string.sunday
         }
     }
 }

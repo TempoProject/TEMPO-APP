@@ -35,8 +35,8 @@ import kotlin.random.Random
 class ProphylaxisAlarmReceiver : BroadcastReceiver() {
     @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
     override fun onReceive(context: Context, intent: Intent) {
-        val title = intent.getStringExtra("title") ?: "Promemoria profilassi"
-        val message = intent.getStringExtra("message") ?: "È ora di eseguire la profilassi"
+        val title = intent.getStringExtra("title") ?: context.getString(R.string.prophylaxis_reminder)
+        val message = intent.getStringExtra("message") ?: context.getString(R.string.prophylaxis_time)
         val alarmId = intent.getIntExtra("alarmId", -1)
 
         Log.d("AlarmReceiver", "Ricevuto alarm ID $alarmId: title=$title, message=$message")
@@ -159,10 +159,12 @@ class ProphylaxisAlarmReceiver : BroadcastReceiver() {
                 .toInstant().toEpochMilli()
 
             val intent = Intent(context, ProphylaxisAlarmReceiver::class.java).apply {
-                putExtra("title", "Profilassi settimanale")
+                putExtra("title", context.getString(R.string.weekly_prophylaxis))
                 putExtra(
                     "message",
-                    "È il momento della profilassi per ${getDayName(dayToReschedule)}"
+                    "${context.getString(R.string.prophylaxis_time_notification)} ${
+                        context.getString(getDayName(dayToReschedule))
+                    }"
                 )
                 putExtra("alarmId", 1000) // ID fisso per singolo giorno
             }
@@ -257,7 +259,7 @@ class ProphylaxisAlarmReceiver : BroadcastReceiver() {
         )
 
         val detailedMessage = buildString {
-            append("Ti sei trattato")
+            append(context.getString(R.string.did_you_treat_yself))
             if (drugName.isNotBlank()) {
                 append(" con $drugName")
                 if (dosage.isNotBlank()) {
@@ -272,7 +274,7 @@ class ProphylaxisAlarmReceiver : BroadcastReceiver() {
             context.getString(R.string.reminder_notification_channel_id)
         )
             .setSmallIcon(R.drawable.ic_launcher_foreground)
-            .setContentTitle("Promemoria Profilassi")
+            .setContentTitle(context.getString(R.string.prophylaxis_reminder))
             .setContentText(detailedMessage)
             .setStyle(NotificationCompat.BigTextStyle().bigText(detailedMessage))
             .setPriority(NotificationCompat.PRIORITY_HIGH)
@@ -281,12 +283,12 @@ class ProphylaxisAlarmReceiver : BroadcastReceiver() {
             .setContentIntent(pendingIntent)
             .addAction(
                 R.drawable.ic_check,
-                "Sì",
+                context.getString(R.string.yes),
                 yesPendingIntent
             )
             .addAction(
                 R.drawable.ic_close,
-                "No",
+                context.getString(R.string.no),
                 noPendingIntent
             )
             .setDefaults(NotificationCompat.DEFAULT_ALL)
@@ -300,15 +302,15 @@ class ProphylaxisAlarmReceiver : BroadcastReceiver() {
         }
     }
 
-    private fun getDayName(day: DayOfWeek): String {
+    private fun getDayName(day: DayOfWeek): Int {
         return when (day) {
-            DayOfWeek.MONDAY -> "Lunedì"
-            DayOfWeek.TUESDAY -> "Martedì"
-            DayOfWeek.WEDNESDAY -> "Mercoledì"
-            DayOfWeek.THURSDAY -> "Giovedì"
-            DayOfWeek.FRIDAY -> "Venerdì"
-            DayOfWeek.SATURDAY -> "Sabato"
-            DayOfWeek.SUNDAY -> "Domenica"
+            DayOfWeek.MONDAY -> R.string.monday
+            DayOfWeek.TUESDAY -> R.string.tuesday
+            DayOfWeek.WEDNESDAY -> R.string.wednesday
+            DayOfWeek.THURSDAY -> R.string.thursday
+            DayOfWeek.FRIDAY -> R.string.friday
+            DayOfWeek.SATURDAY -> R.string.saturday
+            DayOfWeek.SUNDAY -> R.string.sunday
         }
     }
 }
