@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
@@ -53,8 +52,6 @@ import com.tempo.tempoapp.ui.bleeding.BleedingEntryDestination
 import com.tempo.tempoapp.ui.bleeding.BleedingEventDetailsDestination
 import com.tempo.tempoapp.ui.history.HistoryDestination
 import com.tempo.tempoapp.ui.infusion.InfusionEntryDestination
-import com.tempo.tempoapp.ui.movesense.MovesenseDestination
-import com.tempo.tempoapp.ui.movesense.ScanDeviceDestination
 import com.tempo.tempoapp.ui.navigation.NavigationDestination
 import com.tempo.tempoapp.ui.onboarding.ProphylaxisScreen
 import kotlinx.coroutines.CoroutineScope
@@ -294,7 +291,7 @@ fun HomeScreen(
                         route = ProphylaxisScreen.route
                     )
                 }
-                NavDrawerItem(
+                /*NavDrawerItem(
                     stringId = R.string.movesense,
                     icon = Icons.Default.Build,
                     scope = scope,
@@ -306,7 +303,7 @@ fun HomeScreen(
                             navController?.navigate(ScanDeviceDestination.route)
                     }
 
-                )
+                )*/
                 NavDrawerItem(
                     stringId = R.string.logout,
                     icon = Icons.AutoMirrored.Filled.ExitToApp,
