@@ -13,12 +13,12 @@
     <string name="edit">Modifica</string>
     <string name="note" translatable="false">Note</string>
     <string name="infusion_site">Sede infusione</string>
-    <string name="dose_units">Dose in unità</string>
+    <string name="dose_units">Dose</string>
     <string name="lot_number">Numero di lotto</string>
     <string name="treatment">Trattamento</string>
     <string name="history">Storico eventi</string>
     <string name="reminder">Lista promemoria</string>
-    <string name="add_infusion">Registra infusione extra profilassi</string>
+    <string name="add_infusion">Infusione extra profilassi</string>
     <string name="add_event">Aggiungi evento</string>
     <string name="add_reminder">Aggiungi promemoria</string>
 
@@ -72,17 +72,14 @@
         <item>Terapia</item>
     </string-array>
     <string-array name="cause_array">
-        <item>Accidentale</item>
+        <item>Post traumatico</item>
         <item>Spontaneo</item>
-        <item>Post-traumatico</item>
-        <item>Post-chirurgico</item>
-        <item>Post-procedura</item>
-        <item>Altro</item>
+        <item>Post-operatorio</item>
+        <item>Post-procedure</item>
     </string-array>
     <string-array name="type_of_events">
-        <item>Visita dal medico</item>
-        <item>Infusione</item>
-        <item>Refill farmaco</item>
+        <item>Sanguamento</item>
+        <item>Solo dolore</item>
     </string-array>
     <string name="permission_calendar">Concedi l\'accesso al calendario</string>
     <string name="cancel">Cancella</string>
@@ -129,5 +126,88 @@
     <string name="reason_physical_activity">Previsione attività fisica</string>
     <string name="reason_regular_prophylaxis">Recupero regolare profilassi</string>
 
+    <string name="scheduling_type">Tipo di schedulazione:</string>
+    <string name="days_of_week">Giorni della settimana</string>
+    <string name="custom">Personalizzato</string>
+    <string name="select_day">Seleziona il giorno:</string>
+    <string name="select_at_least_one_day">Seleziona almeno un giorno</string>
+    <string name="every">Ogni</string>
+    <string name="recurrence_start_date">Data di inizio ricorrenza:</string>
+    <string name="reminder_time">Ora promemoria:</string>
 
+    <!-- Medication -->
+    <string name="prophylaxis_drug_name">Nome farmaco profilassi</string>
+    <string name="prophylaxis_dosage">Dosaggio profilassi</string>
+    <string name="on_demand_infusion_drug">Farmaco infusione on-demand</string>
+    <string name="confirm_prophylaxis">Conferma profilassi</string>
+
+    <!-- Validation -->
+    <string name="required_field">Campo richiesto</string>
+    <string name="authorization_required">Autorizzazione necessaria</string>
+
+    <string name="continue_action">Continua</string>
+    <string name="cancel_action">Annulla</string>
+
+    <string name="app_description">Tempo app aiuta le persone con emofilia in profilassi a tener traccia dei trattamenti e degli eventi rilevanti.</string>
+    <string name="permissions_intro_message">Per funzionare correttamente, Tempo app necessita di alcune autorizzazioni che ti verranno ora chieste.</string>
+
+    <!-- Permissions -->
+    <string name="alarm_permission_message">Per garantire la corretta esecuzione dei promemoria programmati, l\'app richiede il permesso di impostare allarmi precisi. Premi \'Continua\' per concedere l\'autorizzazione.</string>
+
+    <string name="registration_required_message">Per funzionare correttamente è necessario registrarsi e inserire l\'ID fornito.</string>
+    <string name="no_account_question">Non hai un account?</string>
+    <string name="recover_id">Recupera ID</string>
+
+    <!-- Permission Management -->
+    <string name="permissions_required_title">Permessi richiesti</string>
+    <string name="permissions_manual_setup_message">Per funzionare correttamente, Tempo ha bisogno di alcuni permessi. Puoi abilitarli manualmente nelle impostazioni dell\'app.</string>
+    <string name="open_settings">Apri Impostazioni</string>
+    <string name="retry">Riprova</string>
+    <string name="authorize_and_continue">Autorizza e continua</string>
+    <string name="permissions_list_intro">Per funzionare correttamente, Tempo richiede le seguenti autorizzazioni:</string>
+
+    <!-- Permission Types -->
+    <string name="permission_location">Localizzazione</string>
+    <string name="permission_location_description">Ci serve per prendere dati contestuali come le informazioni meteorologiche</string>
+    <string name="permission_health_connect">Health Connect</string>
+    <string name="permission_health_connect_description">Per collezionare dati relativi alla salute del paziente</string>
+    <string name="permission_bluetooth">Bluetooth</string>
+    <string name="permission_bluetooth_description">Per l\'utilizzo di dispositivi esterni come Movesense</string>
+    <string name="permission_notifications">Notifiche</string>
+    <string name="permission_notifications_description">Per ricevere promemoria e notifiche importanti</string>
+
+    <!-- Infusion Management -->
+    <string name="edit_infusion">Modifica infusione</string>
+    <string name="delete_infusion">Elimina infusione</string>
+    <string name="infusion_details">Dettagli Infusione</string>
+    <string name="not_specified">Non specificato</string>
+    <string name="batch_information">Informazioni Batch</string>
+
+    <!-- Event Management -->
+    <string name="authorization_required_title">Autorizzazione richiesta</string>
+    <string name="grant_authorization">Concedi autorizzazione</string>
+    <string name="event_type">Tipo di evento</string>
+    <string name="event_cause">Causa dell\'evento</string>
+    <string name="event_location">Sede dell\'evento</string>
+    <string name="event_location_placeholder">Inserisci qui il luogo dell\'evento: </string>
+    <string name="edit_event">Modifica evento</string>
+    <string name="delete_event">Elimina evento</string>
+
+    <string name="weekly_prophylaxis">Profilassi settimanale</string>
+    <string name="prophylaxis_time_notification">È il momento della profilassi per il giorno</string>
+    <string name="recurring_prophylaxis">Profilassi ricorrente</string>
+    <string name="prophylaxis_time">È il momento della profilassi</string>
+
+
+    <!-- Days of the week -->
+    <string name="monday">Lunedì</string>
+    <string name="tuesday">Martedì</string>
+    <string name="wednesday">Mercoledì</string>
+    <string name="thursday">Giovedì</string>
+    <string name="friday">Venerdì</string>
+    <string name="saturday">Sabato</string>
+    <string name="sunday">Domenica</string>
+    <string name="prophylaxis_reminder">Promemoria profilassi</string>
+    <string name="loading">Caricamento</string>
+    <string name="event_details">Dettagli evento</string>
 </resources>
