@@ -72,7 +72,7 @@ fun Loading() {
             modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_small))
         )
         Text(
-            text = "Operazione in corso",
+            text = stringResource(id = R.string.loading),
             modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_small))
         )
     }
