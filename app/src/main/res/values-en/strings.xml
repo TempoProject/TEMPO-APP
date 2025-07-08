@@ -209,4 +209,8 @@
     <string name="prophylaxis_reminder">Prophylaxis reminder</string>
     <string name="loading">Loading</string>
     <string name="event_details">Event details</string>
+
+    <string name="error_dose_must_be_positive">Dose must be greater than 0</string>
+    <string name="error_dose_invalid_format">Invalid dose format</string>
+    <string name="postpone">Postpone</string>
 </resources>
