@@ -35,9 +35,13 @@ import kotlin.random.Random
 class ProphylaxisAlarmReceiver : BroadcastReceiver() {
     @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
     override fun onReceive(context: Context, intent: Intent) {
-        val title = intent.getStringExtra("title") ?: context.getString(R.string.prophylaxis_reminder)
-        val message = intent.getStringExtra("message") ?: context.getString(R.string.prophylaxis_time)
+        val title =
+            intent.getStringExtra("title") ?: context.getString(R.string.prophylaxis_reminder)
+        val message =
+            intent.getStringExtra("message") ?: context.getString(R.string.prophylaxis_time)
         val alarmId = intent.getIntExtra("alarmId", -1)
+        val originalResponseId = intent.getLongExtra("originalResponseId", -1L)
+        val isPostponed = intent.getBooleanExtra("isPostponed", false)
 
         Log.d("AlarmReceiver", "Ricevuto alarm ID $alarmId: title=$title, message=$message")
 
@@ -50,18 +54,22 @@ class ProphylaxisAlarmReceiver : BroadcastReceiver() {
                 val reminderType = when (alarmId) {
                     1000 -> "Settimanale"
                     2000 -> "Ricorrente"
-                    else -> "Generico"
+                    else -> if (isPostponed) "Posticipata" else "Generico"
                 }
 
 
-                val responseId = insertProphylaxisResponse(
-                    context = context,
-                    reminderDateTime = System.currentTimeMillis(),
-                    reminderType = reminderType,
-                    drugName = config?.drugName ?: "N/A",
-                    dosage = config?.dosage ?: "N/A",
-                    dosageUnits = config?.dosageUnit ?: "N/A"
-                )
+                val responseId = if (isPostponed && originalResponseId != -1L) {
+                    originalResponseId
+                } else {
+                    insertProphylaxisResponse(
+                        context = context,
+                        reminderDateTime = System.currentTimeMillis(),
+                        reminderType = reminderType,
+                        drugName = config?.drugName ?: "N/A",
+                        dosage = config?.dosage ?: "N/A",
+                        dosageUnits = config?.dosageUnit ?: "N/A"
+                    )
+                }
 
                 Log.d("AlarmReceiver", "Risposta inserita con ID: $notificationId")
 
@@ -77,7 +85,9 @@ class ProphylaxisAlarmReceiver : BroadcastReceiver() {
                     dosageUnits = config?.dosageUnit ?: "N/A"
                 )
 
-                rescheduleAlarm(context)
+                if (!isPostponed) {
+                    rescheduleAlarm(context)
+                }
             } catch (e: Exception) {
                 Log.e("AlarmReceiver", "Errore durante il recupero della configurazione", e)
             }
@@ -258,6 +268,23 @@ class ProphylaxisAlarmReceiver : BroadcastReceiver() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
+        val postponeIntent = Intent(context, ProphylaxisResponseReceiver::class.java).apply {
+            action = ProphylaxisResponseReceiver.ACTION_POSTPONE_RESPONSE
+            putExtra(ProphylaxisResponseReceiver.EXTRA_NOTIFICATION_ID, notificationId)
+            putExtra(ProphylaxisResponseReceiver.EXTRA_ID_RESPONSE, responseId)
+            putExtra(ProphylaxisResponseReceiver.EXTRA_REMINDER_DATETIME, currentTimeMillis)
+            putExtra(ProphylaxisResponseReceiver.EXTRA_REMINDER_TYPE, reminderType)
+            putExtra(ProphylaxisResponseReceiver.EXTRA_DRUG_NAME, drugName)
+            putExtra(ProphylaxisResponseReceiver.EXTRA_DOSAGE, dosage)
+            putExtra(ProphylaxisResponseReceiver.EXTRA_DOSAGE_UNITS, dosageUnits)
+        }
+        val postponePendingIntent = PendingIntent.getBroadcast(
+            context,
+            notificationId * 10 + 3,
+            postponeIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
         val detailedMessage = buildString {
             append(context.getString(R.string.did_you_treat_yself))
             if (drugName.isNotBlank()) {
@@ -290,6 +317,11 @@ class ProphylaxisAlarmReceiver : BroadcastReceiver() {
                 R.drawable.ic_close,
                 context.getString(R.string.no),
                 noPendingIntent
+            )
+            .addAction(
+                R.drawable.baseline_access_time_24,
+                context.getString(R.string.postpone),
+                postponePendingIntent
             )
             .setDefaults(NotificationCompat.DEFAULT_ALL)
             .setCategory(NotificationCompat.CATEGORY_REMINDER)
