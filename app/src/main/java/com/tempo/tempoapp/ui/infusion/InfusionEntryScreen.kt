@@ -1,6 +1,7 @@
 package com.tempo.tempoapp.ui.infusion
 
 import android.content.Context
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -47,10 +48,13 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.tempo.tempoapp.R
 import com.tempo.tempoapp.TempoAppBar
 import com.tempo.tempoapp.ui.AppViewModelProvider
 import com.tempo.tempoapp.ui.DosageUnit
+import com.tempo.tempoapp.ui.bleeding.BleedingEntryDestination
+import com.tempo.tempoapp.ui.filterDoseInput
 import com.tempo.tempoapp.ui.navigation.NavigationDestination
 import com.tempo.tempoapp.ui.toStringDate
 import kotlinx.coroutines.launch
@@ -80,10 +84,12 @@ object InfusionEntryDestination : NavigationDestination {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InfusionEventScreen(
+    navController: NavController? = null,
     onNavigateUp: () -> Unit,
 ) {
     val viewModel: InfusionEntryViewModel = viewModel(factory = AppViewModelProvider.Factory)
     val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     Scaffold(
         topBar = {
@@ -98,9 +104,21 @@ fun InfusionEventScreen(
             uiState = viewModel.uiState,
             onItemClick = viewModel::updateUiState,
             onSave = {
+                val reason = context.getString(R.string.reason_trauma)
+                Log.d("InfusionEventScreen", "Saving infusion with reason: $reason")
+                Log.d(
+                    "InfusionEventScreen",
+                    "Current infusion details: ${viewModel.uiState.infusionDetails}"
+                )
                 coroutineScope.launch {
                     val success = viewModel.onSave()
-                    if (success) {
+                    if (success && viewModel.uiState.infusionDetails.reason == reason) {
+                        navController?.navigate(
+                            BleedingEntryDestination.route
+                        ) {
+                            popUpTo(InfusionEntryDestination.route) { inclusive = true }
+                        }
+                    } else if (success) {
                         onNavigateUp()
                     }
                 }
@@ -203,7 +221,12 @@ fun InfusionEventInputForm(
         // Motivo (obbligatorio)
         InfusionDropdownWithError(
             value = uiState.infusionDetails.reason,
-            itemList = listOf(stringResource(R.string.reason_trauma), stringResource(R.string.reason_procedure_surgery), stringResource(R.string.reason_physical_activity), stringResource(R.string.reason_regular_prophylaxis)),
+            itemList = listOf(
+                stringResource(R.string.reason_trauma),
+                stringResource(R.string.reason_procedure_surgery),
+                stringResource(R.string.reason_physical_activity),
+                stringResource(R.string.reason_regular_prophylaxis)
+            ),
             onItemSelected = { onItemClick(uiState.infusionDetails.copy(reason = it)) },
             label = stringResource(R.string.reason),
             hasError = uiState.hasError("reason"),
@@ -228,7 +251,7 @@ fun InfusionEventInputForm(
             // Dose (obbligatorio)
             OutlinedTextFieldWithError(
                 value = uiState.infusionDetails.dose,
-                onValueChange = { onItemClick(uiState.infusionDetails.copy(dose = it)) },
+                onValueChange = { onItemClick(uiState.infusionDetails.copy(dose = filterDoseInput(it))) },
                 label = stringResource(R.string.dose_units),
                 hasError = uiState.hasError("dose"),
                 errorMessage = if (uiState.hasError("dose")) stringResource(
@@ -253,7 +276,7 @@ fun InfusionEventInputForm(
         // Batch number (facoltativo)
         OutlinedTextField(
             value = uiState.infusionDetails.batchNumber,
-            onValueChange = { onItemClick(uiState.infusionDetails.copy(batchNumber = it)) },
+            onValueChange = { onItemClick(uiState.infusionDetails.copy(batchNumber = it.filter { it.isDigit() })) },
             label = { Text(stringResource(R.string.batch_number)) },
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(dimensionResource(id = R.dimen.padding_small)),
