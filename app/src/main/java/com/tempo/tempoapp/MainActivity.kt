@@ -182,6 +182,7 @@ class MainActivity : ComponentActivity() {
 
                     composable(route = InfusionEntryDestination.route) {
                         InfusionEventScreen(
+                            navController,
                             onNavigateUp = { navController.navigateUp() },
                         )
                     }
@@ -352,7 +353,7 @@ private fun checkStandardPermissions(context: Context): Boolean {
     val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         arrayOf(
             Manifest.permission.POST_NOTIFICATIONS,
-            Manifest.permission.ACCESS_FINE_LOCATION,
+            //Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION,
             Manifest.permission.BLUETOOTH_CONNECT,
             Manifest.permission.BLUETOOTH_SCAN,
