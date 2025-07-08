@@ -224,3 +224,22 @@ enum class DosageUnit {
     MG_KG, // mg/kg
     IU     // International Units
 }
+
+fun filterDoseInput(input: String): String {
+
+    val filtered = input.filter { it.isDigit() || it == ',' }
+
+    val commaCount = filtered.count { it == ',' }
+    if (commaCount > 1) {
+
+        val firstCommaIndex = filtered.indexOf(',')
+        return filtered.substring(0, firstCommaIndex + 1) +
+                filtered.substring(firstCommaIndex + 1).replace(",", "")
+    }
+
+    if (filtered.startsWith(",")) {
+        return "0$filtered"
+    }
+
+    return filtered
+}
