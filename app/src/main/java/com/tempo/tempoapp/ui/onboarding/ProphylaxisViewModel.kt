@@ -230,8 +230,6 @@ class ProphylaxisViewModel(val appPreferencesManager: AppPreferencesManager) : V
 }
 
 data class ProphylaxisUiState(
-    // TODO CHECK VALORI CONSENTITI
-
     val isLoading: Boolean = false,
     val isActiveProphylaxis: Boolean = false,
     val schedulingMode: SchedulingMode = SchedulingMode.DaysOfWeek,

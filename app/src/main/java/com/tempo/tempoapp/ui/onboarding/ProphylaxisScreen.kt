@@ -64,6 +64,7 @@ import androidx.work.WorkManager
 import com.tempo.tempoapp.R
 import com.tempo.tempoapp.ui.AppViewModelProvider
 import com.tempo.tempoapp.ui.DosageUnit
+import com.tempo.tempoapp.ui.filterDoseInput
 import com.tempo.tempoapp.ui.home.HomeDestination
 import com.tempo.tempoapp.ui.navigation.NavigationDestination
 import com.tempo.tempoapp.workers.GetStepsRecord
@@ -276,7 +277,7 @@ fun ProphylaxisScreen(
                     ) {
                         OutlinedTextField(
                             value = uiState.dosage,
-                            onValueChange = viewModel::onDosageChange,
+                            onValueChange = { viewModel.onDosageChange(filterDoseInput(it)) },
                             label = { Text(stringResource(R.string.prophylaxis_dosage)) },
                             keyboardOptions = KeyboardOptions.Default.copy(
                                 keyboardType = KeyboardType.Number,
