@@ -35,11 +35,8 @@ class BleedingEntryViewModel(private val bleedingRepository: BleedingRepository)
      * @param bleedingDetails Details of the bleeding event.
      */
     fun updateUiState(bleedingDetails: BleedingDetails) {
-        val validationErrors = validateInput(bleedingDetails)
-        uiState = BleedingEventUiState(
-            bleedingDetails = bleedingDetails,
-            isEntryValid = validationErrors.isEmpty(),
-            validationErrors = validationErrors
+        uiState = uiState.copy(
+            bleedingDetails = bleedingDetails
         )
     }
 
@@ -71,7 +68,7 @@ class BleedingEntryViewModel(private val bleedingRepository: BleedingRepository)
             }
 
 
-            if (site == "Other" && note.isNullOrBlank()) {
+            if ((site == "Other" || site == "Altro") && note.isNullOrBlank()) {
                 errors["note"] = R.string.error_notes_required_for_other
             }
 
@@ -81,12 +78,22 @@ class BleedingEntryViewModel(private val bleedingRepository: BleedingRepository)
             }
 
 
-            if (treatment == "Sì") {
+            if (treatment == "Sì" || treatment == "Yes") {
                 if (medicationType.isBlank()) {
                     errors["medicationType"] = R.string.error_medication_type_required
                 }
                 if (dose.isBlank()) {
                     errors["dose"] = R.string.error_dose_required
+                } else {
+                    val normalizedDose = dose.replace(",", ".")
+                    try {
+                        val doseValue = normalizedDose.toDouble()
+                        if (doseValue <= 0) {
+                            errors["dose"] = R.string.error_dose_must_be_positive
+                        }
+                    } catch (e: NumberFormatException) {
+                        errors["dose"] = R.string.error_dose_invalid_format
+                    }
                 }
 
             }

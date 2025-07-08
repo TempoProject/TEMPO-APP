@@ -65,6 +65,7 @@ import com.tempo.tempoapp.R
 import com.tempo.tempoapp.TempoAppBar
 import com.tempo.tempoapp.ui.AppViewModelProvider
 import com.tempo.tempoapp.ui.DosageUnit
+import com.tempo.tempoapp.ui.filterDoseInput
 import com.tempo.tempoapp.ui.navigation.NavigationDestination
 import com.tempo.tempoapp.ui.toStringDate
 import kotlinx.coroutines.launch
@@ -175,7 +176,6 @@ fun BleedingEventBody(
                 .padding(end = 8.dp)
                 .width(150.dp),
             onClick = onSave,
-            enabled = uiState.isEntryValid,
             shape = MaterialTheme.shapes.small,
         ) {
             Text(text = stringResource(id = R.string.save))
@@ -283,7 +283,15 @@ fun BleedingEventInputForm(
                     ) {
                         OutlinedTextFieldWithError(
                             value = uiState.bleedingDetails.dose,
-                            onValueChange = { onItemClick(uiState.bleedingDetails.copy(dose = it)) },
+                            onValueChange = {
+                                onItemClick(
+                                    uiState.bleedingDetails.copy(
+                                        dose = filterDoseInput(
+                                            it
+                                        )
+                                    )
+                                )
+                            },
                             label = stringResource(R.string.dose_units),
                             hasError = uiState.hasError("dose"),
                             keyboardType = KeyboardType.Number,
@@ -304,7 +312,7 @@ fun BleedingEventInputForm(
                     // Lot Number (facoltativo)
                     OutlinedTextField(
                         value = uiState.bleedingDetails.lotNumber,
-                        onValueChange = { onItemClick(uiState.bleedingDetails.copy(lotNumber = it)) },
+                        onValueChange = { onItemClick(uiState.bleedingDetails.copy(lotNumber = it.filter { it.isDigit() })) },
                         label = { Text(stringResource(R.string.batch_number)) },
                         modifier = Modifier.fillMaxWidth(),
                         keyboardOptions = KeyboardOptions.Default.copy(
@@ -411,7 +419,9 @@ fun BleedingEventInputForm(
         OutlinedTextFieldWithError(
             value = uiState.bleedingDetails.note ?: "",
             onValueChange = { onItemClick(uiState.bleedingDetails.copy(note = it)) },
-            label = if (isNoteRequired) stringResource(R.string.event_location_placeholder) else stringResource(R.string.note),
+            label = if (isNoteRequired) stringResource(R.string.event_location_placeholder) else stringResource(
+                R.string.note
+            ),
             hasError = uiState.hasError("note"),
             errorMessage = stringResource(uiState.getError("note") ?: R.string.dummy_value),
             modifier = Modifier.fillMaxWidth(),
