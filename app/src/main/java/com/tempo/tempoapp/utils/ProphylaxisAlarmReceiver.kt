@@ -17,7 +17,7 @@ import com.tempo.tempoapp.MainActivity
 import com.tempo.tempoapp.R
 import com.tempo.tempoapp.TempoApplication
 import com.tempo.tempoapp.data.model.ProphylaxisResponse
-import com.tempo.tempoapp.ui.onboarding.SchedulingMode
+import com.tempo.tempoapp.ui.prophylaxis.SchedulingMode
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first

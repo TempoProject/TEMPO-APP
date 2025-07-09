@@ -7,7 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import com.tempo.tempoapp.R
-import com.tempo.tempoapp.ui.onboarding.RecurrenceUnit
+import com.tempo.tempoapp.ui.prophylaxis.RecurrenceUnit
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalDateTime
