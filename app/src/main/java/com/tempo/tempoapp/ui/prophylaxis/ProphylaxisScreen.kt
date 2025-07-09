@@ -1,6 +1,8 @@
-package com.tempo.tempoapp.ui.onboarding
+package com.tempo.tempoapp.ui.prophylaxis
 
 import android.app.AlarmManager
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
 import android.content.Context
 import android.content.Intent
 import android.os.Build
@@ -272,8 +274,9 @@ fun ProphylaxisScreen(
                     Spacer(Modifier.height(16.dp))
 
                     Row(
-                        verticalAlignment = Alignment.Top,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
                     ) {
                         OutlinedTextField(
                             value = uiState.dosage,
@@ -402,15 +405,30 @@ fun DropdownMenuUnit(
 
     Box {
         OutlinedButton(onClick = { expanded = true }) {
-            Text(selectedUnit.name.lowercase().replaceFirstChar { it.uppercase() })
+            val recurrence = when (selectedUnit) {
+                RecurrenceUnit.Days -> stringResource(R.string.days)
+                RecurrenceUnit.Weeks -> stringResource(R.string.weeks)
+            }
+            Text(recurrence.replaceFirstChar { it.uppercase() })
         }
 
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             RecurrenceUnit.entries.forEach {
-                DropdownMenuItem(text = { Text(it.name.lowercase()) }, onClick = {
-                    onSelect(it)
-                    expanded = false
-                })
+                when (it) {
+                    RecurrenceUnit.Days -> {
+                        DropdownMenuItem(text = { Text("Giorni") }, onClick = {
+                            onSelect(it)
+                            expanded = false
+                        })
+                    }
+
+                    RecurrenceUnit.Weeks -> {
+                        DropdownMenuItem(text = { Text("Settimane") }, onClick = {
+                            onSelect(it)
+                            expanded = false
+                        })
+                    }
+                }
             }
         }
     }
@@ -470,7 +488,7 @@ fun TimePickerDialog(
     onDismiss: () -> Unit
 ) {
     val timePickerDialog = remember {
-        android.app.TimePickerDialog(
+        TimePickerDialog(
             context,
             { _, hour, minute ->
                 onTimeSelected(LocalTime.of(hour, minute))
@@ -525,7 +543,7 @@ fun DatePickerDialog(
 ) {
     val context = LocalContext.current
     val datePickerDialog = remember {
-        android.app.DatePickerDialog(
+        DatePickerDialog(
             context,
             { _, year, month, dayOfMonth ->
                 onDateSelected(LocalDate.of(year, month + 1, dayOfMonth))

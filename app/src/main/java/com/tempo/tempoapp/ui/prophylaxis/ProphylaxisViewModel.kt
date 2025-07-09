@@ -1,4 +1,4 @@
-package com.tempo.tempoapp.ui.onboarding
+package com.tempo.tempoapp.ui.prophylaxis
 
 import AppPreferencesManager
 import android.content.Context
@@ -143,12 +143,26 @@ class ProphylaxisViewModel(val appPreferencesManager: AppPreferencesManager) : V
         val currentState = uiState.value
 
         val drugNameError = currentState.drugName.isBlank()
-        val dosageError = currentState.dosage.isBlank()
+        val dosageError = if (currentState.dosage.isBlank()) {
+            true
+        } else {
+            val normalizedDose = currentState.dosage.replace(",", ".")
+            try {
+                val doseValue = normalizedDose.toDouble()
+                if (doseValue <= 0) {
+                    true
+                } else
+                    false
+            } catch (e: NumberFormatException) {
+                true
+            }
+        }
         val drugNameExtraError = currentState.drugNameExtra.isBlank()
         val recurrenceIntervalError = currentState.schedulingMode == SchedulingMode.Recurring &&
                 currentState.recurrenceIntervalText.isEmpty()
         val selectedDaysError = currentState.schedulingMode == SchedulingMode.DaysOfWeek &&
                 currentState.selectedDays == null
+
 
         updateUiState {
             it.copy(
