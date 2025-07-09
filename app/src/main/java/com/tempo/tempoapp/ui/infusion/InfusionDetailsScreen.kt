@@ -232,7 +232,7 @@ fun InfusionItemDetails(details: InfusionDetails, modifier: Modifier) {
                     Divider()
 
                     ItemDetailsRow(
-                        label = stringResource(R.string.batch_number),
+                        label = stringResource(R.string.lot_number),
                         itemDetail = details.batchNumber
                     )
                 }

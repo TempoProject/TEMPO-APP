@@ -16,8 +16,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -43,6 +41,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -157,7 +156,7 @@ fun InfusionEventBody(
             modifier = Modifier.fillMaxWidth()
         )
 
-        // Mostra errori solo se l'utente ha tentato di salvare
+        /*
         if (uiState.shouldShowErrors()) {
             Card(
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
@@ -180,7 +179,7 @@ fun InfusionEventBody(
                     }
                 }
             }
-        }
+        }*/
 
         Button(
             modifier = Modifier
@@ -221,12 +220,7 @@ fun InfusionEventInputForm(
         // Motivo (obbligatorio)
         InfusionDropdownWithError(
             value = uiState.infusionDetails.reason,
-            itemList = listOf(
-                stringResource(R.string.reason_trauma),
-                stringResource(R.string.reason_procedure_surgery),
-                stringResource(R.string.reason_physical_activity),
-                stringResource(R.string.reason_regular_prophylaxis)
-            ),
+            itemList = stringArrayResource(R.array.infusion_reason_array).toList(),
             onItemSelected = { onItemClick(uiState.infusionDetails.copy(reason = it)) },
             label = stringResource(R.string.reason),
             hasError = uiState.hasError("reason"),
@@ -252,39 +246,39 @@ fun InfusionEventInputForm(
             OutlinedTextFieldWithError(
                 value = uiState.infusionDetails.dose,
                 onValueChange = { onItemClick(uiState.infusionDetails.copy(dose = filterDoseInput(it))) },
-                label = stringResource(R.string.dose_units),
+                label = stringResource(R.string.dose_units) + " in " + uiState.infusionDetails.dosageUnit,
                 hasError = uiState.hasError("dose"),
                 errorMessage = if (uiState.hasError("dose")) stringResource(
                     uiState.getError("dose") ?: R.string.dummy_value
                 ) else null,
-                modifier = Modifier.weight(1f),
+                //modifier = Modifier.weight(1f),
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Number,
                     imeAction = ImeAction.Next
                 )
             )
 
-            InfusionDosageUnitDropdown(
+            /*InfusionDosageUnitDropdown(
                 selectedUnit = uiState.infusionDetails.dosageUnit,
                 onSelect = { unit ->
                     onItemClick(uiState.infusionDetails.copy(dosageUnit = unit))
                 },
                 modifier = Modifier.padding(top = 8.dp)
-            )
+            )*/
         }
 
         // Batch number (facoltativo)
-        OutlinedTextField(
+        /*OutlinedTextField(
             value = uiState.infusionDetails.batchNumber,
             onValueChange = { onItemClick(uiState.infusionDetails.copy(batchNumber = it.filter { it.isDigit() })) },
-            label = { Text(stringResource(R.string.batch_number)) },
+            label = { Text(stringResource(R.string.lot_number)) },
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(dimensionResource(id = R.dimen.padding_small)),
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Number,
                 imeAction = ImeAction.Next
             )
-        )
+        )*/
 
         // Data e ora (obbligatori)
         Row(

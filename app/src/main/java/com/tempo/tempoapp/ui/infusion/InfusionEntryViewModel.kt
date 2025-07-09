@@ -193,7 +193,7 @@ data class InfusionDetails(
     val reason: String = "",
     val drugName: String = "",
     val dose: String = "",
-    val dosageUnit: DosageUnit = DosageUnit.MG_KG,
+    val dosageUnit: DosageUnit = DosageUnit.IU,
     val batchNumber: String = "",
     val note: String? = null,
     val date: Long = Instant.now().truncatedTo(ChronoUnit.DAYS).toEpochMilli(),
