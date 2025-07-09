@@ -29,6 +29,7 @@ import com.tempo.tempoapp.ui.HomeBody
 import com.tempo.tempoapp.ui.bleeding.BleedingEventDetailsDestination
 import com.tempo.tempoapp.ui.infusion.InfusionEntryDestination
 import com.tempo.tempoapp.ui.navigation.NavigationDestination
+import com.tempo.tempoapp.ui.prophylaxis.ProphylaxisDetailsScreenRoute
 import com.tempo.tempoapp.ui.toStringDate
 import java.time.Instant
 import java.time.LocalDate
@@ -108,8 +109,9 @@ fun HistoryScreen(
                 Log.d(TAG, "Bleeding item clicked: $id")
                 navController?.navigate("${BleedingEventDetailsDestination.route}/${id}")
             },
-            onProphylaxisItemClick = {
-                // TODO
+            onProphylaxisItemClick = { id ->
+                Log.d(TAG, "Prophylaxis item clicked: $id")
+                navController?.navigate("${ProphylaxisDetailsScreenRoute.route}/${id}")
             }
         )
 

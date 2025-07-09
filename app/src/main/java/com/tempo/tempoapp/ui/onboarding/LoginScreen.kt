@@ -34,6 +34,7 @@ import androidx.navigation.NavController
 import com.tempo.tempoapp.R
 import com.tempo.tempoapp.ui.AppViewModelProvider
 import com.tempo.tempoapp.ui.navigation.NavigationDestination
+import com.tempo.tempoapp.ui.prophylaxis.ProphylaxisScreen
 
 object LoginScreen : NavigationDestination {
     override val route: String = "login"
