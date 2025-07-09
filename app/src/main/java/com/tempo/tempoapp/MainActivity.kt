@@ -67,8 +67,10 @@ import com.tempo.tempoapp.ui.infusion.InfusionEditScreen
 import com.tempo.tempoapp.ui.infusion.InfusionEntryDestination
 import com.tempo.tempoapp.ui.infusion.InfusionEventScreen
 import com.tempo.tempoapp.ui.onboarding.LoginScreen
-import com.tempo.tempoapp.ui.onboarding.ProphylaxisScreen
 import com.tempo.tempoapp.ui.onboarding.WelcomeScreen
+import com.tempo.tempoapp.ui.prophylaxis.ProphylaxisDetailScreen
+import com.tempo.tempoapp.ui.prophylaxis.ProphylaxisDetailsScreenRoute
+import com.tempo.tempoapp.ui.prophylaxis.ProphylaxisScreen
 import com.tempo.tempoapp.ui.theme.TempoAppTheme
 import com.tempo.tempoapp.workers.GetStepsRecord
 import kotlinx.coroutines.flow.first
@@ -213,6 +215,15 @@ class MainActivity : ComponentActivity() {
 
                     composable(ProphylaxisScreen.route) {
                         ProphylaxisScreen(navController = navController)
+                    }
+
+                    composable(ProphylaxisDetailsScreenRoute.routeWithArgs,
+                        arguments = listOf(navArgument(ProphylaxisDetailsScreenRoute.itemIdArg){
+                            type = NavType.IntType
+                        })) {
+                        ProphylaxisDetailScreen(
+                            navController
+                        )
                     }
                 }
             }
