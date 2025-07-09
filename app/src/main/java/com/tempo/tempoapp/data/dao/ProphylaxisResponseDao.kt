@@ -16,4 +16,13 @@ interface ProphylaxisResponseDao : LogbookDao<ProphylaxisResponse> {
     """
     )
     fun getAllDayProphylaxis(date: Long): Flow<List<ProphylaxisResponse>>
+
+    @Query(
+        """
+            SELECT *
+            FROM prophylaxis_responses
+            WHERE id = :itemId
+        """
+    )
+    fun getItemFromId(itemId: Int): Flow<ProphylaxisResponse>?
 }

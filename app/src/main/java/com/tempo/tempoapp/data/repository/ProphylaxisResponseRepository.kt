@@ -34,6 +34,7 @@ class ProphylaxisResponseRepository(private val prophylaxisResponseDao: Prophyla
     }
 
     override fun getItemFromId(id: Int): Flow<ProphylaxisResponse> {
-        TODO("Not yet implemented")
+        return prophylaxisResponseDao.getItemFromId(id)
+            ?: throw IllegalArgumentException("ProphylaxisResponse with id $id not found")
     }
 }
