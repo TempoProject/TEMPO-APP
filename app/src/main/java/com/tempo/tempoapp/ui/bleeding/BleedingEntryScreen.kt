@@ -145,31 +145,31 @@ fun BleedingEventBody(
             onItemClick = onItemClick,
             modifier = Modifier.fillMaxWidth()
         )
-
-        if (uiState.shouldShowErrors()) {
-            Card(
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(
-                    modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_medium))
-                ) {
-                    Text(
-                        text = stringResource(R.string.error_validation_header),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onErrorContainer
-                    )
-                    uiState.validationErrors.values.forEach { error ->
-                        Text(
-                            text = stringResource(error),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onErrorContainer
-                        )
+        /*
+                if (uiState.shouldShowErrors()) {
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_medium))
+                        ) {
+                            Text(
+                                text = stringResource(R.string.error_validation_header),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onErrorContainer
+                            )
+                            uiState.validationErrors.values.forEach { error ->
+                                Text(
+                                    text = stringResource(error),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onErrorContainer
+                                )
+                            }
+                        }
                     }
                 }
-            }
-        }
-
+        */
         Button(
             modifier = Modifier
                 .align(alignment = Alignment.End)
@@ -238,92 +238,6 @@ fun BleedingEventInputForm(
             errorMessage = stringResource(uiState.getError("site") ?: R.string.dummy_value),
             modifier = Modifier.fillMaxWidth()
         )
-
-        // Did you treat yourself (obbligatorio)
-        RadioButtonGroupWithError(
-            selectedValue = uiState.bleedingDetails.treatment,
-            options = listOf(stringResource(R.string.yes), stringResource(R.string.no)),
-            onSelectionChanged = { onItemClick(uiState.bleedingDetails.copy(treatment = it)) },
-            label = stringResource(R.string.did_you_treat_yself),
-            hasError = uiState.hasError("treatment"),
-            errorMessage = stringResource(uiState.getError("treatment") ?: R.string.dummy_value),
-        )
-
-        if (uiState.bleedingDetails.treatment == stringResource(R.string.yes)) {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-            ) {
-                Column(
-                    modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_medium)),
-                    verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_small))
-                ) {
-                    Text(
-                        text = stringResource(R.string.details),
-                        style = MaterialTheme.typography.titleMedium
-                    )
-
-                    // Tipo di farmaco (obbligatorio)
-                    OutlinedTextFieldWithError(
-                        value = uiState.bleedingDetails.medicationType,
-                        onValueChange = { onItemClick(uiState.bleedingDetails.copy(medicationType = it)) },
-                        label = stringResource(R.string.drug_name),
-                        hasError = uiState.hasError("medicationType"),
-                        keyboardType = KeyboardType.Text,
-                        errorMessage = stringResource(
-                            uiState.getError("medicationType") ?: R.string.dummy_value
-                        ),
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    Row(
-                        verticalAlignment = Alignment.Top,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        OutlinedTextFieldWithError(
-                            value = uiState.bleedingDetails.dose,
-                            onValueChange = {
-                                onItemClick(
-                                    uiState.bleedingDetails.copy(
-                                        dose = filterDoseInput(
-                                            it
-                                        )
-                                    )
-                                )
-                            },
-                            label = stringResource(R.string.dose_units),
-                            hasError = uiState.hasError("dose"),
-                            keyboardType = KeyboardType.Number,
-                            errorMessage = stringResource(
-                                uiState.getError("dose") ?: R.string.dummy_value
-                            ),
-                            modifier = Modifier.weight(1f),
-                        )
-                        BleedingDosageUnitDropdown(
-                            selectedUnit = uiState.bleedingDetails.dosageUnit,
-                            onSelect = { unit ->
-                                onItemClick(uiState.bleedingDetails.copy(dosageUnit = unit))
-                            },
-                            modifier = Modifier.padding(top = 8.dp)
-                        )
-                    }
-
-                    // Lot Number (facoltativo)
-                    OutlinedTextField(
-                        value = uiState.bleedingDetails.lotNumber,
-                        onValueChange = { onItemClick(uiState.bleedingDetails.copy(lotNumber = it.filter { it.isDigit() })) },
-                        label = { Text(stringResource(R.string.batch_number)) },
-                        modifier = Modifier.fillMaxWidth(),
-                        keyboardOptions = KeyboardOptions.Default.copy(
-                            keyboardType = KeyboardType.Number,
-                            imeAction = ImeAction.Done
-                        ),
-                        shape = RoundedCornerShape(dimensionResource(id = R.dimen.padding_small))
-                    )
-                }
-            }
-        }
 
         // Pain Scale (obbligatorio)
         var sliderPosition by remember {
@@ -413,9 +327,97 @@ fun BleedingEventInputForm(
                 style = MaterialTheme.typography.bodySmall
             )
         }
+        // Did you treat yourself (obbligatorio)
+        RadioButtonGroupWithError(
+            selectedValue = uiState.bleedingDetails.treatment,
+            options = listOf(stringResource(R.string.yes), stringResource(R.string.no)),
+            onSelectionChanged = { onItemClick(uiState.bleedingDetails.copy(treatment = it)) },
+            label = stringResource(R.string.did_you_treat_yself),
+            hasError = uiState.hasError("treatment"),
+            errorMessage = stringResource(uiState.getError("treatment") ?: R.string.dummy_value),
+        )
+
+        if (uiState.bleedingDetails.treatment == stringResource(R.string.yes)) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+            ) {
+                Column(
+                    modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_medium)),
+                    verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_small))
+                ) {
+                    Text(
+                        text = stringResource(R.string.details),
+                        style = MaterialTheme.typography.titleMedium
+                    )
+
+                    // Tipo di farmaco (obbligatorio)
+                    OutlinedTextFieldWithError(
+                        value = uiState.bleedingDetails.medicationType,
+                        onValueChange = { onItemClick(uiState.bleedingDetails.copy(medicationType = it)) },
+                        label = stringResource(R.string.drug_name),
+                        hasError = uiState.hasError("medicationType"),
+                        keyboardType = KeyboardType.Text,
+                        imeAction = ImeAction.Next,
+                        errorMessage = stringResource(
+                            uiState.getError("medicationType") ?: R.string.dummy_value
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Row(
+                        verticalAlignment = Alignment.Top,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        OutlinedTextFieldWithError(
+                            value = uiState.bleedingDetails.dose,
+                            onValueChange = {
+                                onItemClick(
+                                    uiState.bleedingDetails.copy(
+                                        dose = filterDoseInput(
+                                            it
+                                        )
+                                    )
+                                )
+                            },
+                            label = stringResource(R.string.dose_units) + " in " + uiState.bleedingDetails.dosageUnit,
+                            hasError = uiState.hasError("dose"),
+                            keyboardType = KeyboardType.Number,
+                            imeAction = ImeAction.Done,
+                            errorMessage = stringResource(
+                                uiState.getError("dose") ?: R.string.dummy_value
+                            ),
+                            //modifier = Modifier.weight(1f),
+                        )
+
+                        /*BleedingDosageUnitDropdown(
+                            selectedUnit = uiState.bleedingDetails.dosageUnit,
+                            onSelect = { unit ->
+                                onItemClick(uiState.bleedingDetails.copy(dosageUnit = unit))
+                            },
+                            modifier = Modifier.padding(top = 8.dp)
+                        )*/
+                    }
+
+                    // Lot Number (facoltativo)
+                    /*OutlinedTextField(
+                        value = uiState.bleedingDetails.lotNumber,
+                        onValueChange = { onItemClick(uiState.bleedingDetails.copy(lotNumber = it.filter { it.isDigit() })) },
+                        label = { Text(stringResource(R.string.lot_number)) },
+                        modifier = Modifier.fillMaxWidth(),
+                        keyboardOptions = KeyboardOptions.Default.copy(
+                            keyboardType = KeyboardType.Number,
+                            imeAction = ImeAction.Done
+                        ),
+                        shape = RoundedCornerShape(dimensionResource(id = R.dimen.padding_small))
+                    )*/
+                }
+            }
+        }
 
 
-        val isNoteRequired = uiState.bleedingDetails.site == "Other"
+        val isNoteRequired = uiState.bleedingDetails.site == stringResource(R.string.other)
         OutlinedTextFieldWithError(
             value = uiState.bleedingDetails.note ?: "",
             onValueChange = { onItemClick(uiState.bleedingDetails.copy(note = it)) },
@@ -708,13 +710,14 @@ fun RadioButtonGroupWithError(
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             options.forEach { option ->
                 Text(
                     text = option,
                     modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_small)),
-                    style = MaterialTheme.typography.bodySmall
+                    style = MaterialTheme.typography.bodyMedium
                 )
                 RadioButton(
                     selected = option == selectedValue,
@@ -744,6 +747,7 @@ fun OutlinedTextFieldWithError(
     hasError: Boolean,
     errorMessage: String?,
     keyboardType: KeyboardType,
+    imeAction: ImeAction = ImeAction.Default,
     modifier: Modifier = Modifier,
     minLines: Int = 1
 ) {
@@ -758,7 +762,7 @@ fun OutlinedTextFieldWithError(
             minLines = minLines,
             keyboardOptions = KeyboardOptions.Default.copy(
                 keyboardType = keyboardType,
-                imeAction = ImeAction.Next
+                imeAction = imeAction
             ),
             colors = if (hasError) {
                 OutlinedTextFieldDefaults.colors(
@@ -790,6 +794,7 @@ fun BleedingDosageUnitDropdown(
     Box(modifier = modifier) {
         OutlinedButton(
             onClick = { expanded = true },
+            enabled = false,
             modifier = Modifier.width(80.dp)
         ) {
             Text(

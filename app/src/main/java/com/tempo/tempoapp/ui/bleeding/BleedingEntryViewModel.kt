@@ -78,7 +78,7 @@ class BleedingEntryViewModel(private val bleedingRepository: BleedingRepository)
             }
 
 
-            if (treatment == "Sì" || treatment == "Yes") {
+            if (treatment == "Si" || treatment == "Yes") {
                 if (medicationType.isBlank()) {
                     errors["medicationType"] = R.string.error_medication_type_required
                 }
@@ -99,7 +99,7 @@ class BleedingEntryViewModel(private val bleedingRepository: BleedingRepository)
             }
 
 
-            if (painScale.isBlank() || painScale == "0.0") {
+            if (painScale.isBlank()) {
                 errors["painScale"] = R.string.error_pain_scale_required
             }
 
@@ -173,9 +173,9 @@ data class BleedingDetails(
     val treatment: String = "",
     val medicationType: String = "",
     val dose: String = "",
-    val dosageUnit: DosageUnit = DosageUnit.MG_KG,
+    val dosageUnit: DosageUnit = DosageUnit.IU,
     val lotNumber: String = "",
-    val painScale: String = "",
+    val painScale: String = "0",
     val note: String? = null, // Note (facoltativo, ma obbligatorio se site = "Other")
     val date: Long = Instant.now().truncatedTo(ChronoUnit.DAYS).toEpochMilli(),
     val time: String = Instant.now().truncatedTo(ChronoUnit.MILLIS).toEpochMilli().toStringTime(),

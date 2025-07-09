@@ -100,7 +100,7 @@ class BleedingEditViewModel(
             }
 
 
-            if (painScale.isBlank() || painScale == "0.0") {
+            if (painScale.isBlank()) {
                 errors["painScale"] = R.string.error_pain_scale_required
             }
 
