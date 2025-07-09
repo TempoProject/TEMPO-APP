@@ -32,8 +32,7 @@ fun ProphylaxisItem(item: ProphylaxisResponse, modifier: Modifier = Modifier) {
             verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_small))
         ) {
             Text(
-                text = stringResource(id = R.string.profylaxis_screen_title).removePrefix("Aggiungi ").removePrefix("Add ")
-                    .replaceFirst("p", "P"),
+                text = stringResource(id = R.string.prophylaxis_details),
                 style = MaterialTheme.typography.titleLarge
             )
             Column {
@@ -88,7 +87,7 @@ fun ProphylaxisItem(item: ProphylaxisResponse, modifier: Modifier = Modifier) {
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        text = "Risposta",
+                        text = stringResource(R.string.infusion_performed),
                         style = MaterialTheme.typography.titleMedium,
                     )
                     Spacer(Modifier.weight(1f))
@@ -99,7 +98,7 @@ fun ProphylaxisItem(item: ProphylaxisResponse, modifier: Modifier = Modifier) {
                 }
             }
             Text(
-                text = item.date.toStringDate() + " " + item.responseDateTime.toStringTime(),
+                text = if (item.responseDateTime != 0L) item.date.toStringDate() + " " + item.responseDateTime.toStringTime() else item.date.toStringDate(),
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.align(alignment = Alignment.End)
             )
