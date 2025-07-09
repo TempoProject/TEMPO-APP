@@ -3,7 +3,7 @@
     <string name="event">Event</string>
     <string name="infusion">Infusion</string>
     <string name="severity_string_label">Bleeding severity</string>
-    <string name="site_string_label">Event site</string>
+    <string name="site_string_label">Where?</string>
     <string name="cause_string_label">Cause</string>
     <string name="pain_scale_string_label">Pain scale</string>
     <string name="details">Details</string>
@@ -48,22 +48,22 @@
     <string name="did_you_treat_yself">Did you treat yourself?</string>
     <string-array name="site_array">
         <item>Head</item>
-        <item>Neck</item>
-        <item>Left shoulder</item>
-        <item>Right shoulder</item>
-        <item>Left arm</item>
-        <item>Right arm</item>
-        <item>Left elbow</item>
-        <item>Right elbow</item>
-        <item>Left wrist</item>
-        <item>Right wrist</item>
-        <item>Left leg</item>
-        <item>Right leg</item>
-        <item>Right knee</item>
-        <item>Left knee</item>
-        <item>Right ankle</item>
-        <item>Left ankle</item>
         <item>Hip</item>
+        <item>Left ankle</item>
+        <item>Left arm</item>
+        <item>Left elbow</item>
+        <item>Left knee</item>
+        <item>Left leg</item>
+        <item>Left shoulder</item>
+        <item>Left wrist</item>
+        <item>Neck</item>
+        <item>Right ankle</item>
+        <item>Right arm</item>
+        <item>Right elbow</item>
+        <item>Right knee</item>
+        <item>Right leg</item>
+        <item>Right shoulder</item>
+        <item>Right wrist</item>
         <item>Other</item>
     </string-array>
     <string-array name="treatment_array">
@@ -72,14 +72,13 @@
         <item>Therapy</item>
     </string-array>
     <string-array name="cause_array">
-        <item>Post traumatic</item>
         <item>Spontaneous</item>
-        <item>Post-operative</item>
-        <item>Post-procedure</item>
+        <item>Post traumatic</item>
+        <item>Post invasive medical procedures</item>
     </string-array>
     <string-array name="type_of_events">
-        <item>Bleeding</item>
-        <item>Pain only</item>
+        <item>Suspected bleeding</item>
+        <item>Only pain</item>
     </string-array>
     <string name="permission_calendar">Grant calendar access</string>
     <string name="cancel">Cancel</string>
@@ -97,7 +96,7 @@
     <string name="login">Login</string>
     <string name="logout">Logout</string>
     <string name="steps">Steps</string>
-    <string name="profylaxis_screen_title">Add prophylaxis</string>
+    <string name="profylaxis_screen_title">Prophylaxis settings</string>
     <string name="prophylaxis_notification_channel_id">prophylaxis_channel</string>
     <string name="prophylaxis_notification_channel_name">Prophylaxis</string>
     <string name="drug_name">Drug</string>
@@ -115,7 +114,7 @@
 
     <string name="reason">Reason</string>
     <string name="dose_iu_mg">Dose in IU/Mg per Kg</string>
-    <string name="batch_number">Batch number</string>
+    <!--<string name="batch_number">Batch number</string>-->
 
     <!-- Infusion validation errors -->
     <string name="error_reason_required">Reason required</string>
@@ -213,4 +212,15 @@
     <string name="error_dose_must_be_positive">Dose must be greater than 0</string>
     <string name="error_dose_invalid_format">Invalid dose format</string>
     <string name="postpone">Postpone</string>
+    <string name="prophylaxis_details">Prophylaxis infusion</string>
+    <string name="infusion_performed">infusion performed?</string>
+    <string name="weeks">Weeks</string>
+    <string name="days">Days</string>
+    <string name="other">Other</string>
+    <string-array name="infusion_reason_array">
+        <item><string name="reason_trauma">Trauma</string></item>
+        <item><string name="reason_procedure_surgery">Procedure/Surgery</string></item>
+        <item><string name="reason_physical_activity">Physical activity forecast</string></item>
+        <item><string name="reason_regular_prophylaxis">Regular prophylaxis recovery</string></item>
+    </string-array>
 </resources>

@@ -3,7 +3,7 @@
     <string name="event">Evento</string>
     <string name="infusion">Infusione</string>
     <string name="severity_string_label">Gravità del sanguinamento</string>
-    <string name="site_string_label">Sede evento</string>
+    <string name="site_string_label">Dove?</string>
     <string name="cause_string_label">Causa</string>
     <string name="pain_scale_string_label">Scala del dolore</string>
     <string name="details">Dettagli</string>
@@ -47,24 +47,24 @@
     <string name="do_you_think_is_a_bleeding">Secondo te è sanguinamento?</string>
     <string name="did_you_treat_yself">Ti sei trattato?</string>
     <string-array name="site_array">
-        <item>Testa</item>
-        <item>Collo</item>
-        <item>Spalla sinitra</item>
-        <item>Spalla destra</item>
-        <item>Braccio sinistro</item>
+        <item>Anca</item>
         <item>Braccio destro</item>
-        <item>Gomito sinistro</item>
-        <item>Gomito destro</item>
-        <item>Polso sinsitro</item>
-        <item>Polso destro</item>
-        <item>Gamba sinistra</item>
-        <item>Gamba destra</item>
-        <item>Ginocchio Destro</item>
-        <item>Ginocchio Sinistro</item>
+        <item>Braccio sinistro</item>
         <item>Caviglia Destra</item>
         <item>Caviglia Sinistra</item>
-        <item>Anca</item>
-        <item>Other</item>
+        <item>Collo</item>
+        <item>Gamba destra</item>
+        <item>Gamba sinistra</item>
+        <item>Ginocchio Destro</item>
+        <item>Ginocchio Sinistro</item>
+        <item>Gomito destro</item>
+        <item>Gomito sinistro</item>
+        <item>Polso destro</item>
+        <item>Polso sinistro</item>
+        <item>Spalla destra</item>
+        <item>Spalla sinistra</item>
+        <item>Testa</item>
+        <item>Altro</item>
     </string-array>
     <string-array name="treatment_array">
         <item>Profilassi</item>
@@ -74,11 +74,10 @@
     <string-array name="cause_array">
         <item>Post traumatico</item>
         <item>Spontaneo</item>
-        <item>Post-operatorio</item>
-        <item>Post-procedure</item>
+        <item>Post procedure mediche invasive</item>
     </string-array>
     <string-array name="type_of_events">
-        <item>Sanguamento</item>
+        <item>Sospetto sanguinamento</item>
         <item>Solo dolore</item>
     </string-array>
     <string name="permission_calendar">Concedi l\'accesso al calendario</string>
@@ -97,7 +96,7 @@
     <string name="login">Accedi</string>
     <string name="logout">Esci</string>
     <string name="steps">Passi</string>
-    <string name="profylaxis_screen_title">Aggiungi profilassi</string>
+    <string name="profylaxis_screen_title">Impostazioni profilassi</string>
     <string name="prophylaxis_notification_channel_id">prophylaxis_channel</string>
     <string name="prophylaxis_notification_channel_name">Profilassi</string>
     <string name="drug_name">Farmaco</string>
@@ -115,7 +114,7 @@
 
     <string name="reason">Motivo</string>
     <string name="dose_iu_mg">Dose in IU/Mg per Kg</string>
-    <string name="batch_number">Batch number</string>
+    <!--<string name="batch_number">Batch number</string> -->
 
     <!-- Infusion validation errors -->
     <string name="error_reason_required">Motivo obbligatorio</string>
@@ -125,6 +124,12 @@
     <string name="reason_procedure_surgery">Procedure/Chirurgia</string>
     <string name="reason_physical_activity">Previsione attività fisica</string>
     <string name="reason_regular_prophylaxis">Recupero regolare profilassi</string>
+    <string-array name="infusion_reason_array">
+        <item><string name="reason_trauma">Trauma</string></item>
+        <item><string name="reason_procedure_surgery">Procedure/Chirurgia</string></item>
+        <item><string name="reason_physical_activity">Previsione attività fisica</string></item>
+        <item><string name="reason_regular_prophylaxis">Recupero regolare profilassi</string></item>
+    </string-array>
 
     <string name="scheduling_type">Tipo di schedulazione:</string>
     <string name="days_of_week">Giorni della settimana</string>
@@ -213,4 +218,9 @@
     <string name="error_dose_must_be_positive">La dose deve essere maggiore di 0</string>
     <string name="error_dose_invalid_format">Formato dose non valido</string>
     <string name="postpone">Posticipa</string>
+    <string name="prophylaxis_details">Infusione di profilassi</string>
+    <string name="infusion_performed">Infusione effettuata?</string>
+    <string name="days">Giorni</string>
+    <string name="weeks">Settimane</string>
+    <string name="other">Altro</string>
 </resources>
