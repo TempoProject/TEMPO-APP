@@ -8,8 +8,8 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.tempo.tempoapp.ui.DosageUnit
-import com.tempo.tempoapp.ui.onboarding.RecurrenceUnit
-import com.tempo.tempoapp.ui.onboarding.SchedulingMode
+import com.tempo.tempoapp.ui.prophylaxis.RecurrenceUnit
+import com.tempo.tempoapp.ui.prophylaxis.SchedulingMode
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import java.time.DayOfWeek
