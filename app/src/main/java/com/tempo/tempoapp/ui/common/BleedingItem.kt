@@ -2,8 +2,6 @@ package com.tempo.tempoapp.ui.common
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
@@ -18,9 +16,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.tempo.tempoapp.R
 import com.tempo.tempoapp.data.model.BleedingEvent
+import com.tempo.tempoapp.ui.theme.customColors
 import com.tempo.tempoapp.ui.toStringDate
+import com.tempo.tempoapp.ui.toStringTime
 
-@Composable
+/*@Composable
 fun BleedingItem(item: BleedingEvent, modifier: Modifier) {
     Card(
         colors = CardDefaults.cardColors(MaterialTheme.colorScheme.primary),
@@ -85,6 +85,39 @@ fun BleedingItem(item: BleedingEvent, modifier: Modifier) {
                 text = item.timestamp.toStringDate(),
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.align(alignment = Alignment.End)
+            )
+        }
+    }
+}*/
+
+@Composable
+fun BleedingItem(item: BleedingEvent, modifier: Modifier) {
+    Card(
+        colors = CardDefaults.cardColors(MaterialTheme.customColors.bleeding),
+        modifier = modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(dimensionResource(id = R.dimen.padding_medium)),
+            verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_small))
+        ) {
+            Text(
+                text = "${stringResource(id = R.string.event)}: ${item.bleedingCause}",
+                style = MaterialTheme.typography.titleMedium
+            )
+
+            Text(
+                text = item.bleedingSite,
+                style = MaterialTheme.typography.bodyLarge
+            )
+
+            // Data in basso a destra
+            Text(
+                text = item.timestamp.toStringDate() + " " + item.timestamp.toStringTime(),
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.align(Alignment.End)
             )
         }
     }
