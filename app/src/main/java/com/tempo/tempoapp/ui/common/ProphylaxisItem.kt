@@ -18,13 +18,75 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.tempo.tempoapp.R
 import com.tempo.tempoapp.data.model.ProphylaxisResponse
+import com.tempo.tempoapp.ui.theme.customColors
 import com.tempo.tempoapp.ui.toStringDate
 import com.tempo.tempoapp.ui.toStringTime
 
 @Composable
 fun ProphylaxisItem(item: ProphylaxisResponse, modifier: Modifier = Modifier) {
+    val cardColor = if (item.responded == 1) {
+        MaterialTheme.customColors.success
+    } else {
+        MaterialTheme.customColors.neutral
+    }
+    val statusEmoji = if (item.responded == 1) "✅" else "❌"
     Card(
-        colors = CardDefaults.cardColors(MaterialTheme.colorScheme.secondary),
+        colors = CardDefaults.cardColors(containerColor = cardColor),
+        modifier = modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(dimensionResource(id = R.dimen.padding_medium)),
+            verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_small))
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top
+            ) {
+                // Titolo a sinistra
+                Text(
+                    text = stringResource(id = R.string.prophylaxis_details),
+                    style = MaterialTheme.typography.titleMedium
+                )
+
+                // Column a destra con emoji e data
+                Column(
+                    horizontalAlignment = Alignment.End
+                ) {
+                    // Emoji sopra
+                    Text(
+                        text = statusEmoji,
+                        style = MaterialTheme.typography.headlineLarge // Più grande
+                    )
+                    Spacer(modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_small)))
+                    // Data sotto
+                    Text(
+                        text = if (item.responseDateTime != 0L)
+                            item.date.toStringDate() + " " + item.responseDateTime.toStringTime()
+                        else
+                            item.date.toStringDate(),
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+            }
+        }
+    }
+}
+
+fun Int.mapResponse(): Int = when (this) {
+    0 -> R.string.no
+    1 -> R.string.yes
+    // TODO handle other cases if needed
+    else -> R.string.no
+}
+
+/*
+
+    Card(
+        colors = CardDefaults.cardColors(cardColor),
         modifier = modifier, elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
@@ -104,11 +166,4 @@ fun ProphylaxisItem(item: ProphylaxisResponse, modifier: Modifier = Modifier) {
             )
         }
     }
-}
-
-fun Int.mapResponse(): Int = when (this) {
-    0 -> R.string.no
-    1 -> R.string.yes
-    // TODO handle other cases if needed
-    else -> R.string.no
-}
+ */
