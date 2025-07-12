@@ -1,6 +1,8 @@
 package com.tempo.tempoapp.ui.bleeding
 
+import AppPreferencesManager
 import android.content.Context
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -40,6 +42,7 @@ import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableLongStateOf
@@ -68,6 +71,7 @@ import com.tempo.tempoapp.ui.DosageUnit
 import com.tempo.tempoapp.ui.filterDoseInput
 import com.tempo.tempoapp.ui.navigation.NavigationDestination
 import com.tempo.tempoapp.ui.toStringDate
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.LocalDate
@@ -99,6 +103,18 @@ fun BleedingEntryScreen(
 ) {
     val viewModel: BleedingEntryViewModel = viewModel(factory = AppViewModelProvider.Factory)
     val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        Log.d("BleedingEntryScreen", "Initializing BleedingEntryScreen")
+        viewModel.updateUiState(
+            viewModel.uiState.bleedingDetails.copy(
+                medicationType = AppPreferencesManager(
+                    context = context
+                ).prophylaxisConfig.first()?.drugNameExtra ?: "",
+            )
+        )
+    }
 
     Scaffold(
         topBar = {

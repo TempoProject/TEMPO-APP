@@ -1,5 +1,6 @@
 package com.tempo.tempoapp.ui.infusion
 
+import AppPreferencesManager
 import android.content.Context
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
@@ -30,6 +31,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -56,6 +58,7 @@ import com.tempo.tempoapp.ui.bleeding.BleedingEntryDestination
 import com.tempo.tempoapp.ui.filterDoseInput
 import com.tempo.tempoapp.ui.navigation.NavigationDestination
 import com.tempo.tempoapp.ui.toStringDate
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.LocalDate
@@ -89,6 +92,17 @@ fun InfusionEventScreen(
     val viewModel: InfusionEntryViewModel = viewModel(factory = AppViewModelProvider.Factory)
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        Log.d("InfusionEventScreen", "Initializing infusion event screen")
+        viewModel.updateUiState(
+            viewModel.uiState.infusionDetails.copy(
+                drugName = AppPreferencesManager(
+                    context = context
+                ).prophylaxisConfig.first()?.drugNameExtra ?: "",
+            )
+        )
+    }
 
     Scaffold(
         topBar = {
@@ -144,6 +158,8 @@ fun InfusionEventBody(
     onSave: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+
+
     Column(
         modifier = modifier
             .padding(dimensionResource(id = R.dimen.padding_medium))
