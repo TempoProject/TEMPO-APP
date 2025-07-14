@@ -223,4 +223,9 @@
     <string name="days">Giorni</string>
     <string name="weeks">Settimane</string>
     <string name="other">Altro</string>
+    <string name="edit_prophylaxis">Modifica profilassi</string>
+    <string name="exit">Esci</string>
+    <string name="exit_confirmation_message">Sei sicuro di voler uscire? I dati non salvati andranno persi.</string>
+    <string name="confirm">Conferma</string>
+    <string name="prophylaxis_response_time">Ora infusione:</string>
 </resources>

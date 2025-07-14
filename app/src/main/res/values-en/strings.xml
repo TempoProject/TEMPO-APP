@@ -217,10 +217,15 @@
     <string name="weeks">Weeks</string>
     <string name="days">Days</string>
     <string name="other">Other</string>
+    <string name="edit_prophylaxis">Edit prophylaxis</string>
     <string-array name="infusion_reason_array">
         <item><string name="reason_trauma">Trauma</string></item>
         <item><string name="reason_procedure_surgery">Procedure/Surgery</string></item>
         <item><string name="reason_physical_activity">Physical activity forecast</string></item>
         <item><string name="reason_regular_prophylaxis">Regular prophylaxis recovery</string></item>
     </string-array>
+    <string name="exit">Exit</string>
+    <string name="exit_confirmation_message">Are you sure you want to exit? Unsaved data will be lost.</string>
+    <string name="confirm">Confirm</string>
+    <string name="prophylaxis_response_time">Infusion time:</string>
 </resources>
