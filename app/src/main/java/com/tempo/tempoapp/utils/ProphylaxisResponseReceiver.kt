@@ -69,7 +69,8 @@ class ProphylaxisResponseReceiver : BroadcastReceiver() {
                     id = idResponse.toInt(),
                     reminderDateTime = reminderDateTime,
                     responded = responded.toInt(),
-                    responseDateTime = System.currentTimeMillis(),
+                    responseDateTime = Instant.now().atZone(ZoneId.systemDefault()).toInstant()
+                        .toEpochMilli(),
                     reminderType = reminderType,
                     drugName = drugName,
                     dosage = dosage,
@@ -142,7 +143,10 @@ class ProphylaxisResponseReceiver : BroadcastReceiver() {
                 postponedTriggerTime,
                 pendingIntent
             )
-            Log.d("ResponseReceiver", "Notifica posticipata programmata per ${java.util.Date(postponedTriggerTime)}")
+            Log.d(
+                "ResponseReceiver",
+                "Notifica posticipata programmata per ${java.util.Date(postponedTriggerTime)}"
+            )
         } catch (e: Exception) {
             Log.e("ResponseReceiver", "Errore nella programmazione della notifica posticipata", e)
         }
