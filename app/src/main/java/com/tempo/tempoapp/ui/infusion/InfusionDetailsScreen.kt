@@ -36,6 +36,7 @@ import com.tempo.tempoapp.ui.AppViewModelProvider
 import com.tempo.tempoapp.ui.Loading
 import com.tempo.tempoapp.ui.bleeding.ItemDetailsRow
 import com.tempo.tempoapp.ui.navigation.NavigationDestination
+import com.tempo.tempoapp.ui.theme.customColors
 import com.tempo.tempoapp.ui.toStringDate
 import kotlinx.coroutines.launch
 
@@ -167,8 +168,8 @@ fun InfusionItemDetails(details: InfusionDetails, modifier: Modifier) {
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                containerColor = MaterialTheme.customColors.infusion,
+                //contentColor = MaterialTheme.colorScheme.onPrimaryContainer
             )
         ) {
             Column(

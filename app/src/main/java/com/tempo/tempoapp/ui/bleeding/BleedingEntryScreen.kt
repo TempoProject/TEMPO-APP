@@ -3,6 +3,7 @@ package com.tempo.tempoapp.ui.bleeding
 import AppPreferencesManager
 import android.content.Context
 import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -68,6 +69,7 @@ import com.tempo.tempoapp.R
 import com.tempo.tempoapp.TempoAppBar
 import com.tempo.tempoapp.ui.AppViewModelProvider
 import com.tempo.tempoapp.ui.DosageUnit
+import com.tempo.tempoapp.ui.ExitConfirmationDialog
 import com.tempo.tempoapp.ui.filterDoseInput
 import com.tempo.tempoapp.ui.navigation.NavigationDestination
 import com.tempo.tempoapp.ui.toStringDate
@@ -105,6 +107,12 @@ fun BleedingEntryScreen(
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
 
+    var showExitDialog by remember { mutableStateOf(false) }
+
+    BackHandler {
+        showExitDialog = true
+    }
+
     LaunchedEffect(Unit) {
         Log.d("BleedingEntryScreen", "Initializing BleedingEntryScreen")
         viewModel.updateUiState(
@@ -121,7 +129,9 @@ fun BleedingEntryScreen(
             TempoAppBar(
                 title = stringResource(id = BleedingEntryDestination.titleRes),
                 canNavigateBack = true,
-                navigateUp = onNavigateUp,
+                navigateUp = {
+                    showExitDialog = true
+                },
             )
         },
     ) { innerPadding ->
@@ -140,6 +150,17 @@ fun BleedingEntryScreen(
                 .padding(innerPadding)
                 .fillMaxWidth()
         )
+        if (showExitDialog) {
+            ExitConfirmationDialog(
+                onConfirm = {
+                    showExitDialog = false
+                    onNavigateUp()
+                },
+                onDismiss = {
+                    showExitDialog = false
+                }
+            )
+        }
     }
 }
 

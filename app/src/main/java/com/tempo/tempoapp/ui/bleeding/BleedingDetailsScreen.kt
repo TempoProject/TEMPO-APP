@@ -38,6 +38,7 @@ import com.tempo.tempoapp.TempoAppBar
 import com.tempo.tempoapp.ui.AppViewModelProvider
 import com.tempo.tempoapp.ui.Loading
 import com.tempo.tempoapp.ui.navigation.NavigationDestination
+import com.tempo.tempoapp.ui.theme.customColors
 import com.tempo.tempoapp.ui.toStringDate
 import kotlinx.coroutines.launch
 
@@ -153,8 +154,8 @@ fun BleedingItemDetails(details: BleedingDetails, modifier: Modifier) {
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                containerColor = MaterialTheme.customColors.bleeding,
+                //contentColor = MaterialTheme.colorScheme.onPrimaryContainer
             )
         ) {
             Column(
@@ -204,8 +205,8 @@ fun BleedingItemDetails(details: BleedingDetails, modifier: Modifier) {
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                containerColor = MaterialTheme.customColors.infusion,
+                //contentColor = MaterialTheme.colorScheme.onSecondaryContainer
             )
         ) {
             Column(
