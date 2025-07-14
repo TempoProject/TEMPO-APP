@@ -1,5 +1,6 @@
 package com.tempo.tempoapp.ui.prophylaxis
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -41,6 +42,7 @@ import androidx.navigation.NavController
 import com.tempo.tempoapp.R
 import com.tempo.tempoapp.TempoAppBar
 import com.tempo.tempoapp.ui.AppViewModelProvider
+import com.tempo.tempoapp.ui.ExitConfirmationDialog
 import com.tempo.tempoapp.ui.Loading
 import com.tempo.tempoapp.ui.navigation.NavigationDestination
 import com.tempo.tempoapp.ui.toStringDate
@@ -73,12 +75,18 @@ fun ProphylaxisEditScreen(
     val uiState = viewModel.uiState
     val coroutineScope = rememberCoroutineScope()
 
+    var showExitDialog by remember { mutableStateOf(false) }
+
+    BackHandler {
+        showExitDialog = true
+    }
+
     Scaffold(
         topBar = {
             TempoAppBar(
                 title = stringResource(R.string.edit_prophylaxis),
                 canNavigateBack = true,
-                navigateUp = { navController?.navigateUp() }
+                navigateUp = { showExitDialog = true },
             )
         }) { paddingValues ->
         ProphylaxisEditBody(
@@ -95,6 +103,18 @@ fun ProphylaxisEditScreen(
             },
             modifier = Modifier.padding(paddingValues)
         )
+
+        if (showExitDialog) {
+            ExitConfirmationDialog(
+                onConfirm = {
+                    showExitDialog = false
+                    navController?.navigateUp()
+                },
+                onDismiss = {
+                    showExitDialog = false
+                }
+            )
+        }
     }
 }
 

@@ -8,6 +8,7 @@ import android.content.Intent
 import android.os.Build
 import android.provider.Settings
 import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -66,6 +67,7 @@ import androidx.work.WorkManager
 import com.tempo.tempoapp.R
 import com.tempo.tempoapp.ui.AppViewModelProvider
 import com.tempo.tempoapp.ui.DosageUnit
+import com.tempo.tempoapp.ui.ExitConfirmationDialog
 import com.tempo.tempoapp.ui.filterDoseInput
 import com.tempo.tempoapp.ui.home.HomeDestination
 import com.tempo.tempoapp.ui.navigation.NavigationDestination
@@ -105,6 +107,12 @@ fun ProphylaxisScreen(
     val dosageFocusRequester = remember { FocusRequester() }
     val drugNameExtraFocusRequester = remember { FocusRequester() }
 
+    var showExitDialog by remember { mutableStateOf(false) }
+
+    BackHandler {
+        showExitDialog = true
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -112,7 +120,7 @@ fun ProphylaxisScreen(
                     {
                         if (uiState.isActiveProphylaxis)
                             IconButton(
-                                onClick = { navController?.navigateUp() }
+                                onClick = { showExitDialog = true }
                             ) {
                                 Icon(
                                     painter = painterResource(R.drawable.outline_arrow_back_24),
@@ -276,7 +284,10 @@ fun ProphylaxisScreen(
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+                        horizontalArrangement = Arrangement.spacedBy(
+                            8.dp,
+                            Alignment.CenterHorizontally
+                        ),
                     ) {
                         OutlinedTextField(
                             value = uiState.dosage,
@@ -360,7 +371,19 @@ fun ProphylaxisScreen(
                         Text(stringResource(R.string.confirm_prophylaxis))
                     }
                 }
+
             }
+        }
+        if (showExitDialog) {
+            ExitConfirmationDialog(
+                onConfirm = {
+                    showExitDialog = false
+                    navController?.navigateUp()
+                },
+                onDismiss = {
+                    showExitDialog = false
+                }
+            )
         }
     }
 
