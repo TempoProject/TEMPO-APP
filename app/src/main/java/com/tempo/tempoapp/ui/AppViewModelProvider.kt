@@ -19,6 +19,7 @@ import com.tempo.tempoapp.ui.movesense.MovesenseViewModel
 import com.tempo.tempoapp.ui.movesense.ScanDevicesViewModel
 import com.tempo.tempoapp.ui.onboarding.LoginViewModel
 import com.tempo.tempoapp.ui.prophylaxis.ProphylaxisDetailViewModel
+import com.tempo.tempoapp.ui.prophylaxis.ProphylaxisEditViewModel
 import com.tempo.tempoapp.ui.prophylaxis.ProphylaxisViewModel
 import com.tempo.tempoapp.ui.reminders.ReminderListViewModel
 import com.tempo.tempoapp.ui.reminders.ReminderViewModel
@@ -121,6 +122,13 @@ object AppViewModelProvider {
 
         initializer {
             ProphylaxisDetailViewModel(
+                this.createSavedStateHandle(),
+                tempoApplication().container.prophylaxisResponseRepository
+            )
+        }
+
+        initializer {
+            ProphylaxisEditViewModel(
                 this.createSavedStateHandle(),
                 tempoApplication().container.prophylaxisResponseRepository
             )
