@@ -199,7 +199,7 @@ data class HistoryUiState(
 ) {
     val combinedEvents: List<BodyEvent>
         get() = (bleedingList.map { BodyEvent.Bleeding(it) } +
-                infusionList.map { BodyEvent.Infusion(it) }) +
-                prophylaxisList.map { BodyEvent.Prophylaxis(it) }
-                    .sortedByDescending { it.dateTime }
+                infusionList.map { BodyEvent.Infusion(it) } +
+                prophylaxisList.map { BodyEvent.Prophylaxis(it) })
+            .sortedByDescending { it.dateTime }
 }

@@ -122,7 +122,10 @@ class HomeViewModel(
             movesenseRepository.getDevice()
         ) { bleeding, infusion, steps, prophylaxis, movesense ->
             println(movesense)
-            Log.d("HomeViewModel", Instant.now().truncatedTo(ChronoUnit.DAYS).toEpochMilli().toString())
+            Log.d(
+                "HomeViewModel",
+                Instant.now().truncatedTo(ChronoUnit.DAYS).toEpochMilli().toString()
+            )
             Log.d("HomeViewModel", "Prophylaxis events: $prophylaxis")
             HomeUiState(bleeding, infusion, prophylaxis, steps, movesense)
         }.stateIn(
@@ -153,7 +156,7 @@ data class HomeUiState(
 ) {
     val combinedEvents: List<BodyEvent>
         get() = (bleedingList.map { BodyEvent.Bleeding(it) } +
-                infusionList.map { BodyEvent.Infusion(it) }) +
-                prophylaxisList.map { BodyEvent.Prophylaxis(it) }
-                    .sortedByDescending { it.dateTime }
+                infusionList.map { BodyEvent.Infusion(it) } +
+                prophylaxisList.map { BodyEvent.Prophylaxis(it) })
+            .sortedByDescending { it.dateTime }
 }
