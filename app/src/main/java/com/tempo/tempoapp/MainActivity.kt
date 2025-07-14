@@ -70,6 +70,8 @@ import com.tempo.tempoapp.ui.onboarding.LoginScreen
 import com.tempo.tempoapp.ui.onboarding.WelcomeScreen
 import com.tempo.tempoapp.ui.prophylaxis.ProphylaxisDetailScreen
 import com.tempo.tempoapp.ui.prophylaxis.ProphylaxisDetailsScreenRoute
+import com.tempo.tempoapp.ui.prophylaxis.ProphylaxisEditDestination
+import com.tempo.tempoapp.ui.prophylaxis.ProphylaxisEditScreen
 import com.tempo.tempoapp.ui.prophylaxis.ProphylaxisScreen
 import com.tempo.tempoapp.ui.theme.TempoAppTheme
 import com.tempo.tempoapp.workers.GetStepsRecord
@@ -95,17 +97,6 @@ class MainActivity : ComponentActivity() {
                 LaunchedEffect(Unit) {
                     val availabilityStatus =
                         HealthConnectClient.getSdkStatus(context, context.packageName)
-
-                    // TODO serve davvero?
-                    /*if (availabilityStatus == HealthConnectClient.SDK_AVAILABLE && !isFirstLaunch) {
-                        Log.d("TempoApp", "Health Connect SDK is available")
-                        navController.navigate("splash_screen")
-                        {
-                            popUpTo("splash_screen") {
-                                inclusive = true
-                            }
-                        }
-                    }*/
 
                     if (availabilityStatus == HealthConnectClient.SDK_UNAVAILABLE) {
                         navController.navigate("health_connect_unavailability_screen")
@@ -217,12 +208,25 @@ class MainActivity : ComponentActivity() {
                         ProphylaxisScreen(navController = navController)
                     }
 
-                    composable(ProphylaxisDetailsScreenRoute.routeWithArgs,
-                        arguments = listOf(navArgument(ProphylaxisDetailsScreenRoute.itemIdArg){
+                    composable(
+                        ProphylaxisDetailsScreenRoute.routeWithArgs,
+                        arguments = listOf(navArgument(ProphylaxisDetailsScreenRoute.itemIdArg) {
                             type = NavType.IntType
-                        })) {
+                        })
+                    ) {
                         ProphylaxisDetailScreen(
                             navController
+                        )
+                    }
+
+                    composable(
+                        ProphylaxisEditDestination.routeWithArgs,
+                        arguments = listOf(navArgument(ProphylaxisEditDestination.itemIdArg) {
+                            type = NavType.IntType
+                        })
+                    ) {
+                        ProphylaxisEditScreen(
+                            navController = navController,
                         )
                     }
                 }
