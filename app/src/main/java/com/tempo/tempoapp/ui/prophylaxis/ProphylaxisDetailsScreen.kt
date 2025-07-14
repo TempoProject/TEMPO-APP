@@ -77,7 +77,7 @@ fun ProphylaxisDetailScreen(
             ) {
                 FloatingActionButton(
                     onClick = {
-                        // TODO edit functionality
+                        navController?.navigate("${ProphylaxisEditDestination.route}/${uiState.value.prophylaxisDetails.id}")
                     },
                     shape = MaterialTheme.shapes.medium,
                 ) {
