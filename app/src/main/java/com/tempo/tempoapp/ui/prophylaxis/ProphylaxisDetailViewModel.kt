@@ -7,6 +7,7 @@ import com.tempo.tempoapp.data.model.ProphylaxisResponse
 import com.tempo.tempoapp.data.repository.ProphylaxisResponseRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
@@ -21,6 +22,7 @@ class ProphylaxisDetailViewModel(
 
     val uiState: StateFlow<ProphylaxisDetailsUiState> =
         prophylaxisRepository.getItemFromId(itemId)
+            .filterNotNull()
             .map { prophylaxisResponse ->
                 ProphylaxisDetailsUiState(
                     prophylaxisDetails = prophylaxisResponse.toProphylaxisDetails(),
@@ -33,10 +35,17 @@ class ProphylaxisDetailViewModel(
                 initialValue = ProphylaxisDetailsUiState(isLoading = true)
             )
 
-    suspend fun deleteItem() {
-        val currentState = uiState.value
-        if (!currentState.isLoading && currentState.id != -1) {
-            prophylaxisRepository.deleteItem(currentState.prophylaxisDetails.toEntity())
+    suspend fun deleteItem(): Boolean {
+        return try {
+            val currentState = uiState.value
+            if (!currentState.isLoading && currentState.id != -1) {
+                prophylaxisRepository.deleteItem(currentState.prophylaxisDetails.toEntity())
+                true
+            } else {
+                false
+            }
+        } catch (e: Exception) {
+            false
         }
     }
 

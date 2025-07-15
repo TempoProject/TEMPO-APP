@@ -25,4 +25,13 @@ interface ProphylaxisResponseDao : LogbookDao<ProphylaxisResponse> {
         """
     )
     fun getItemFromId(itemId: Int): Flow<ProphylaxisResponse>?
+
+    @Query(
+        """
+            SELECT *
+            FROM prophylaxis_responses
+            ORDER BY date DESC
+        """
+    )
+    fun getAll(): Flow<List<ProphylaxisResponse>>
 }

@@ -90,8 +90,9 @@ fun ProphylaxisDetailScreen(
                 FloatingActionButton(
                     onClick = {
                         coroutineScope.launch {
-                            viewModel.deleteItem()
-                            navController?.navigateUp()
+                            val success = viewModel.deleteItem()
+                            if (success)
+                                navController?.navigateUp()
                         }
                     },
                     shape = MaterialTheme.shapes.medium,

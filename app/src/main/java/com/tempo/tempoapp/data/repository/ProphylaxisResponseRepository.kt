@@ -29,9 +29,9 @@ class ProphylaxisResponseRepository(private val prophylaxisResponseDao: Prophyla
         prophylaxisResponseDao.update(item)
     }
 
-    override fun getAll(): Flow<List<ProphylaxisResponse>> {
-        TODO("Not yet implemented")
-    }
+    override fun getAll(): Flow<List<ProphylaxisResponse>> =
+        prophylaxisResponseDao.getAll()
+
 
     override fun getItemFromId(id: Int): Flow<ProphylaxisResponse> {
         return prophylaxisResponseDao.getItemFromId(id)
