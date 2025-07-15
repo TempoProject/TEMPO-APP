@@ -107,18 +107,23 @@ class HomeViewModel(
 
     val homeUiState: StateFlow<HomeUiState> =
         combine(
-            bleedingRepository.getAllDayBleeding(
-                Instant.now().truncatedTo(ChronoUnit.DAYS).toEpochMilli()
-            ),
-            infusionRepository.getAllDayInfusion(
-                Instant.now().truncatedTo(ChronoUnit.DAYS).toEpochMilli()
-            ),
+            bleedingRepository.getAll(),
+
+            //getAllDayBleeding(
+            //  Instant.now().truncatedTo(ChronoUnit.DAYS).toEpochMilli()
+            //),
+            infusionRepository.getAll(),
+
+            //getAllDayInfusion(
+            //  Instant.now().truncatedTo(ChronoUnit.DAYS).toEpochMilli()
+            //),
             stepsRecordRepository.getAllDayStepsCount(
                 Instant.now().truncatedTo(ChronoUnit.DAYS).toEpochMilli()
             ),
-            prophylaxisResponseRepository.getAllDayProphylaxis(
-                Instant.now().truncatedTo(ChronoUnit.DAYS).toEpochMilli()
-            ),
+            prophylaxisResponseRepository.getAll(),
+            //getAllDayProphylaxis(
+            //  Instant.now().truncatedTo(ChronoUnit.DAYS).toEpochMilli()
+            //),
             movesenseRepository.getDevice()
         ) { bleeding, infusion, steps, prophylaxis, movesense ->
             println(movesense)
