@@ -29,7 +29,7 @@ fun ProphylaxisItem(item: ProphylaxisResponse, modifier: Modifier = Modifier) {
     } else {
         MaterialTheme.customColors.neutral
     }
-    val statusEmoji = if (item.responded == 1) "✅" else "❌"
+    val statusEmoji = if (item.responded == 1) "✅" else if (item.responded == 0) "❌" else "❓"
     Card(
         colors = CardDefaults.cardColors(containerColor = cardColor),
         modifier = modifier.fillMaxWidth(),
@@ -46,17 +46,14 @@ fun ProphylaxisItem(item: ProphylaxisResponse, modifier: Modifier = Modifier) {
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.Top
             ) {
-                // Titolo a sinistra
                 Text(
                     text = stringResource(id = R.string.prophylaxis_details),
                     style = MaterialTheme.typography.titleMedium
                 )
 
-                // Column a destra con emoji e data
                 Column(
                     horizontalAlignment = Alignment.End
                 ) {
-                    // Emoji sopra
                     Text(
                         text = statusEmoji,
                         style = MaterialTheme.typography.headlineLarge // Più grande
@@ -74,13 +71,6 @@ fun ProphylaxisItem(item: ProphylaxisResponse, modifier: Modifier = Modifier) {
             }
         }
     }
-}
-
-fun Int.mapResponse(): Int = when (this) {
-    0 -> R.string.no
-    1 -> R.string.yes
-    // TODO handle other cases if needed
-    else -> R.string.no
 }
 
 /*
