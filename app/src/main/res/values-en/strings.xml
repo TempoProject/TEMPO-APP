@@ -237,4 +237,5 @@
     <string name="delete_prophylaxis_confirmation">Are you sure you want to delete this prophylaxis?\nThis action cannot be undone</string>
     <string name="delete_infusion_confirmation">Are you sure you want to delete this extra infusion?\nThis action cannot be undone</string>
     <string name="delete_event_confirmation">Are you sure you want to delete this event?\nThis action cannot be undone</string>
+    <string name="postponed_prophylaxis">Postponed prophylaxis</string>
 </resources>
