@@ -67,7 +67,7 @@ import androidx.work.WorkManager
 import com.tempo.tempoapp.R
 import com.tempo.tempoapp.ui.AppViewModelProvider
 import com.tempo.tempoapp.ui.DosageUnit
-import com.tempo.tempoapp.ui.ExitConfirmationDialog
+import com.tempo.tempoapp.ui.InformationDialog
 import com.tempo.tempoapp.ui.filterDoseInput
 import com.tempo.tempoapp.ui.home.HomeDestination
 import com.tempo.tempoapp.ui.navigation.NavigationDestination
@@ -375,7 +375,7 @@ fun ProphylaxisScreen(
             }
         }
         if (showExitDialog) {
-            ExitConfirmationDialog(
+            InformationDialog(
                 onConfirm = {
                     showExitDialog = false
                     navController?.navigateUp()
