@@ -52,9 +52,9 @@ class ProphylaxisAlarmReceiver : BroadcastReceiver() {
                 val config = appPreferencesManager.prophylaxisConfig.first()
 
                 val reminderType = when (alarmId) {
-                    1000 -> "Settimanale"
-                    2000 -> "Ricorrente"
-                    else -> if (isPostponed) "Posticipata" else "Generico"
+                    1000 -> context.getString(R.string.weekly_prophylaxis)
+                    2000 -> context.getString(R.string.recurring_prophylaxis)
+                    else -> if (isPostponed) context.getString(R.string.postponed_prophylaxis) else "Generico"
                 }
 
 
