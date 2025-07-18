@@ -42,7 +42,7 @@ import androidx.navigation.NavController
 import com.tempo.tempoapp.R
 import com.tempo.tempoapp.TempoAppBar
 import com.tempo.tempoapp.ui.AppViewModelProvider
-import com.tempo.tempoapp.ui.ExitConfirmationDialog
+import com.tempo.tempoapp.ui.InformationDialog
 import com.tempo.tempoapp.ui.Loading
 import com.tempo.tempoapp.ui.navigation.NavigationDestination
 import com.tempo.tempoapp.ui.toStringDate
@@ -74,6 +74,7 @@ fun ProphylaxisEditScreen(
     val viewModel: ProphylaxisEditViewModel = viewModel(factory = AppViewModelProvider.Factory)
     val uiState = viewModel.uiState
     val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     var showExitDialog by remember { mutableStateOf(false) }
 
@@ -95,7 +96,7 @@ fun ProphylaxisEditScreen(
             onItemClick = viewModel::updateUiState,
             onSave = {
                 coroutineScope.launch {
-                    val success = viewModel.updateProphylaxisResponse()
+                    val success = viewModel.updateProphylaxisResponse(context)
                     if (success) {
                         navController?.navigateUp()
                     }
@@ -105,7 +106,7 @@ fun ProphylaxisEditScreen(
         )
 
         if (showExitDialog) {
-            ExitConfirmationDialog(
+            InformationDialog(
                 onConfirm = {
                     showExitDialog = false
                     navController?.navigateUp()

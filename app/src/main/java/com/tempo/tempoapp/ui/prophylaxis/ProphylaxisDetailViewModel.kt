@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tempo.tempoapp.data.model.ProphylaxisResponse
 import com.tempo.tempoapp.data.repository.ProphylaxisResponseRepository
+import com.tempo.tempoapp.ui.toStringDosage
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.filterNotNull
@@ -71,7 +72,7 @@ fun ProphylaxisResponse.toProphylaxisDetails(): ProphylaxisDetails {
         reminderType = this.reminderType,
         drugName = this.drugName,
         dosage = this.dosage,
-        dosageUnit = this.dosageUnit
+        dosageUnit = this.dosageUnit.toStringDosage(), postponedAlarmId = this.postponedAlarmId
     )
 }
 
@@ -85,7 +86,8 @@ fun ProphylaxisDetails.toEntity(): ProphylaxisResponse {
         reminderType = this.reminderType,
         drugName = this.drugName,
         dosage = this.dosage,
-        dosageUnit = this.dosageUnit
+        dosageUnit = this.dosageUnit,
+        postponedAlarmId = this.postponedAlarmId
     )
 }
 
@@ -99,4 +101,5 @@ data class ProphylaxisDetails(
     val drugName: String = "",
     val dosage: String = "",
     val dosageUnit: String = "",
+    val postponedAlarmId: Int = -1
 )

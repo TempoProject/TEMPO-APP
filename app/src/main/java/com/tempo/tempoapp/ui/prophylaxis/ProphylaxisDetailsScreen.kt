@@ -21,7 +21,11 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
@@ -34,6 +38,7 @@ import androidx.navigation.NavController
 import com.tempo.tempoapp.R
 import com.tempo.tempoapp.TempoAppBar
 import com.tempo.tempoapp.ui.AppViewModelProvider
+import com.tempo.tempoapp.ui.InformationDialog
 import com.tempo.tempoapp.ui.Loading
 import com.tempo.tempoapp.ui.navigation.NavigationDestination
 import com.tempo.tempoapp.ui.toStringDate
@@ -59,6 +64,8 @@ fun ProphylaxisDetailScreen(
     val viewModel: ProphylaxisDetailViewModel = viewModel(factory = AppViewModelProvider.Factory)
     val uiState = viewModel.uiState.collectAsState()
     val coroutineScope = rememberCoroutineScope()
+
+    var showCancelDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -89,11 +96,12 @@ fun ProphylaxisDetailScreen(
                 Spacer(modifier = Modifier.padding(4.dp))
                 FloatingActionButton(
                     onClick = {
-                        coroutineScope.launch {
+                        showCancelDialog = true
+                        /*coroutineScope.launch {
                             val success = viewModel.deleteItem()
                             if (success)
                                 navController?.navigateUp()
-                        }
+                        }*/
                     },
                     shape = MaterialTheme.shapes.medium,
                 ) {
@@ -109,6 +117,24 @@ fun ProphylaxisDetailScreen(
             uiState = uiState.value, Modifier
                 .padding(it)
                 .verticalScroll(rememberScrollState())
+        )
+    }
+
+    if (showCancelDialog) {
+        InformationDialog(
+            title = R.string.delete_prophylaxis,
+            message = R.string.delete_prophylaxis_confirmation,
+            confirm = R.string.confirm,
+            cancel = R.string.cancel_action,
+            onDismiss = { showCancelDialog = false },
+            onConfirm = {
+                showCancelDialog = false
+                coroutineScope.launch {
+                    val success = viewModel.deleteItem()
+                    if (success)
+                        navController?.navigateUp()
+                }
+            }
         )
     }
 }
@@ -154,7 +180,7 @@ fun ProphylaxisDetailsItem(
                     style = MaterialTheme.typography.titleLarge
                 )*/
                 Column {
-                    Row(
+                    /*Row(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.fillMaxWidth()
@@ -165,10 +191,10 @@ fun ProphylaxisDetailsItem(
                         )
                         Spacer(Modifier.weight(1f))
                         Text(
-                            text = item.reminderType,
+                            text = item.,
                             style = MaterialTheme.typography.bodyLarge
                         )
-                    }
+                    }*/
                     Row(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically,
@@ -228,8 +254,7 @@ fun ProphylaxisDetailsItem(
 fun Int.mapResponse(): Int = when (this) {
     0 -> R.string.no
     1 -> R.string.yes
-    // TODO handle other cases if needed
-    else -> R.string.no
+    else -> R.string.waiting_response
 }
 
 // unused
