@@ -37,4 +37,8 @@ class ProphylaxisResponseRepository(private val prophylaxisResponseDao: Prophyla
         return prophylaxisResponseDao.getItemFromId(id)
             ?: throw IllegalArgumentException("ProphylaxisResponse with id $id not found")
     }
+
+    suspend fun updatePostponedAlarmId(responseId: Long, alarmId: Int) {
+        prophylaxisResponseDao.updatePostponedAlarmId(responseId, alarmId)
+    }
 }

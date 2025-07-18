@@ -34,4 +34,8 @@ interface ProphylaxisResponseDao : LogbookDao<ProphylaxisResponse> {
         """
     )
     fun getAll(): Flow<List<ProphylaxisResponse>>
+
+    @Query("UPDATE prophylaxis_responses SET postponedAlarmId = :alarmId WHERE id = :responseId")
+    suspend fun updatePostponedAlarmId(responseId: Long, alarmId: Int)
+
 }
