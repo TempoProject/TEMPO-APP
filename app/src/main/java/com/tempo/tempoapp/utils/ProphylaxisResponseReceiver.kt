@@ -103,17 +103,27 @@ class ProphylaxisResponseReceiver : BroadcastReceiver() {
             Log.e("ResponseReceiver", "Errore nella cancellazione notifica per posticipo", e)
         }
 
-        schedulePostponedNotification(
+        val postponedAlarmId = schedulePostponedNotification(
             context = context,
             originalResponseId = idResponse,
         )
+
+        val prophylaxisResponseRepository =
+            (context.applicationContext as TempoApplication).container.prophylaxisResponseRepository
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                prophylaxisResponseRepository.updatePostponedAlarmId(idResponse, postponedAlarmId)
+            } catch (e: Exception) {
+                Log.e("ResponseReceiver", "Errore nell'aggiornamento dell'ID alarm posticipato", e)
+            }
+        }
     }
 
     @SuppressLint("ScheduleExactAlarm")
     private fun schedulePostponedNotification(
         context: Context,
         originalResponseId: Long,
-    ) {
+    ): Int {
         val postponeDelayMillis = 30 * 60 * 1000L
         val postponedTriggerTime = System.currentTimeMillis() + postponeDelayMillis
 
@@ -150,5 +160,7 @@ class ProphylaxisResponseReceiver : BroadcastReceiver() {
         } catch (e: Exception) {
             Log.e("ResponseReceiver", "Errore nella programmazione della notifica posticipata", e)
         }
+
+        return postponedAlarmId
     }
 }
