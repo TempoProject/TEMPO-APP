@@ -57,25 +57,28 @@ class InfusionEntryViewModel(private val infusionRepository: InfusionRepository)
             if (dose.isBlank()) {
                 errors["dose"] = R.string.error_dose_required
             } else {
-                val normalizedDose = dose.replace(",", ".")
-                try {
-                    val doseValue = normalizedDose.toDouble()
-                    if (doseValue <= 0) {
-                        errors["dose"] = R.string.error_dose_must_be_positive
+                if (dose.contains(".") || dose.contains(",")) {
+                    throw NumberFormatException()
+                } else {
+                    try {
+                        val doseValue = dose.toInt()
+                        if (doseValue <= 0) {
+                            errors["dose"] = R.string.error_dose_must_be_positive
+                        }
+                    } catch (e: NumberFormatException) {
+                        errors["dose"] = R.string.error_dose_invalid_format
                     }
-                } catch (e: NumberFormatException) {
-                    errors["dose"] = R.string.error_dose_invalid_format
                 }
+
+
+                if (time.isBlank()) {
+                    errors["time"] = R.string.error_time_required
+                }
+
             }
 
-
-            if (time.isBlank()) {
-                errors["time"] = R.string.error_time_required
-            }
-
+            return errors
         }
-
-        return errors
     }
 
     /**
@@ -97,7 +100,6 @@ class InfusionEntryViewModel(private val infusionRepository: InfusionRepository)
             false
         }
     }
-
 }
 
 /**
@@ -197,5 +199,6 @@ data class InfusionDetails(
     val batchNumber: String = "",
     val note: String? = null,
     val date: Long = Instant.now().truncatedTo(ChronoUnit.DAYS).toEpochMilli(),
-    val time: String = Instant.now().truncatedTo(ChronoUnit.MILLIS).toEpochMilli().toStringTime(),
+    val time: String = Instant.now().truncatedTo(ChronoUnit.MILLIS).toEpochMilli()
+        .toStringTime(),
 )

@@ -23,7 +23,11 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
@@ -36,6 +40,7 @@ import androidx.navigation.NavController
 import com.tempo.tempoapp.R
 import com.tempo.tempoapp.TempoAppBar
 import com.tempo.tempoapp.ui.AppViewModelProvider
+import com.tempo.tempoapp.ui.InformationDialog
 import com.tempo.tempoapp.ui.Loading
 import com.tempo.tempoapp.ui.navigation.NavigationDestination
 import com.tempo.tempoapp.ui.theme.customColors
@@ -66,6 +71,8 @@ fun BleedingDetailsScreen(
     val viewModel: BleedingDetailsViewModel = viewModel(factory = AppViewModelProvider.Factory)
     val uiState = viewModel.uiState.collectAsState()
     val coroutineScope = rememberCoroutineScope()
+
+    var showCancelDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -101,10 +108,11 @@ fun BleedingDetailsScreen(
                 Spacer(modifier = Modifier.padding(4.dp))
                 FloatingActionButton(
                     onClick = {
-                        coroutineScope.launch {
+                        showCancelDialog = true
+                        /*coroutineScope.launch {
                             viewModel.deleteItem()
                             navController?.navigateUp()
-                        }
+                        }*/
                     },
                     shape = MaterialTheme.shapes.medium,
                 ) {
@@ -121,6 +129,24 @@ fun BleedingDetailsScreen(
             Modifier
                 .padding(it)
                 .verticalScroll(rememberScrollState())
+        )
+    }
+
+    if (showCancelDialog) {
+        InformationDialog(
+            title = R.string.delete_event,
+            message = R.string.delete_event_confirmation,
+            confirm = R.string.confirm,
+            cancel = R.string.cancel_action,
+            onDismiss = { showCancelDialog = false },
+            onConfirm = {
+                showCancelDialog = false
+                coroutineScope.launch {
+                    viewModel.deleteItem()
+                }.invokeOnCompletion {
+                    navController?.navigateUp()
+                }
+            }
         )
     }
 }

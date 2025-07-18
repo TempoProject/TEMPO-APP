@@ -19,7 +19,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tempo.tempoapp.R
 import com.tempo.tempoapp.TempoAppBar
 import com.tempo.tempoapp.ui.AppViewModelProvider
-import com.tempo.tempoapp.ui.ExitConfirmationDialog
+import com.tempo.tempoapp.ui.InformationDialog
 import com.tempo.tempoapp.ui.Loading
 import com.tempo.tempoapp.ui.navigation.NavigationDestination
 import kotlinx.coroutines.launch
@@ -96,7 +96,7 @@ fun BleedingEditScreen(
                 modifier = Modifier.padding(innerPadding)
             )
             if (showExitDialog) {
-                ExitConfirmationDialog(
+                InformationDialog(
                     onConfirm = {
                         showExitDialog = false
                         onNavigateUp()

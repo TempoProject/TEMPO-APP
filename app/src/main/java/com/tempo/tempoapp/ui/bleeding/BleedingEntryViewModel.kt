@@ -85,17 +85,19 @@ class BleedingEntryViewModel(private val bleedingRepository: BleedingRepository)
                 if (dose.isBlank()) {
                     errors["dose"] = R.string.error_dose_required
                 } else {
-                    val normalizedDose = dose.replace(",", ".")
-                    try {
-                        val doseValue = normalizedDose.toDouble()
-                        if (doseValue <= 0) {
-                            errors["dose"] = R.string.error_dose_must_be_positive
+                    if (dose.contains(".") || dose.contains(",")) {
+                        throw NumberFormatException()
+                    } else {
+                        try {
+                            val doseValue = dose.toInt()
+                            if (doseValue <= 0) {
+                                errors["dose"] = R.string.error_dose_must_be_positive
+                            }
+                        } catch (e: NumberFormatException) {
+                            errors["dose"] = R.string.error_dose_invalid_format
                         }
-                    } catch (e: NumberFormatException) {
-                        errors["dose"] = R.string.error_dose_invalid_format
                     }
                 }
-
             }
 
 

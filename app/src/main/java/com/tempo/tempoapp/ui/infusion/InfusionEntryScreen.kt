@@ -55,7 +55,7 @@ import com.tempo.tempoapp.R
 import com.tempo.tempoapp.TempoAppBar
 import com.tempo.tempoapp.ui.AppViewModelProvider
 import com.tempo.tempoapp.ui.DosageUnit
-import com.tempo.tempoapp.ui.ExitConfirmationDialog
+import com.tempo.tempoapp.ui.InformationDialog
 import com.tempo.tempoapp.ui.bleeding.BleedingEntryDestination
 import com.tempo.tempoapp.ui.filterDoseInput
 import com.tempo.tempoapp.ui.navigation.NavigationDestination
@@ -150,7 +150,7 @@ fun InfusionEventScreen(
         )
 
         if (showExitDialog) {
-            ExitConfirmationDialog(
+            InformationDialog(
                 onConfirm = {
                     showExitDialog = false
                     onNavigateUp()
