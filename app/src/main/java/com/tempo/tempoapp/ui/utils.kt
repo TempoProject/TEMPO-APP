@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -25,6 +26,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -95,14 +100,21 @@ fun <T> ItemCount(
     count: T,
     @DrawableRes iconId: Int,
     @StringRes stringId: Int,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    @StringRes message: Int = R.string.exit_confirmation_message
 ) {
+    var showDialog by remember { mutableStateOf(false) }
+
+
     Column {
         Box(
             modifier = Modifier
                 .size(100.dp)
                 .clip(RoundedCornerShape(dimensionResource(id = R.dimen.padding_medium)))
-                .background(MaterialTheme.colorScheme.primary),
+                .background(MaterialTheme.colorScheme.primary)
+                .clickable {
+                    showDialog = true
+                },
             contentAlignment = Alignment.Center
         ) {
             Column(
@@ -112,7 +124,7 @@ fun <T> ItemCount(
                 Icon(
                     painter = painterResource(id = iconId),
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onPrimary
+                    tint = MaterialTheme.colorScheme.onPrimary,
                 )
                 Text(
                     text = count.toString(),
@@ -125,8 +137,18 @@ fun <T> ItemCount(
                     color = MaterialTheme.colorScheme.onPrimary
                 )
             }
-
         }
+
+        if (showDialog)
+            InformationDialog(
+                onConfirm = { showDialog = false },
+                onDismiss = { showDialog = false },
+                cancelEnabled = false,
+                icon = iconId,
+                title = stringId,
+                message = message,
+                confirm = R.string.confirm,
+            )
     }
 }
 
@@ -163,24 +185,26 @@ fun HomeBody(
                 count = bleedingEventList.count(),
                 iconId = R.drawable.baseline_bloodtype_24,
                 stringId = R.string.event,
-                modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_medium))
+                modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_medium)),
+                message = R.string.event_count_details_message
             )
             ItemCount(
                 count = infusionEventList.count(),
                 iconId = R.drawable.baseline_medication_24,
                 stringId = R.string.infusion,
-                modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_medium))
+                modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_medium)),
+                message = R.string.infusion_count_details_message
             )
             ItemCount(
                 count = stepsCount,
                 iconId = R.drawable.baseline_directions_walk_24,
                 stringId = R.string.steps,
-                modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_medium))
+                modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_medium)),
+                message = R.string.steps_count_details_message
             )
         }
+        Spacer(Modifier.padding(10.dp))
         EventsList(
-            //bleedingEventList,
-            //infusionEventList,
             combinedEvent,
             onInfusionItemClick = { onInfusionItemClick(it.id) },
             onBleedingItemClick = { onBleedingItemClick(it.id) },
@@ -250,28 +274,43 @@ fun filterDoseInput(input: String): String {
 }
 
 @Composable
-fun ExitConfirmationDialog(
+fun InformationDialog(
     onConfirm: () -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    cancelEnabled: Boolean = true,
+    @DrawableRes icon: Int = -1,
+    @StringRes title: Int = R.string.confirm,
+    @StringRes message: Int = R.string.exit_confirmation_message,
+    @StringRes confirm: Int = R.string.exit,
+    @StringRes cancel: Int = R.string.cancel
+
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
         icon = {
-            Icon(
-                imageVector = Icons.Default.Warning,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.error
-            )
+            if (icon != -1) {
+                Icon(
+                    painter = painterResource(id = icon),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            } else {
+                Icon(
+                    imageVector = Icons.Default.Warning,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.error
+                )
+            }
         },
         title = {
             Text(
-                text = stringResource(R.string.confirm),
+                text = stringResource(title),
                 style = MaterialTheme.typography.headlineSmall
             )
         },
         text = {
             Text(
-                text = stringResource(R.string.exit_confirmation_message),
+                text = stringResource(message),
                 style = MaterialTheme.typography.bodyMedium
             )
         },
@@ -279,16 +318,26 @@ fun ExitConfirmationDialog(
             TextButton(
                 onClick = onConfirm,
                 colors = ButtonDefaults.textButtonColors(
-                    contentColor = MaterialTheme.colorScheme.error
+
+                    contentColor = if (icon != -1) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
                 )
             ) {
-                Text(stringResource(R.string.exit)) // "Esci"
+                Text(stringResource(confirm))
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.cancel)) // "Annulla"
-            }
+            if (cancelEnabled)
+                TextButton(onClick = onDismiss) {
+                    Text(stringResource(cancel))
+                }
         }
     )
+}
+
+fun String.toStringDosage(): String {
+    return when (this) {
+        DosageUnit.MG_KG.name -> "mg/kg"
+        DosageUnit.IU.name -> "IU"
+        else -> ""
+    }
 }
