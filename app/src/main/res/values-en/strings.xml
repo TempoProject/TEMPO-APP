@@ -228,4 +228,13 @@
     <string name="exit_confirmation_message">Are you sure you want to exit? Unsaved data will be lost.</string>
     <string name="confirm">Confirm</string>
     <string name="prophylaxis_response_time">Infusion time:</string>
+
+    <string name="event_count_details_message">Total number of bleeding and pain events recorded in the app</string>
+    <string name="infusion_count_details_message">Number of on-demand infusions recorded in the app</string>
+    <string name="steps_count_details_message">Number of daily steps recorded through connected devices</string>
+    <string name="waiting_response">Awaiting response</string>
+    <string name="delete_prophylaxis">Delete prophylaxis</string>
+    <string name="delete_prophylaxis_confirmation">Are you sure you want to delete this prophylaxis?\nThis action cannot be undone</string>
+    <string name="delete_infusion_confirmation">Are you sure you want to delete this extra infusion?\nThis action cannot be undone</string>
+    <string name="delete_event_confirmation">Are you sure you want to delete this event?\nThis action cannot be undone</string>
 </resources>

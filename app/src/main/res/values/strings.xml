@@ -228,4 +228,13 @@
     <string name="exit_confirmation_message">Sei sicuro di voler uscire? I dati non salvati andranno persi.</string>
     <string name="confirm">Conferma</string>
     <string name="prophylaxis_response_time">Ora infusione:</string>
+    <string name="event_count_details_message">Numero totale di eventi di sanguinamento e dolore registrati nell\'app</string>
+    <string name="infusion_count_details_message">Numero di infusioni on-demand registrate nell\'app</string>
+    <string name="steps_count_details_message">Numero di passi giornalieri registrati tramite i dispositivi connessi</string>
+    <string name="waiting_response">In attesa di risposta</string>
+    <string name="delete_prophylaxis">Elimina profilassi</string>
+    <string name="delete_prophylaxis_confirmation">Sei sicuro di voler eliminare questa profilassi?\nQuesta azione non può essere annullata</string>
+    <string name="delete_infusion_confirmation">Sei sicuro di voler cancellare questa infusione extra?\\nQuesta azione non può essere annullata</string>
+    <string name="delete_event_confirmation">Sei sicuro di voler eliminare questo evento?\\nQuesta azione non può essere annullata.</string>
+
 </resources>
