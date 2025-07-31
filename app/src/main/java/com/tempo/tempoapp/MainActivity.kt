@@ -47,9 +47,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.PeriodicWorkRequestBuilder
-import androidx.work.WorkManager
 import com.tempo.tempoapp.ui.bleeding.BleedingDetailsScreen
 import com.tempo.tempoapp.ui.bleeding.BleedingEditScreen
 import com.tempo.tempoapp.ui.bleeding.BleedingEntryDestination
@@ -74,9 +71,7 @@ import com.tempo.tempoapp.ui.prophylaxis.ProphylaxisEditDestination
 import com.tempo.tempoapp.ui.prophylaxis.ProphylaxisEditScreen
 import com.tempo.tempoapp.ui.prophylaxis.ProphylaxisScreen
 import com.tempo.tempoapp.ui.theme.TempoAppTheme
-import com.tempo.tempoapp.workers.GetStepsRecord
 import kotlinx.coroutines.flow.first
-import java.util.concurrent.TimeUnit
 
 /**
  * MainActivity for the Tempo app.
@@ -96,7 +91,7 @@ class MainActivity : ComponentActivity() {
                 //)
                 LaunchedEffect(Unit) {
                     val availabilityStatus =
-                        HealthConnectClient.getSdkStatus(context, context.packageName)
+                        HealthConnectClient.getSdkStatus(context)
 
                     if (availabilityStatus == HealthConnectClient.SDK_UNAVAILABLE) {
                         navController.navigate("health_connect_unavailability_screen")
@@ -109,7 +104,11 @@ class MainActivity : ComponentActivity() {
                     if (availabilityStatus == HealthConnectClient.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED) {
                         // Optionally redirect to package installer to find a provider, for example:
                         val uriString =
-                            "market://details?id=${context.packageName}&url=healthconnect%3A%2F%2Fonboarding"
+                            "market://details?id=${getString(R.string.health_connect_package)}&url=${
+                                getString(
+                                    R.string.onboarding_url
+                                )
+                            }"
                         context.startActivity(
                             Intent(Intent.ACTION_VIEW).apply {
                                 setPackage("com.android.vending")
@@ -348,11 +347,17 @@ suspend fun checkAllPermissions(
 ): Boolean {
     // 1. Controllo Health Connect permissions
     val healthPermissionsGranted = checkHealthConnectPermissions(healthConnectClient)
-
     // 2. Controllo Standard permissions (location, bluetooth, notifications)
-    val standardPermissionsGranted = checkStandardPermissions(context)
+    Log.d("TempoApp", "Health permissions granted: $healthPermissionsGranted")
 
-    return healthPermissionsGranted && standardPermissionsGranted
+    // 2. Controllo Standard permissions
+    val standardPermissionsGranted = checkStandardPermissions(context)
+    Log.d("TempoApp", "Standard permissions granted: $standardPermissionsGranted")
+
+    val result = healthPermissionsGranted && standardPermissionsGranted
+    Log.d("TempoApp", "All permissions result: $result")
+
+    return result
 }
 
 suspend fun checkHealthConnectPermissions(healthConnectClient: HealthConnectClient): Boolean {
@@ -361,31 +366,40 @@ suspend fun checkHealthConnectPermissions(healthConnectClient: HealthConnectClie
         HealthPermission.getReadPermission(StepsRecord::class),
         HealthPermission.PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND
     )
-    return granted.containsAll(requiredHealthPermissions)
+    Log.d("TempoApp", "Granted HC permissions: $granted")
+    Log.d("TempoApp", "Required HC permissions: $requiredHealthPermissions")
+
+    val result = granted.containsAll(requiredHealthPermissions)
+    Log.d("TempoApp", "Health Connect permissions check result: $result")
+
+    return result
 }
 
 private fun checkStandardPermissions(context: Context): Boolean {
     val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        Log.d("TempoApp", "Checking permissions for Android 13+")
         arrayOf(
             Manifest.permission.POST_NOTIFICATIONS,
+            Manifest.permission.ACCESS_COARSE_LOCATION,
             //Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_COARSE_LOCATION,
-            Manifest.permission.BLUETOOTH_CONNECT,
-            Manifest.permission.BLUETOOTH_SCAN,
+            //Manifest.permission.BLUETOOTH_CONNECT,
+            //Manifest.permission.BLUETOOTH_SCAN,
         )
-    } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+    } /*else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        Log.d("TempoApp", "Checking permissions for Android 12+")
         arrayOf(
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION,
-            Manifest.permission.BLUETOOTH_CONNECT,
-            Manifest.permission.BLUETOOTH_SCAN,
+            //Manifest.permission.BLUETOOTH_CONNECT,
+            //Manifest.permission.BLUETOOTH_SCAN,
         )
-    } else {
+    } */ else {
+        Log.d("TempoApp", "Checking permissions for Android 11 and below")
         arrayOf(
-            Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION,
-            Manifest.permission.BLUETOOTH,
-            Manifest.permission.BLUETOOTH_ADMIN,
+            //Manifest.permission.ACCESS_FINE_LOCATION,
+            //Manifest.permission.BLUETOOTH,
+            //Manifest.permission.BLUETOOTH_ADMIN,
         )
     }
 
@@ -416,18 +430,20 @@ private suspend fun handlePermissionsGranted(
 
         if (context.preferences.isActiveProphylaxis.first() && canScheduleNotification) {
 
-            val workManager = WorkManager.getInstance(context)
+            /**val workManager = WorkManager.getInstance(context)
 
             //preferences = AppPreferencesManager(this)
-            /**
+
              * Schedule periodic work for saving records.
-             */
+
             workManager.enqueueUniquePeriodicWork(
-                "GetStepsRecord",
-                ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
-                PeriodicWorkRequestBuilder<GetStepsRecord>(15, TimeUnit.MINUTES)
-                    .build()
-            )
+            "GetStepsRecord",
+            ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
+            PeriodicWorkRequestBuilder<GetStepsRecord>(15, TimeUnit.MINUTES)
+            .build()
+            )*/
+
+            TempoApplication.startHealthConnectWorkManager(context)
             Log.d("TempoApp", "Active prophylaxis is enabled and can schedule notifications")
             navController?.navigate(HomeDestination.route) {
                 popUpTo("splash_screen") {
