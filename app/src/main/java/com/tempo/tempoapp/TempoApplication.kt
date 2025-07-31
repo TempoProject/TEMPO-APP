@@ -5,6 +5,7 @@ import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.util.Log
 import androidx.work.Constraints
 import androidx.work.Data
 import androidx.work.ExistingPeriodicWorkPolicy
@@ -40,6 +41,63 @@ class TempoApplication : Application() {
 
     private lateinit var workManager: WorkManager
     private lateinit var notificationManager: NotificationManager
+
+    companion object {
+
+        fun startHealthConnectWorkManager(context: Context) {
+            Log.d("TempoApplication", "Starting GetStepsRecord WorkManager")
+            WorkManager.getInstance(context).enqueueUniquePeriodicWork(
+                "GetStepsRecord",
+                ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
+                PeriodicWorkRequestBuilder<GetStepsRecord>(15, TimeUnit.MINUTES).build()
+            )
+        }
+
+        fun startFirebaseSyncWorkManagers(context: Context) {
+            Log.d("TempoApplication", "Starting Firebase sync WorkManagers")
+
+            val constraints = Constraints(
+                requiresBatteryNotLow = true,
+                requiredNetworkType = NetworkType.CONNECTED
+            )
+
+            val workManager = WorkManager.getInstance(context)
+
+            workManager.enqueueUniquePeriodicWork(
+                "StepsRecords",
+                ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
+                PeriodicWorkRequestBuilder<SaveStepsRecords>(30, TimeUnit.MINUTES)
+                    .setConstraints(constraints).build()
+            )
+
+            workManager.enqueueUniquePeriodicWork(
+                "BleedingRecords",
+                ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
+                PeriodicWorkRequestBuilder<SaveBleedingRecords>(30, TimeUnit.MINUTES)
+                    .setConstraints(constraints).build()
+            )
+
+            workManager.enqueueUniquePeriodicWork(
+                "InfusionRecords",
+                ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
+                PeriodicWorkRequestBuilder<SaveInfusionRecords>(30, TimeUnit.MINUTES)
+                    .setConstraints(constraints).build()
+            )
+
+            workManager.enqueueUniquePeriodicWork(
+                "AccelerometerRecords",
+                ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
+                PeriodicWorkRequestBuilder<MovesenseWorker>(30, TimeUnit.MINUTES)
+                    .setConstraints(constraints)
+                    .setInputData(Data.Builder().putInt("state", 6).build()).build()
+            )
+        }
+
+        fun stopHealthConnectWorkManager(context: Context) {
+            Log.d("TempoApplication", "Stopping GetStepsRecord WorkManager")
+            WorkManager.getInstance(context).cancelUniqueWork("GetStepsRecord")
+        }
+    }
 
     /**
      * Called when the application is starting.
@@ -85,6 +143,7 @@ class TempoApplication : Application() {
         container = AppDataContainer(this)
         workManager = WorkManager.getInstance(this)
 
+
         CoroutineScope(Dispatchers.IO).launch {
             val isFirstLaunch = preferences.isFirstLaunch.first()
             //preferences = AppPreferencesManager(this)
@@ -92,11 +151,14 @@ class TempoApplication : Application() {
              * Schedule periodic work for saving records.
              */
             withContext(Dispatchers.Main) {
-                val constraints =
+                if (!isFirstLaunch)
+                    startHealthConnectWorkManager(this@TempoApplication)
+                /*val constraints =
                     Constraints(
                         requiresBatteryNotLow = true,
                         requiredNetworkType = NetworkType.CONNECTED
                     )
+
                 val stepsRecords =
                     PeriodicWorkRequestBuilder<SaveStepsRecords>(
                         30,
@@ -104,6 +166,14 @@ class TempoApplication : Application() {
                     ).setConstraints(
                         constraints
                     ).build()
+
+                 val saveAccelerometer =
+                    PeriodicWorkRequestBuilder<MovesenseWorker>(
+                        30,
+                        TimeUnit.MINUTES
+                    ).setConstraints(
+                        constraints
+                    ).setInputData(Data.Builder().putInt("state", 6).build()).build()
 
                 val bleedingRecords =
                     PeriodicWorkRequestBuilder<SaveBleedingRecords>(
@@ -120,55 +190,48 @@ class TempoApplication : Application() {
                     ).setConstraints(
                         constraints
                     ).build()
+*/
 
-                val saveAccelerometer =
-                    PeriodicWorkRequestBuilder<MovesenseWorker>(
-                        30,
-                        TimeUnit.MINUTES
-                    ).setConstraints(
-                        constraints
-                    ).setInputData(Data.Builder().putInt("state", 6).build()).build()
-
-
-                if (!isFirstLaunch)
-                    workManager.enqueueUniquePeriodicWork(
-                        "GetStepsRecord",
-                        ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
-                        PeriodicWorkRequestBuilder<GetStepsRecord>(15, TimeUnit.MINUTES)
-                            .build()
-                    )
-
-
-
-
+                /*
                 workManager.enqueueUniquePeriodicWork(
-                    "StepsRecords",
+                    "GetStepsRecord",
                     ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
-                    stepsRecords
+                    PeriodicWorkRequestBuilder<GetStepsRecord>(15, TimeUnit.MINUTES)
+                        .build()
                 )
 
-                workManager.enqueueUniquePeriodicWork(
-                    "BleedingRecords",
-                    ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
-                    bleedingRecords
-                )
 
-                workManager.enqueueUniquePeriodicWork(
-                    "InfusionRecords",
-                    ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
-                    infusionRecords
-                )
 
-                workManager.enqueueUniquePeriodicWork(
-                    "AccelerometerRecords",
-                    ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
-                    saveAccelerometer
-                )
+                            workManager.enqueueUniquePeriodicWork(
+                                "StepsRecords",
+                                ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
+                                stepsRecords
+                            )
+
+                            workManager.enqueueUniquePeriodicWork(
+                                "BleedingRecords",
+                                ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
+                                bleedingRecords
+                            )
+
+                            workManager.enqueueUniquePeriodicWork(
+                                "InfusionRecords",
+                                ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
+                                infusionRecords
+                            )
+
+                            workManager.enqueueUniquePeriodicWork(
+                                "AccelerometerRecords",
+                                ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
+                                saveAccelerometer
+                            )
+
+             */
             }
         }
     }
-
 }
+
 
 /**
  * Firebase Realtime Database object.
