@@ -7,22 +7,8 @@ import androidx.work.WorkerParameters
 import com.google.firebase.installations.FirebaseInstallations
 import com.tempo.tempoapp.FirebaseRealtimeDatabase
 import com.tempo.tempoapp.TempoApplication
-import com.tempo.tempoapp.data.model.toBloodGlucoseToJson
-import com.tempo.tempoapp.data.model.toBloodPressureToJson
-import com.tempo.tempoapp.data.model.toBodyFatToJson
-import com.tempo.tempoapp.data.model.toBodyWaterMassToJson
-import com.tempo.tempoapp.data.model.toBoneMassToJson
-import com.tempo.tempoapp.data.model.toDistanceToJson
-import com.tempo.tempoapp.data.model.toElevationGainedToJson
-import com.tempo.tempoapp.data.model.toFloorsClimbedToJson
-import com.tempo.tempoapp.data.model.toHeartRateToJson
-import com.tempo.tempoapp.data.model.toOxygenSaturationToJson
-import com.tempo.tempoapp.data.model.toRespiratoryRateToJson
-import com.tempo.tempoapp.data.model.toSleepSessionToJson
 import com.tempo.tempoapp.data.model.toStepsRecordToJson
-import com.tempo.tempoapp.data.model.toTotalCaloriesBurnedToJson
 import com.tempo.tempoapp.data.model.toWeatherForecastToJson
-import com.tempo.tempoapp.data.model.toWeightToJson
 import kotlinx.coroutines.tasks.await
 
 /**
@@ -31,6 +17,8 @@ import kotlinx.coroutines.tasks.await
  * @param appContext The application context.
  * @param params The parameters to configure the worker.
  */
+
+// TODO remove in the next commit
 class SaveStepsRecords(appContext: Context, params: WorkerParameters) :
     CoroutineWorker(appContext, params) {
 
@@ -46,7 +34,7 @@ class SaveStepsRecords(appContext: Context, params: WorkerParameters) :
         (appContext.applicationContext as TempoApplication).container.stepsRecordRepository
     private val weatherForecastRepository =
         (appContext.applicationContext as TempoApplication).container.weatherForecastRepository
-
+/*
     private val totalCaloriesBurnedRepository =
         (this.applicationContext as TempoApplication).container.totalCaloriesBurnedRepository
 
@@ -88,7 +76,7 @@ class SaveStepsRecords(appContext: Context, params: WorkerParameters) :
 
     private val weightRepository =
         (this.applicationContext as TempoApplication).container.weightRepository
-
+*/
 
     // Firebase database reference
     private val databaseRef =
@@ -220,6 +208,7 @@ class SaveStepsRecords(appContext: Context, params: WorkerParameters) :
             stepsRecordRepository.updateItem(record.copy(isSent = true))
         }
 
+        /*
         totalCaloriesBurnedRepository.getAllDayTotalCaloriesBurned(isSent = false)
             .forEach { record ->
                 databaseRef.child("total_calories_burned").child(id).child(record.id.toString())
@@ -303,7 +292,7 @@ class SaveStepsRecords(appContext: Context, params: WorkerParameters) :
             databaseRef.child("heart_rate").child(id).child(record.id.toString())
                 .setValue(record.toHeartRateToJson(record.id))
             heartRateRepository.updateItem(record.copy(isSent = true))
-        }
+        }*/
 
         return Result.success()
     }
