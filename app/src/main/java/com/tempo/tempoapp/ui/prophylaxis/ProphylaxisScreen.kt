@@ -61,22 +61,18 @@ import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.PeriodicWorkRequestBuilder
-import androidx.work.WorkManager
 import com.tempo.tempoapp.R
+import com.tempo.tempoapp.TempoApplication
 import com.tempo.tempoapp.ui.AppViewModelProvider
 import com.tempo.tempoapp.ui.DosageUnit
 import com.tempo.tempoapp.ui.InformationDialog
 import com.tempo.tempoapp.ui.filterDoseInput
 import com.tempo.tempoapp.ui.home.HomeDestination
 import com.tempo.tempoapp.ui.navigation.NavigationDestination
-import com.tempo.tempoapp.workers.GetStepsRecord
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
-import java.util.concurrent.TimeUnit
 
 object ProphylaxisScreen : NavigationDestination {
     override val route: String = "prophylaxis"
@@ -340,28 +336,34 @@ fun ProphylaxisScreen(
 
                     Button(
                         onClick = {
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                                val alarmManager =
-                                    context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-                                if (!alarmManager.canScheduleExactAlarms()) {
-                                    showExactAlarmPermissionDialog =
-                                        !alarmManager.canScheduleExactAlarms()
+                            val canScheduleAlarms =
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                                    // Android 12+ - controlla permessi exact alarms
+                                    val alarmManager =
+                                        context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+                                    alarmManager.canScheduleExactAlarms()
                                 } else {
-                                    viewModel.saveProphylaxis(context) {
-                                        val workManager = WorkManager.getInstance(context)
-                                        workManager.enqueueUniquePeriodicWork(
-                                            "GetStepsRecord",
-                                            ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
-                                            PeriodicWorkRequestBuilder<GetStepsRecord>(
-                                                15,
-                                                TimeUnit.MINUTES
-                                            )
-                                                .build()
+                                    // Android 11 e precedenti - exact alarms sempre disponibili
+                                    true
+                                }
+                            if (!canScheduleAlarms) {
+                                showExactAlarmPermissionDialog = true
+                            } else {
+                                viewModel.saveProphylaxis(context) {
+                                    TempoApplication.startHealthConnectWorkManager(context)
+                                    /*val workManager = WorkManager.getInstance(context)
+                                    workManager.enqueueUniquePeriodicWork(
+                                        "GetStepsRecord",
+                                        ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
+                                        PeriodicWorkRequestBuilder<GetStepsRecord>(
+                                            15,
+                                            TimeUnit.MINUTES
                                         )
-
-                                        navController?.navigate(HomeDestination.route) {
-                                            popUpTo(ProphylaxisScreen.route) { inclusive = true }
-                                        }
+                                            .build()
+                                    )
+*/
+                                    navController?.navigate(HomeDestination.route) {
+                                        popUpTo(ProphylaxisScreen.route) { inclusive = true }
                                     }
                                 }
                             }
