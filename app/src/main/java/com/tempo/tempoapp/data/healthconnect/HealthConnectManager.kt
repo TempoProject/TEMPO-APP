@@ -28,7 +28,7 @@ import java.time.Instant
 /**
  * Minimum supported SDK version required for HealthConnect functionality.
  */
-const val MIN_SUPPORTED_SDK = Build.VERSION_CODES.O_MR1
+const val MIN_SUPPORTED_SDK = Build.VERSION_CODES.P
 
 /**
  * Manager class for interacting with HealthConnect functionalities.
