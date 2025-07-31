@@ -18,7 +18,7 @@ android {
     defaultConfig {
         applicationId = "com.tempo.tempoapp"
         minSdk = 26
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
 
@@ -49,6 +49,8 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
+
+        isCoreLibraryDesugaringEnabled = true
     }
     kotlinOptions {
         jvmTarget = "1.8"
@@ -64,14 +66,13 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
-    defaultConfig {
-        ksp {
-            arg("room.schemaLocation", "$projectDir/schemas")
-        }
-    }
+}
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
 }
 
 dependencies {
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -103,7 +104,7 @@ dependencies {
     implementation("androidx.room:room-ktx:${rootProject.extra["room_version"]}")
 
     // Health Connect
-    implementation("androidx.health.connect:connect-client:1.1.0-rc02")
+    implementation("androidx.health.connect:connect-client:1.1.0-rc03")
 
     // Coroutine
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.0")
