@@ -4,6 +4,7 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -46,13 +47,18 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.PermissionController
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.StepsRecord
 import androidx.navigation.NavController
 import com.tempo.tempoapp.R
 import com.tempo.tempoapp.preferences
+import com.tempo.tempoapp.ui.Loading
 import com.tempo.tempoapp.ui.navigation.NavigationDestination
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 object PermissionScreen : NavigationDestination {
@@ -71,24 +77,24 @@ fun PermissionScreen(
     val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         arrayOf(
             Manifest.permission.POST_NOTIFICATIONS,
+            Manifest.permission.ACCESS_COARSE_LOCATION,
             //Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_COARSE_LOCATION,
-            Manifest.permission.BLUETOOTH_CONNECT,
-            Manifest.permission.BLUETOOTH_SCAN,
+            //Manifest.permission.BLUETOOTH_CONNECT,
+            //Manifest.permission.BLUETOOTH_SCAN,
         )
-    } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+    }/* else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
         arrayOf(
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION,
-            Manifest.permission.BLUETOOTH_CONNECT,
-            Manifest.permission.BLUETOOTH_SCAN,
+            //Manifest.permission.BLUETOOTH_CONNECT,
+            //Manifest.permission.BLUETOOTH_SCAN,
         )
-    } else {
+    } */ else {
         arrayOf(
-            Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION,
-            Manifest.permission.BLUETOOTH,
-            Manifest.permission.BLUETOOTH_ADMIN,
+            //Manifest.permission.ACCESS_FINE_LOCATION,
+            //Manifest.permission.BLUETOOTH,
+            //Manifest.permission.BLUETOOTH_ADMIN,
         )
     }
 
@@ -97,11 +103,14 @@ fun PermissionScreen(
     var showSettingsDialog by remember { mutableStateOf(false) }
     var permissionAttempts by remember { mutableIntStateOf(0) }
     var healthPermissionAttempts by remember { mutableIntStateOf(0) }
+    var isCheckingHealthConnectPermissions by remember { mutableStateOf(false) }
 
     fun checkPermissions() {
         missingPermissions = permissions.filter {
             ContextCompat.checkSelfPermission(context, it) != PackageManager.PERMISSION_GRANTED
         }
+        Log.d("PermissionScreen", "Missing permissions: ${missingPermissions.joinToString()}")
+        Log.d("PermissionScreen", "Permission attempts: $permissionAttempts")
     }
 
     // Funzione per aprire le impostazioni dell'app
@@ -114,14 +123,18 @@ fun PermissionScreen(
 
     val launcherStandardPermissions =
         rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { results ->
+            Log.d("PermissionScreen", "Permission results: $results")
             checkPermissions()
             val allGranted = results.values.all { it }
+            Log.d("PermissionScreen", "All granted: $allGranted")
 
             if (allGranted) {
                 permissionAttempts = 0
             } else {
                 permissionAttempts++
+                Log.d("PermissionScreen", "Permission attempts now: $permissionAttempts")
                 if (permissionAttempts >= 2) {
+                    Log.d("PermissionScreen", "Showing settings dialog")
                     showSettingsDialog = true
                 }
             }
@@ -129,18 +142,64 @@ fun PermissionScreen(
 
     val requestPermissionActivityContract =
         PermissionController.createRequestPermissionResultContract()
+    Log.d("PermissionScreen", "Permission contract created: $requestPermissionActivityContract")
 
     val launcherHealthPermissions =
         rememberLauncherForActivityResult(requestPermissionActivityContract) { isGranted ->
+            Log.d("PermissionScreen", "Health Connect launcher callback triggered")
+            Log.d("PermissionScreen", "Granted permissions: $isGranted")
+
+            isCheckingHealthConnectPermissions = true
+
             val requiredPermissions = setOf(
                 HealthPermission.getReadPermission(StepsRecord::class),
                 HealthPermission.Companion.PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND
             )
 
             areHealthPermissionsGranted = isGranted.containsAll(requiredPermissions)
+            Log.d(
+                "PermissionScreen",
+                "All required permissions granted: $areHealthPermissionsGranted"
+            )
 
             if (!areHealthPermissionsGranted) {
-                showSettingsDialog = true
+                Log.d("PermissionScreen", "Not all permissions granted, showing settings dialog")
+
+                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S) {
+                    CoroutineScope(Dispatchers.Main).launch {
+                        delay(1000)
+                        try {
+                            val healthClient = HealthConnectClient.getOrCreate(context)
+                            val actualGranted =
+                                healthClient.permissionController.getGrantedPermissions()
+                            Log.d(
+                                "PermissionScreen",
+                                "Manual check - actually granted: $actualGranted"
+                            )
+
+                            val manualCheck = actualGranted.containsAll(requiredPermissions)
+                            Log.d("PermissionScreen", "Manual check result: $manualCheck")
+
+                            if (manualCheck) {
+                                Log.d("PermissionScreen", "✅ Manual check passed - updating state")
+                                areHealthPermissionsGranted = true
+                                // Non mostrare il dialog
+                            } else {
+                                Log.d("PermissionScreen", "❌ Manual check failed - showing dialog")
+                                showSettingsDialog = true
+                            }
+                        } catch (e: Exception) {
+                            Log.e("PermissionScreen", "Error in manual check", e)
+                            isCheckingHealthConnectPermissions = false
+                            showSettingsDialog = true
+                        }
+                    }
+                } else {
+                    isCheckingHealthConnectPermissions = false
+                    showSettingsDialog = true
+                }
+            } else {
+                Log.d("PermissionScreen", "All permissions granted!")
             }
         }
 
@@ -150,7 +209,12 @@ fun PermissionScreen(
     }
 
     LaunchedEffect(missingPermissions, areHealthPermissionsGranted) {
+        Log.d(
+            "PermissionScreen",
+            "LaunchedEffect - missingPermissions: ${missingPermissions.size}, areHealthPermissionsGranted: $areHealthPermissionsGranted"
+        )
         if (missingPermissions.isEmpty() && areHealthPermissionsGranted) {
+            Log.d("PermissionScreen", "All permissions OK, navigating to splash screen")
             coroutine.launch { context.preferences.setFirstLaunch(false) }
             navController.navigate("splash_screen") {
                 popUpTo(PermissionScreen.route) { inclusive = true }
@@ -219,7 +283,50 @@ fun PermissionScreen(
                             missingPermissions.isNotEmpty() -> {
                                 launcherStandardPermissions.launch(missingPermissions.toTypedArray())
                             }
+                            /*!areHealthPermissionsGranted -> {
+                                launcherHealthPermissions.launch(
+                                    setOf(
+                                        HealthPermission.getReadPermission(StepsRecord::class),
+                                        HealthPermission.Companion.PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND
+                                    )
+                                )
+                            }
 
+                            else -> {
+                                // Tutti i permessi sono concessi, naviga alla home
+
+                                // se l'utente è loggato vai alla home, altrimenti al login.
+
+                                navController.navigate("splash_screen") {
+                                    popUpTo(PermissionScreen.route) { inclusive = true }
+                                }
+                            }*/
+                            /*else -> {
+                                try {
+                                    val permissionsToRequest = setOf(
+                                        HealthPermission.getReadPermission(StepsRecord::class),
+                                        HealthPermission.Companion.PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND
+                                    )
+                                    Log.d(
+                                        "PermissionScreen",
+                                        "Permissions to request: $permissionsToRequest"
+                                    )
+
+                                    launcherHealthPermissions.launch(permissionsToRequest)
+                                    Log.d(
+                                        "PermissionScreen",
+                                        "Health Connect launcher called successfully"
+                                    )
+
+                                } catch (e: Exception) {
+                                    Log.e(
+                                        "PermissionScreen",
+                                        "Error launching Health Connect permissions",
+                                        e
+                                    )
+                                    showSettingsDialog = true
+                                }
+                            }*/
                             !areHealthPermissionsGranted -> {
                                 launcherHealthPermissions.launch(
                                     setOf(
@@ -248,6 +355,9 @@ fun PermissionScreen(
                 Text(stringResource(R.string.authorize_and_continue))
             }
         }
+
+        if (isCheckingHealthConnectPermissions)
+            Loading()
     }
 }
 
@@ -280,15 +390,15 @@ fun PermissionsList() {
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        PermissionItem(
-            image = ImageVector.vectorResource(R.drawable.outline_bluetooth_24),
-            iconDescription = "Icona Bluetooth",
-            title = stringResource(R.string.permission_bluetooth),
-            description = stringResource(R.string.permission_bluetooth_description)
-        )
+        /*        PermissionItem(
+                    image = ImageVector.vectorResource(R.drawable.outline_bluetooth_24),
+                    iconDescription = "Icona Bluetooth",
+                    title = stringResource(R.string.permission_bluetooth),
+                    description = stringResource(R.string.permission_bluetooth_description)
+                )
 
-        Spacer(modifier = Modifier.height(12.dp))
-
+                Spacer(modifier = Modifier.height(12.dp))
+        */
         PermissionItem(
             image = Icons.Default.Notifications,
             iconDescription = "Icona Notifica",
