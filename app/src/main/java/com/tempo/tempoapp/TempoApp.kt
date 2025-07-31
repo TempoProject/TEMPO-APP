@@ -11,21 +11,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
-import com.tempo.tempoapp.data.healthconnect.HealthConnectManager
-import com.tempo.tempoapp.ui.navigation.TempoNavHost
-
-/**
- * Composable function for the Tempo app.
- */
-@Composable
-fun TempoApp(
-    navController: NavHostController = rememberNavController(),
-    healthConnectManager: HealthConnectManager,
-) {
-    TempoNavHost(navController = navController, healthConnectManager)
-}
 
 /**
  * Composable function for the Tempo app's app bar.
