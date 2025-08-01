@@ -71,6 +71,7 @@ import com.tempo.tempoapp.ui.prophylaxis.ProphylaxisEditDestination
 import com.tempo.tempoapp.ui.prophylaxis.ProphylaxisEditScreen
 import com.tempo.tempoapp.ui.prophylaxis.ProphylaxisScreen
 import com.tempo.tempoapp.ui.theme.TempoAppTheme
+import com.tempo.tempoapp.utils.CrashlyticsHelper
 import kotlinx.coroutines.flow.first
 
 /**
@@ -361,50 +362,92 @@ suspend fun checkAllPermissions(
 }
 
 suspend fun checkHealthConnectPermissions(healthConnectClient: HealthConnectClient): Boolean {
-    val granted = healthConnectClient.permissionController.getGrantedPermissions()
-    val requiredHealthPermissions = setOf(
-        HealthPermission.getReadPermission(StepsRecord::class),
-        HealthPermission.PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND
-    )
-    Log.d("TempoApp", "Granted HC permissions: $granted")
-    Log.d("TempoApp", "Required HC permissions: $requiredHealthPermissions")
+    return try {
+        val granted = healthConnectClient.permissionController.getGrantedPermissions()
+        val requiredHealthPermissions = setOf(
+            HealthPermission.getReadPermission(StepsRecord::class),
+            HealthPermission.PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND
+        )
 
-    val result = granted.containsAll(requiredHealthPermissions)
-    Log.d("TempoApp", "Health Connect permissions check result: $result")
+        Log.d("TempoApp", "Granted HC permissions: $granted")
+        Log.d("TempoApp", "Required HC permissions: $requiredHealthPermissions")
 
-    return result
+        val result = granted.containsAll(requiredHealthPermissions)
+        Log.d("TempoApp", "Health Connect permissions check result: $result")
+
+        CrashlyticsHelper.logCriticalAction(
+            action = "health_connect_permission_check",
+            success = result,
+            details = if (result) "All HC permissions granted" else "Missing HC permissions"
+        )
+
+        return result
+
+    } catch (e: Exception) {
+        CrashlyticsHelper.logCriticalAction(
+            action = "health_connect_permission_check",
+            success = false,
+            details = "Exception checking HC permissions: ${e.message}"
+        )
+
+        Log.e("TempoApp", "Error checking Health Connect permissions", e)
+        false
+    }
 }
 
 private fun checkStandardPermissions(context: Context): Boolean {
-    val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        Log.d("TempoApp", "Checking permissions for Android 13+")
-        arrayOf(
-            Manifest.permission.POST_NOTIFICATIONS,
-            Manifest.permission.ACCESS_COARSE_LOCATION,
-            //Manifest.permission.ACCESS_FINE_LOCATION,
-            //Manifest.permission.BLUETOOTH_CONNECT,
-            //Manifest.permission.BLUETOOTH_SCAN,
-        )
-    } /*else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        Log.d("TempoApp", "Checking permissions for Android 12+")
-        arrayOf(
-            Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_COARSE_LOCATION,
-            //Manifest.permission.BLUETOOTH_CONNECT,
-            //Manifest.permission.BLUETOOTH_SCAN,
-        )
-    } */ else {
-        Log.d("TempoApp", "Checking permissions for Android 11 and below")
-        arrayOf(
-            Manifest.permission.ACCESS_COARSE_LOCATION,
-            //Manifest.permission.ACCESS_FINE_LOCATION,
-            //Manifest.permission.BLUETOOTH,
-            //Manifest.permission.BLUETOOTH_ADMIN,
-        )
-    }
+    return try {
+        val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            arrayOf(
+                Manifest.permission.POST_NOTIFICATIONS,
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+            )
+        } else {
+            arrayOf(
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+            )
+        }
 
-    return permissions.all { permission ->
-        ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED
+        val allGranted = permissions.all { permission ->
+            ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED
+        }
+
+        CrashlyticsHelper.logCriticalAction(
+            action = "standard_permissions_check",
+            success = allGranted,
+            details = if (allGranted) "All standard permissions granted" else "Missing standard permissions"
+        )
+
+
+        permissions.forEach { permission ->
+            val granted = ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED
+            val permissionType = when {
+                permission.contains("NOTIFICATION") -> "notification"
+                permission.contains("LOCATION") -> "location"
+                permission.contains("BLUETOOTH") -> "bluetooth"
+                else -> "unknown"
+            }
+
+            if (!granted) {
+                CrashlyticsHelper.logCriticalAction(
+                    action = "${permissionType}_permission_missing",
+                    success = false,
+                    details = "Permission $permission not granted"
+                )
+            }
+        }
+
+        allGranted
+
+    } catch (e: Exception) {
+        CrashlyticsHelper.logCriticalAction(
+            action = "standard_permissions_check",
+            success = false,
+            details = "Exception checking standard permissions: ${e.message}"
+        )
+
+        Log.e("TempoApp", "Error checking standard permissions", e)
+        false
     }
 }
 
