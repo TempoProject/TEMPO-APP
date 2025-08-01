@@ -13,6 +13,7 @@ import androidx.work.NetworkType
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.google.firebase.Firebase
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.database
 import com.tempo.tempoapp.data.AppContainer
@@ -107,6 +108,8 @@ class TempoApplication : Application() {
         notificationManager =
             getSystemService(NOTIFICATION_SERVICE) as
                     NotificationManager
+
+        initializeCrashlytics()
 
         /**
          * Create notification channels.
@@ -229,9 +232,53 @@ class TempoApplication : Application() {
              */
             }
         }
+
+        configureUserIdIfLoggedIn()
+    }
+
+    private fun configureUserIdIfLoggedIn() {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val isLoggedIn = preferences.isLoggedIn.first()
+                if (isLoggedIn) {
+                    val userId = preferences.userId.first()
+                    if (!userId.isNullOrEmpty()) {
+                        setCrashlyticsUserId(userId)
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("TempoApplication", "Failed to configure Crashlytics userId", e)
+            }
+        }
+    }
+
+    private fun initializeCrashlytics() {
+        try {
+            FirebaseCrashlytics.getInstance().isCrashlyticsCollectionEnabled = true
+
+            FirebaseCrashlytics.getInstance().setCustomKey("app_version", BuildConfig.VERSION_NAME)
+            FirebaseCrashlytics.getInstance().setCustomKey("app_version_code", BuildConfig.VERSION_CODE)
+            FirebaseCrashlytics.getInstance().setCustomKey("build_type", BuildConfig.BUILD_TYPE)
+
+            FirebaseCrashlytics.getInstance().log("Tempo App initialized successfully")
+
+        } catch (e: Exception) {
+            Log.e("TempoApplication", "Error initializing Crashlytics: ${e.message}")
+        }
+    }
+
+    fun setCrashlyticsUserId(userId: String) {
+        try {
+            FirebaseCrashlytics.getInstance().setUserId("tempo_user_$userId")
+            FirebaseCrashlytics.getInstance().setCustomKey("user_logged_in", true)
+            FirebaseCrashlytics.getInstance().log("User logged in with ID: $userId")
+
+            Log.d("TempoApplication", "Crashlytics user ID set: $userId")
+        } catch (e: Exception) {
+            Log.e("TempoApplication", "Failed to set Crashlytics user ID", e)
+        }
     }
 }
-
 
 /**
  * Firebase Realtime Database object.
