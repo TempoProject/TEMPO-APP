@@ -10,6 +10,7 @@ import com.tempo.tempoapp.data.repository.InfusionRepository
 import com.tempo.tempoapp.ui.DosageUnit
 import com.tempo.tempoapp.ui.toStringDate
 import com.tempo.tempoapp.ui.toStringTime
+import com.tempo.tempoapp.utils.CrashlyticsHelper
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.temporal.ChronoUnit
@@ -85,18 +86,42 @@ class InfusionEntryViewModel(private val infusionRepository: InfusionRepository)
      * Saves the infusion event if the input is valid.
      */
     suspend fun onSave(): Boolean {
-        val validationErrors = validateInput()
+        return try {
+            val validationErrors = validateInput()
 
-        uiState = uiState.copy(
-            isEntryValid = validationErrors.isEmpty(),
-            validationErrors = validationErrors,
-            hasAttemptedSave = true
-        )
+            uiState = uiState.copy(
+                isEntryValid = validationErrors.isEmpty(),
+                validationErrors = validationErrors,
+                hasAttemptedSave = true
+            )
 
-        return if (validationErrors.isEmpty()) {
-            infusionRepository.insertItem(uiState.infusionDetails.toEntity())
-            true
-        } else {
+            if (validationErrors.isEmpty()) {
+                infusionRepository.insertItem(uiState.infusionDetails.toEntity())
+
+                CrashlyticsHelper.logCriticalAction(
+                    action = "infusion_event_insert",
+                    success = true,
+                    details = "New infusion event saved successfully"
+                )
+
+                true
+            } else {
+                CrashlyticsHelper.logCriticalAction(
+                    action = "infusion_event_insert",
+                    success = false,
+                    details = "Validation failed: ${validationErrors.size} errors"
+                )
+
+                false
+            }
+
+        } catch (e: Exception) {
+            CrashlyticsHelper.logCriticalAction(
+                action = "infusion_event_insert",
+                success = false,
+                details = "Exception occurred: ${e.message}"
+            )
+
             false
         }
     }

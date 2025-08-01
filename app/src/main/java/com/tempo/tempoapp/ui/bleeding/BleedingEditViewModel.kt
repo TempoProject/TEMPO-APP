@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tempo.tempoapp.R
 import com.tempo.tempoapp.data.repository.BleedingRepository
+import com.tempo.tempoapp.utils.CrashlyticsHelper
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -132,23 +133,42 @@ class BleedingEditViewModel(
      * Triggers validation only when called.
      */
     suspend fun update(): Boolean {
-        val validationErrors = validateInput()
+        return try {
+            val validationErrors = validateInput()
 
-        uiState = uiState.copy(
-            isEntryValid = validationErrors.isEmpty(),
-            validationErrors = validationErrors,
-            hasAttemptedSave = true
-        )
+            uiState = uiState.copy(
+                isEntryValid = validationErrors.isEmpty(),
+                validationErrors = validationErrors,
+                hasAttemptedSave = true
+            )
 
-        return if (validationErrors.isEmpty()) {
-            try {
+            if (validationErrors.isEmpty()) {
                 bleedingRepository.updateItem(uiState.bleedingDetails.toEntity())
+
+                CrashlyticsHelper.logCriticalAction(
+                    action = "bleeding_event_update",
+                    success = true,
+                    details = "Bleeding event updated successfully"
+                )
+
                 true
-            } catch (e: Exception) {
-                // Handle update error
+            } else {
+                CrashlyticsHelper.logCriticalAction(
+                    action = "bleeding_event_update",
+                    success = false,
+                    details = "Validation failed: ${validationErrors.size} errors"
+                )
+
                 false
             }
-        } else {
+
+        } catch (e: Exception) {
+            CrashlyticsHelper.logCriticalAction(
+                action = "bleeding_event_update",
+                success = false,
+                details = "Exception occurred: ${e.message}"
+            )
+
             false
         }
     }

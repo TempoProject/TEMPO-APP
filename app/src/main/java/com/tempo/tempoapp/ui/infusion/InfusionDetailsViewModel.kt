@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tempo.tempoapp.data.repository.InfusionRepository
+import com.tempo.tempoapp.utils.CrashlyticsHelper
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.filterNotNull
@@ -38,13 +39,37 @@ class InfusionDetailsViewModel(
                 started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
                 initialValue = InfusionDetailsUiState(isLoading = true)
             )
+
     /**
      * Deletes the infusion item.
      */
     suspend fun deleteItem() {
-        val currentState = uiState.value
-        if (!currentState.isLoading && currentState.id != -1) {
-            infusionRepository.deleteItem(currentState.infusionDetails.toEntity())
+        try {
+            val currentState = uiState.value
+            if (!currentState.isLoading && currentState.id != -1) {
+                infusionRepository.deleteItem(currentState.infusionDetails.toEntity())
+
+                CrashlyticsHelper.logCriticalAction(
+                    action = "infusion_event_delete",
+                    success = true,
+                    details = "Infusion event deleted successfully"
+                )
+            } else {
+
+                CrashlyticsHelper.logCriticalAction(
+                    action = "infusion_event_delete",
+                    success = false,
+                    details = "Invalid delete attempt - loading: ${currentState.isLoading}, id: ${currentState.id}"
+                )
+            }
+
+        } catch (e: Exception) {
+
+            CrashlyticsHelper.logCriticalAction(
+                action = "infusion_event_delete",
+                success = false,
+                details = "Exception occurred: ${e.message}"
+            )
         }
     }
 

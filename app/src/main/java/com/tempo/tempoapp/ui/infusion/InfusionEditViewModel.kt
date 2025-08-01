@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tempo.tempoapp.R
 import com.tempo.tempoapp.data.repository.InfusionRepository
+import com.tempo.tempoapp.utils.CrashlyticsHelper
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -58,23 +59,42 @@ class InfusionEditViewModel(
     }
 
     suspend fun update(): Boolean {
-        val validationErrors = validateInput()
+        return try {
+            val validationErrors = validateInput()
 
-        uiState = uiState.copy(
-            isEntryValid = validationErrors.isEmpty(),
-            validationErrors = validationErrors,
-            hasAttemptedSave = true
-        )
+            uiState = uiState.copy(
+                isEntryValid = validationErrors.isEmpty(),
+                validationErrors = validationErrors,
+                hasAttemptedSave = true
+            )
 
-        return if (validationErrors.isEmpty()) {
-            try {
+            if (validationErrors.isEmpty()) {
                 infusionRepository.updateItem(uiState.infusionDetails.toEntity())
+
+                CrashlyticsHelper.logCriticalAction(
+                    action = "infusion_event_update",
+                    success = true,
+                    details = "Infusion event updated successfully"
+                )
+
                 true
-            } catch (e: Exception) {
-                // Handle update error
+            } else {
+                CrashlyticsHelper.logCriticalAction(
+                    action = "infusion_event_update",
+                    success = false,
+                    details = "Validation failed: ${validationErrors.size} errors"
+                )
+
                 false
             }
-        } else {
+
+        } catch (e: Exception) {
+            CrashlyticsHelper.logCriticalAction(
+                action = "infusion_event_update",
+                success = false,
+                details = "Exception occurred: ${e.message}"
+            )
+
             false
         }
     }

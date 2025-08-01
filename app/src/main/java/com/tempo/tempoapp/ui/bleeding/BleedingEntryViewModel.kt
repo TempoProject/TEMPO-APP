@@ -10,6 +10,7 @@ import com.tempo.tempoapp.data.repository.BleedingRepository
 import com.tempo.tempoapp.ui.DosageUnit
 import com.tempo.tempoapp.ui.toStringDate
 import com.tempo.tempoapp.ui.toStringTime
+import com.tempo.tempoapp.utils.CrashlyticsHelper
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.temporal.ChronoUnit
@@ -118,18 +119,43 @@ class BleedingEntryViewModel(private val bleedingRepository: BleedingRepository)
      * Saves the bleeding event if the input is valid.
      */
     suspend fun onSave(): Boolean {
-        val validationErrors = validateInput()
+        return try {
+            val validationErrors = validateInput()
 
-        uiState = uiState.copy(
-            isEntryValid = validationErrors.isEmpty(),
-            validationErrors = validationErrors,
-            hasAttemptedSave = true
-        )
+            uiState = uiState.copy(
+                isEntryValid = validationErrors.isEmpty(),
+                validationErrors = validationErrors,
+                hasAttemptedSave = true
+            )
 
-        return if (validationErrors.isEmpty()) {
-            bleedingRepository.insertItem(uiState.bleedingDetails.toEntity())
-            true
-        } else {
+            if (validationErrors.isEmpty()) {
+                bleedingRepository.insertItem(uiState.bleedingDetails.toEntity())
+
+                CrashlyticsHelper.logCriticalAction(
+                    action = "bleeding_event_insert",
+                    success = true,
+                    details = "New bleeding event saved successfully"
+                )
+
+                true
+            } else {
+                CrashlyticsHelper.logCriticalAction(
+                    action = "bleeding_event_insert",
+                    success = false,
+                    details = "Validation failed: ${validationErrors.size} errors"
+                )
+
+                false
+            }
+
+        } catch (e: Exception) {
+            // ⭐ Log solo dell'azione critica - eccezione
+            CrashlyticsHelper.logCriticalAction(
+                action = "bleeding_event_insert",
+                success = false,
+                details = "Exception occurred: ${e.message}"
+            )
+
             false
         }
     }

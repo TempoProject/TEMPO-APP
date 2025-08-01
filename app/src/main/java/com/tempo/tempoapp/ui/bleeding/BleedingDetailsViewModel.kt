@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tempo.tempoapp.data.repository.BleedingRepository
+import com.tempo.tempoapp.utils.CrashlyticsHelper
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.filterNotNull
@@ -43,9 +44,32 @@ class BleedingDetailsViewModel(
      * Deletes the currently displayed bleeding event item.
      */
     suspend fun deleteItem() {
-        val currentState = uiState.value
-        if (!currentState.isLoading && currentState.id != -1) {
-            bleedingRepository.deleteItem(currentState.bleedingDetails.toEntity())
+        try {
+            val currentState = uiState.value
+            if (!currentState.isLoading && currentState.id != -1) {
+                bleedingRepository.deleteItem(currentState.bleedingDetails.toEntity())
+
+
+                CrashlyticsHelper.logCriticalAction(
+                    action = "bleeding_event_delete",
+                    success = true,
+                    details = "Bleeding event deleted successfully"
+                )
+            } else {
+
+                CrashlyticsHelper.logCriticalAction(
+                    action = "bleeding_event_delete",
+                    success = false,
+                    details = "Invalid delete attempt - loading: ${currentState.isLoading}, id: ${currentState.id}"
+                )
+            }
+
+        } catch (e: Exception) {
+            CrashlyticsHelper.logCriticalAction(
+                action = "bleeding_event_delete",
+                success = false,
+                details = "Exception occurred: ${e.message}"
+            )
         }
     }
 
