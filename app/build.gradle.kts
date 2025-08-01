@@ -3,8 +3,10 @@ import java.util.Properties
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
-    id("com.google.devtools.ksp") version "1.9.20-1.0.14"
+    id("com.google.devtools.ksp") version "2.0.20-1.0.25"
     id("com.google.gms.google-services")
+    alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.firebase.crashlytics)
 }
 
 android {
@@ -58,9 +60,9 @@ android {
     buildFeatures {
         compose = true
     }
-    composeOptions {
+    /*composeOptions {
         kotlinCompilerExtensionVersion = "1.5.5"
-    }
+    }*/
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -119,9 +121,10 @@ dependencies {
     implementation("com.google.code.gson:gson:2.11.0")
 
     // Firebase
-    implementation(platform("com.google.firebase:firebase-bom:33.15.0"))
+    implementation(platform("com.google.firebase:firebase-bom:34.0.0"))
     implementation("com.google.firebase:firebase-database")
-    implementation("com.google.firebase:firebase-installations:18.0.0")
+    implementation("com.google.firebase:firebase-installations:19.0.0")
+    implementation("com.google.firebase:firebase-crashlytics")
 
     // RxAndroidBle (movesense)
     implementation(files("libs/mdslib-3.15.0(1)-release.aar"))
