@@ -10,6 +10,7 @@ import androidx.work.WorkerParameters
 import com.tempo.tempoapp.TempoApplication
 import com.tempo.tempoapp.data.model.toTimestamp
 import com.tempo.tempoapp.data.repository.StepsRecordRepository
+import com.tempo.tempoapp.utils.CrashlyticsHelper
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 
@@ -20,18 +21,29 @@ class GetStepsRecord(ctx: Context, params: WorkerParameters) : CoroutineWorker(c
     private val stepsRecordRepository = (ctx as TempoApplication).container.stepsRecordRepository
 
     override suspend fun doWork(): Result {
+        return try {
+            val startTime = Instant.now().minus(720, ChronoUnit.MINUTES)
+            val endTime = Instant.now()
 
-        val startTime = Instant.now().minus(720, ChronoUnit.MINUTES)
-        val endTime = Instant.now()
+            readStepsRecord(
+                healthConnectManager,
+                startTime,
+                endTime,
+                stepsRecordRepository
+            )
 
-        readStepsRecord(
-            healthConnectManager,
-            startTime,
-            endTime,
-            stepsRecordRepository
-        )
 
-        return Result.success()
+
+
+            Result.success()
+        } catch (e: Exception) {
+            CrashlyticsHelper.logCriticalAction(
+                action = "get_steps_record_worker",
+                success = false,
+                details = "Worker failed: ${e.message}"
+            )
+            Result.failure()
+        }
     }
 
     private suspend fun readStepsRecord(
