@@ -56,6 +56,7 @@ import com.tempo.tempoapp.R
 import com.tempo.tempoapp.preferences
 import com.tempo.tempoapp.ui.Loading
 import com.tempo.tempoapp.ui.navigation.NavigationDestination
+import com.tempo.tempoapp.utils.CrashlyticsHelper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -124,18 +125,53 @@ fun PermissionScreen(
     val launcherStandardPermissions =
         rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { results ->
             Log.d("PermissionScreen", "Permission results: $results")
+
+            results.forEach { (permission, granted) ->
+                val permissionType = when {
+                    permission.contains("NOTIFICATION") -> "notification"
+                    permission.contains("LOCATION") -> "location"
+                    permission.contains("BLUETOOTH") -> "bluetooth"
+                    else -> "unknown"
+                }
+
+                CrashlyticsHelper.logCriticalAction(
+                    action = "${permissionType}_permission_result",
+                    success = granted,
+                    details = "User ${if (granted) "granted" else "denied"} $permission"
+                )
+            }
             checkPermissions()
             val allGranted = results.values.all { it }
             Log.d("PermissionScreen", "All granted: $allGranted")
 
             if (allGranted) {
                 permissionAttempts = 0
+
+                CrashlyticsHelper.logCriticalAction(
+                    action = "standard_permissions_flow",
+                    success = true,
+                    details = "All standard permissions granted by user"
+                )
+
             } else {
                 permissionAttempts++
                 Log.d("PermissionScreen", "Permission attempts now: $permissionAttempts")
+
+                CrashlyticsHelper.logCriticalAction(
+                    action = "standard_permissions_flow",
+                    success = false,
+                    details = "Permissions denied, attempt #$permissionAttempts"
+                )
+
                 if (permissionAttempts >= 2) {
                     Log.d("PermissionScreen", "Showing settings dialog")
                     showSettingsDialog = true
+
+                    CrashlyticsHelper.logCriticalAction(
+                        action = "permissions_manual_settings_required",
+                        success = false,
+                        details = "User needs to grant permissions manually after $permissionAttempts attempts"
+                    )
                 }
             }
         }
@@ -157,6 +193,13 @@ fun PermissionScreen(
             )
 
             areHealthPermissionsGranted = isGranted.containsAll(requiredPermissions)
+
+            CrashlyticsHelper.logCriticalAction(
+                action = "health_connect_permission_result",
+                success = areHealthPermissionsGranted,
+                details = if (areHealthPermissionsGranted) "All HC permissions granted" else "HC permissions incomplete"
+            )
+
             Log.d(
                 "PermissionScreen",
                 "All required permissions granted: $areHealthPermissionsGranted"
@@ -181,17 +224,35 @@ fun PermissionScreen(
                             Log.d("PermissionScreen", "Manual check result: $manualCheck")
 
                             if (manualCheck) {
-                                Log.d("PermissionScreen", "✅ Manual check passed - updating state")
+                                Log.d("PermissionScreen", "Manual check passed - updating state")
                                 areHealthPermissionsGranted = true
+
+                                CrashlyticsHelper.logCriticalAction(
+                                    action = "health_connect_manual_check",
+                                    success = true,
+                                    details = "Manual HC permission check passed"
+                                )
                                 // Non mostrare il dialog
                             } else {
-                                Log.d("PermissionScreen", "❌ Manual check failed - showing dialog")
+                                Log.d("PermissionScreen", "Manual check failed - showing dialog")
                                 showSettingsDialog = true
+
+                                CrashlyticsHelper.logCriticalAction(
+                                    action = "health_connect_manual_check",
+                                    success = false,
+                                    details = "Manual HC permission check failed"
+                                )
                             }
                         } catch (e: Exception) {
                             Log.e("PermissionScreen", "Error in manual check", e)
                             isCheckingHealthConnectPermissions = false
                             showSettingsDialog = true
+
+                            CrashlyticsHelper.logCriticalAction(
+                                action = "health_connect_manual_check",
+                                success = false,
+                                details = "Manual check error: ${e.message}"
+                            )
                         }
                     }
                 } else {
