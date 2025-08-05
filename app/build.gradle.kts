@@ -13,7 +13,7 @@ android {
     namespace = "com.tempo.tempoapp"
     compileSdk = 36
     // Allow buildConfig to load properties from local.properties file
-    buildFeatures{
+    buildFeatures {
         buildConfig = true
     }
 
@@ -34,8 +34,15 @@ android {
         properties.load(project.rootProject.file("local.properties").inputStream())
         buildConfigField("String", "FIREBASE_URL", "\"${properties.getProperty("FIREBASE_URL")}\"")
         buildConfigField("String", "API_KEY", "\"${properties.getProperty("API_KEY")}\"")
-        buildConfigField("String", "OPEN_WEATHER_URL", "\"${properties.getProperty("OPEN_WEATHER_URL")}\"")
-
+        buildConfigField(
+            "String",
+            "OPEN_WEATHER_URL",
+            "\"${properties.getProperty("OPEN_WEATHER_URL")}\""
+        )
+        buildConfigField("String", "APP_EMAIL", "\"${properties.getProperty("API_EMAIL")}\"")
+        buildConfigField("String", "APP_PASSWORD", "\"${properties.getProperty("API_PASSWORD")}\"")
+        buildConfigField("String", "API_BASE_URL", "\"${properties.getProperty("API_BASE_URL")}\"")
+        buildConfigField("String", "REGISTRATION_URL", "\"${properties.getProperty("REGISTRATION_URL")}\"")
 
     }
 

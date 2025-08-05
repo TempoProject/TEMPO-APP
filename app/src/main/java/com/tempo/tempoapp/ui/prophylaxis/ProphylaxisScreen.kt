@@ -351,6 +351,7 @@ fun ProphylaxisScreen(
                             } else {
                                 viewModel.saveProphylaxis(context) {
                                     TempoApplication.startHealthConnectWorkManager(context)
+                                    TempoApplication.updateSessionID(context)
                                     /*val workManager = WorkManager.getInstance(context)
                                     workManager.enqueueUniquePeriodicWork(
                                         "GetStepsRecord",
