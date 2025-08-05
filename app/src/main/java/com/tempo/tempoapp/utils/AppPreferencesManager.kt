@@ -24,6 +24,8 @@ class AppPreferencesManager(private val context: Context) {
         val IS_FIRST_LAUNCH = booleanPreferencesKey("is_first_launch")
         val IS_LOGGED_IN = booleanPreferencesKey("is_logged_in")
         val USER_ID = stringPreferencesKey("user_id")
+
+        val SESSION_ID = stringPreferencesKey("session_id")
         val ACTIVE_PROPHYLAXIS = booleanPreferencesKey("active_prophylaxis")
         val SCHEDULING_MODE = stringPreferencesKey("scheduling_mode")
         val SELECTED_DAYS = stringPreferencesKey("selected_days")
@@ -56,6 +58,15 @@ class AppPreferencesManager(private val context: Context) {
     suspend fun setUserId(id: String) {
         context.dataStore.edit { preferences ->
             preferences[USER_ID] = id
+        }
+    }
+
+    val sessionId: Flow<String?> = context.dataStore.data
+        .map { preferences -> preferences[SESSION_ID] }
+
+    suspend fun setSessionId(sessionId: String) {
+        context.dataStore.edit { preferences ->
+            preferences[SESSION_ID] = sessionId
         }
     }
 
