@@ -237,5 +237,6 @@
     <string name="delete_infusion_confirmation">Sei sicuro di voler cancellare questa infusione extra?\\nQuesta azione non può essere annullata</string>
     <string name="delete_event_confirmation">Sei sicuro di voler eliminare questo evento?\\nQuesta azione non può essere annullata.</string>
     <string name="postponed_prophylaxis">Profilassi posticipata</string>
+    <string name="error_login">Errore durante il login. Riprova</string>
 
 </resources>
