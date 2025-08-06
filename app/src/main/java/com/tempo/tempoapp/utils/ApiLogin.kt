@@ -17,10 +17,10 @@ private val retrofit = Retrofit.Builder().addConverterFactory(GsonConverterFacto
     .build()
 
 interface ApiLoginService {
-    @POST("patient/verify")
+    @POST("deanonymization/patient/verify")
     suspend fun verifyPatient(@Body body: PatientVerify): Response<Unit>
 
-    @POST("user/login")
+    @POST("deanonymization/user/login")
     suspend fun sessionID(@Body body: UserLoginRequest): Response<UserLoginResponse>
 
 }
