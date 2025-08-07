@@ -322,7 +322,7 @@ suspend fun checkPermissionsAndRun(
     navController: NavController?,
     context: Context
 ) {
-    // TODO: Check if user is logged in via app preferences
+
     Log.d("TempoApp", "Checking permissions...")
     val allPermissionsGranted = checkAllPermissions(healthConnectClient, context)
 
@@ -409,7 +409,10 @@ private fun checkStandardPermissions(context: Context): Boolean {
         }
 
         val allGranted = permissions.all { permission ->
-            ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED
+            ContextCompat.checkSelfPermission(
+                context,
+                permission
+            ) == PackageManager.PERMISSION_GRANTED
         }
 
         CrashlyticsHelper.logCriticalAction(
@@ -420,7 +423,10 @@ private fun checkStandardPermissions(context: Context): Boolean {
 
 
         permissions.forEach { permission ->
-            val granted = ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED
+            val granted = ContextCompat.checkSelfPermission(
+                context,
+                permission
+            ) == PackageManager.PERMISSION_GRANTED
             val permissionType = when {
                 permission.contains("NOTIFICATION") -> "notification"
                 permission.contains("LOCATION") -> "location"

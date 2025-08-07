@@ -1,6 +1,5 @@
 package com.tempo.tempoapp.ui.home
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tempo.tempoapp.data.model.BleedingEvent
@@ -126,12 +125,12 @@ class HomeViewModel(
             //),
             movesenseRepository.getDevice()
         ) { bleeding, infusion, steps, prophylaxis, movesense ->
-            println(movesense)
-            Log.d(
+            //println(movesense)
+            /*Log.d(
                 "HomeViewModel",
                 Instant.now().truncatedTo(ChronoUnit.DAYS).toEpochMilli().toString()
             )
-            Log.d("HomeViewModel", "Prophylaxis events: $prophylaxis")
+            Log.d("HomeViewModel", "Prophylaxis events: $prophylaxis")*/
             HomeUiState(bleeding, infusion, prophylaxis, steps, movesense)
         }.stateIn(
             scope = viewModelScope,
