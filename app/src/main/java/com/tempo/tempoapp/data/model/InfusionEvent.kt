@@ -28,25 +28,3 @@ data class InfusionEvent(
     @ColumnInfo(name = "is_sent")
     val isSent: Boolean = false
 )
-
-
-data class InfusionEventJson(
-    val id: Int = 0,
-    val reason: String?,
-    val drugName: String?,
-    val dose: String?,
-    val batchNumber: String?,
-    val note: String?,
-    val timestamp: Long,
-    val date: Long,
-)
-
-
-/**
- * Extension function to convert an [InfusionEvent] object to an [InfusionEventJson] object.
- *
- * @param id The unique identifier of the infusion event, default is 0.
- * @return The [InfusionEventJson] representation of the infusion event.
- */
-fun InfusionEvent.toInfusionEventJson(id: Int = 0): InfusionEventJson =
-    InfusionEventJson(id, reason, drugName, dose, batchNumber, note, timestamp, date)

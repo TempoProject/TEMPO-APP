@@ -39,32 +39,6 @@ data class StepsRecord(
 )
 
 /**
- * Data class representing the JSON structure of a steps record.
- *
- * @property id The unique identifier of the steps record.
- * @property steps The number of steps taken.
- * @property date The date of the record in milliseconds.
- * @property startTime The start time of the recorded steps in milliseconds.
- * @property endTime The end time of the recorded steps in milliseconds.
- */
-data class StepsRecordToJson(
-    val id: Int = 0,
-    val steps: Long,
-    val date: Long,
-    val startTime: Long,
-    val endTime: Long,
-)
-
-/**
- * Extension function to convert a [StepsRecord] object to a [StepsRecordToJson] object.
- *
- * @param id The unique identifier of the steps record, default is 0.
- * @return The [StepsRecordToJson] representation of the steps record.
- */
-fun StepsRecord.toStepsRecordToJson(id: Int): StepsRecordToJson =
-    StepsRecordToJson(id, steps, date, startTime, endTime)
-
-/**
  * Extension function to convert an [Instant] to a timestamp in milliseconds, truncated to the specified [ChronoUnit].
  *
  * @param unit The [ChronoUnit] to truncate the instant to.
