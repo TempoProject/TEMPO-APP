@@ -35,6 +35,15 @@ interface ProphylaxisResponseDao : LogbookDao<ProphylaxisResponse> {
     )
     fun getAll(): Flow<List<ProphylaxisResponse>>
 
+    @Query(
+        """
+            SELECT *
+            FROM prophylaxis_responses
+            WHERE isSent = :isSent
+        """
+    )
+    fun getAllToSent(isSent: Boolean): List<ProphylaxisResponse>
+
     @Query("UPDATE prophylaxis_responses SET postponedAlarmId = :alarmId WHERE id = :responseId")
     suspend fun updatePostponedAlarmId(responseId: Long, alarmId: Int)
 

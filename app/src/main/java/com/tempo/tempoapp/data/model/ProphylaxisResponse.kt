@@ -15,5 +15,6 @@ data class ProphylaxisResponse(
     val drugName: String,
     val dosage: String,
     val dosageUnit: String,
-    val postponedAlarmId: Int = -1
+    val postponedAlarmId: Int = -1,
+    val isSent: Boolean = false
 )

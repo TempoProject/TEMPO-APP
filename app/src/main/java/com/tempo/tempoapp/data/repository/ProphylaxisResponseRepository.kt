@@ -32,6 +32,9 @@ class ProphylaxisResponseRepository(private val prophylaxisResponseDao: Prophyla
     override fun getAll(): Flow<List<ProphylaxisResponse>> =
         prophylaxisResponseDao.getAll()
 
+    fun getAllToSent(isSent: Boolean): List<ProphylaxisResponse> =
+        prophylaxisResponseDao.getAllToSent(isSent)
+
 
     override fun getItemFromId(id: Int): Flow<ProphylaxisResponse> {
         return prophylaxisResponseDao.getItemFromId(id)
