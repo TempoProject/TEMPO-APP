@@ -7,7 +7,6 @@ import android.app.NotificationManager
 import android.content.Context
 import android.util.Log
 import androidx.work.Constraints
-import androidx.work.Data
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.ExistingWorkPolicy
 import androidx.work.NetworkType
@@ -21,11 +20,11 @@ import com.google.firebase.database.database
 import com.tempo.tempoapp.data.AppContainer
 import com.tempo.tempoapp.data.AppDataContainer
 import com.tempo.tempoapp.workers.GetStepsRecord
-import com.tempo.tempoapp.workers.MovesenseWorker
 import com.tempo.tempoapp.workers.SaveBleedingRecords
 import com.tempo.tempoapp.workers.SaveInfusionRecords
 import com.tempo.tempoapp.workers.SaveStepsRecords
 import com.tempo.tempoapp.workers.SessionID
+import com.tempo.tempoapp.workers.WeatherCollectionWorker
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -68,7 +67,7 @@ class TempoApplication : Application() {
             )
         }
 
-        fun startFirebaseSyncWorkManagers(context: Context) {
+        fun startServerSyncWorkManagers(context: Context) {
             Log.d("TempoApplication", "Starting Firebase sync WorkManagers")
 
             val constraints = Constraints(
@@ -99,6 +98,14 @@ class TempoApplication : Application() {
                     .setConstraints(constraints).build()
             )
 
+            workManager.enqueueUniqueWork(
+                "WeatherForecast",
+                ExistingWorkPolicy.REPLACE,
+                OneTimeWorkRequestBuilder<WeatherCollectionWorker>()
+                    .setConstraints(constraints)
+                    .build()
+            )
+            /*
             workManager.enqueueUniquePeriodicWork(
                 "AccelerometerRecords",
                 ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
@@ -106,11 +113,7 @@ class TempoApplication : Application() {
                     .setConstraints(constraints)
                     .setInputData(Data.Builder().putInt("state", 6).build()).build()
             )
-        }
-
-        fun stopHealthConnectWorkManager(context: Context) {
-            Log.d("TempoApplication", "Stopping GetStepsRecord WorkManager")
-            WorkManager.getInstance(context).cancelUniqueWork("GetStepsRecord")
+             */
         }
     }
 
@@ -172,7 +175,7 @@ class TempoApplication : Application() {
                 withContext(Dispatchers.Main) {
                     updateSessionID(this@TempoApplication)
                     startHealthConnectWorkManager(this@TempoApplication)
-
+                    startServerSyncWorkManagers(this@TempoApplication)
 
                     /*val constraints =
                         Constraints(
