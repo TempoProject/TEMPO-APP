@@ -53,6 +53,8 @@ import com.tempo.tempoapp.ui.bleeding.BleedingEntryDestination
 import com.tempo.tempoapp.ui.bleeding.BleedingEntryScreen
 import com.tempo.tempoapp.ui.bleeding.BleedingEventDetailsDestination
 import com.tempo.tempoapp.ui.bleeding.BleedingEventEditDestination
+import com.tempo.tempoapp.ui.export.ExportDestination
+import com.tempo.tempoapp.ui.export.ExportScreen
 import com.tempo.tempoapp.ui.history.HistoryDestination
 import com.tempo.tempoapp.ui.history.HistoryScreen
 import com.tempo.tempoapp.ui.home.HomeDestination
@@ -227,6 +229,12 @@ class MainActivity : ComponentActivity() {
                     ) {
                         ProphylaxisEditScreen(
                             navController = navController,
+                        )
+                    }
+
+                    composable(ExportDestination.route) {
+                        ExportScreen(
+                            onNavigateBack = { navController.navigateUp() }
                         )
                     }
                 }

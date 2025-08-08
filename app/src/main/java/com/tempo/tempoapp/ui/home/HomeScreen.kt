@@ -47,6 +47,7 @@ import com.tempo.tempoapp.ui.AppViewModelProvider
 import com.tempo.tempoapp.ui.HomeBody
 import com.tempo.tempoapp.ui.bleeding.BleedingEntryDestination
 import com.tempo.tempoapp.ui.bleeding.BleedingEventDetailsDestination
+import com.tempo.tempoapp.ui.export.ExportDestination
 import com.tempo.tempoapp.ui.infusion.InfusionEntryDestination
 import com.tempo.tempoapp.ui.navigation.NavigationDestination
 import com.tempo.tempoapp.ui.prophylaxis.ProphylaxisDetailsScreenRoute
@@ -258,8 +259,19 @@ fun HomeScreen(
                     navController?.navigate(
                         route = InfusionEntryDestination.route
                     )
-
                 }
+                NavDrawerItem(
+                    stringId = R.string.add_infusion,
+                    icon = ImageVector.vectorResource(id = R.drawable.baseline_medication_24),
+                    scope = scope,
+                    drawerState = drawerState
+                ) {
+
+                    navController?.navigate(
+                        route = ExportDestination.route
+                    )
+                }
+
                 /*NavDrawerItem(
                     stringId = R.string.add_reminder,
                     icon = Icons.Default.Notifications,
