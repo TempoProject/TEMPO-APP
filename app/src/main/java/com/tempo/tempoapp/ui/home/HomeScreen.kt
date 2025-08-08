@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -261,8 +262,8 @@ fun HomeScreen(
                     )
                 }
                 NavDrawerItem(
-                    stringId = R.string.add_infusion,
-                    icon = ImageVector.vectorResource(id = R.drawable.baseline_medication_24),
+                    stringId = R.string.export_title,
+                    icon = Icons.Default.Share,
                     scope = scope,
                     drawerState = drawerState
                 ) {
