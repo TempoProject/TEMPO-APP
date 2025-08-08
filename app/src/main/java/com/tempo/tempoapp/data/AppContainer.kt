@@ -3,6 +3,7 @@ package com.tempo.tempoapp.data
 import android.content.Context
 import com.tempo.tempoapp.data.repository.AccelerometerRepository
 import com.tempo.tempoapp.data.repository.BleedingRepository
+import com.tempo.tempoapp.data.repository.ExportRepository
 import com.tempo.tempoapp.data.repository.InfusionRepository
 import com.tempo.tempoapp.data.repository.MovesenseRepository
 import com.tempo.tempoapp.data.repository.ProphylaxisResponseRepository
@@ -25,6 +26,8 @@ interface AppContainer {
     val reminderRepository: ReminderRepository
     val weatherForecastRepository: WeatherForecastRepository
     val prophylaxisResponseRepository: ProphylaxisResponseRepository
+
+    val exportRepository: ExportRepository
     /*val totalCaloriesBurnedRepository: TotalCaloriesBurnedRepository
     val bloodGlucoseRepository: BloodGlucoseRepository
     val bloodPressureRepository: BloodPressureRepository
@@ -77,6 +80,13 @@ class AppDataContainer(private val context: Context) : AppContainer {
     }
     override val prophylaxisResponseRepository: ProphylaxisResponseRepository
         get() = ProphylaxisResponseRepository(
+            TempoDatabase.getDatabase(context).prophylaxisResponseDao()
+        )
+
+    override val exportRepository: ExportRepository
+        get() = ExportRepository(
+            TempoDatabase.getDatabase(context).bleedingDao(),
+            TempoDatabase.getDatabase(context).infusionDao(),
             TempoDatabase.getDatabase(context).prophylaxisResponseDao()
         )
     /*
