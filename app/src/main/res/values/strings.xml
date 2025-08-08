@@ -238,5 +238,15 @@
     <string name="delete_event_confirmation">Sei sicuro di voler eliminare questo evento?\\nQuesta azione non può essere annullata.</string>
     <string name="postponed_prophylaxis">Profilassi posticipata</string>
     <string name="error_login">Errore durante il login. Riprova</string>
+    <string name="export_title">Esporta Dati</string>
+    <string name="back_button">Indietro</string>
+    <string name="export_share_all_data_title">Condividi tutti i dati</string>
+    <string name="export_description">Genera un file CSV e condividilo direttamente tramite email, WhatsApp, Drive, etc.</string>
+    <string name="export_data_types">• Eventi di sanguinamento\n• Infusioni extra\n• Dati della profilassi</string>
+    <string name="export_generating_csv">Generazione CSV in corso…</string>
+    <string name="export_generate_and_share_button">Genera e Condividi CSV</string>
+    <string name="export_success_message">✅ CSV generato con successo!\nRecord esportati: %1$d</string>
+    <string name="export_error_csv_creation">Errore durante la creazione del file CSV</string>
+    <string name="export_error_generic">Errore: %1$s</string>
 
 </resources>
