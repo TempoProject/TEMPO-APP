@@ -10,6 +10,7 @@ import com.tempo.tempoapp.movesense.AndroidBluetoothController
 import com.tempo.tempoapp.ui.bleeding.BleedingDetailsViewModel
 import com.tempo.tempoapp.ui.bleeding.BleedingEditViewModel
 import com.tempo.tempoapp.ui.bleeding.BleedingEntryViewModel
+import com.tempo.tempoapp.ui.export.ExportViewModel
 import com.tempo.tempoapp.ui.history.HistoryViewModel
 import com.tempo.tempoapp.ui.home.HomeViewModel
 import com.tempo.tempoapp.ui.infusion.InfusionDetailsViewModel
@@ -23,6 +24,7 @@ import com.tempo.tempoapp.ui.prophylaxis.ProphylaxisEditViewModel
 import com.tempo.tempoapp.ui.prophylaxis.ProphylaxisViewModel
 import com.tempo.tempoapp.ui.reminders.ReminderListViewModel
 import com.tempo.tempoapp.ui.reminders.ReminderViewModel
+import com.tempo.tempoapp.utils.CsvExportService
 
 /**
  * AppViewModelProvider is an object responsible for providing ViewModel instances using Jetpack ViewModelProvider.
@@ -112,7 +114,6 @@ object AppViewModelProvider {
         }
 
         initializer {
-            // TODO: update with actual login logic
             LoginViewModel(tempoApplication().preferences)
         }
 
@@ -131,6 +132,13 @@ object AppViewModelProvider {
             ProphylaxisEditViewModel(
                 this.createSavedStateHandle(),
                 tempoApplication().container.prophylaxisResponseRepository
+            )
+        }
+
+        initializer {
+            ExportViewModel(
+                tempoApplication().container.exportRepository,
+                csvExportService = CsvExportService(tempoApplication().applicationContext)
             )
         }
     }
