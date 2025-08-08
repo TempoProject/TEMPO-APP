@@ -6,7 +6,9 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.tempo.tempoapp.R
 import com.tempo.tempoapp.data.repository.InfusionRepository
+import com.tempo.tempoapp.utils.CrashlyticsHelper
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -30,45 +32,109 @@ class InfusionEditViewModel(
     var uiState by mutableStateOf(InfusionUiState())
         private set
 
+
     init {
         viewModelScope.launch {
-            // Retrieve the infusion details from the repository and initialize the UI state
-            uiState = infusionRepository.getItemFromId(eventId).filterNotNull().first()
-                .toInfusionUiState()
+            try {
+                val infusionEvent =
+                    infusionRepository.getItemFromId(eventId).filterNotNull().first()
+                uiState = infusionEvent.toInfusionUiState().copy(
+                    isLoading = false,
+                    isEntryValid = true
+                )
+            } catch (e: Exception) {
+                uiState = InfusionUiState(
+                    isLoading = false,
+                    isEntryValid = false
+                )
+            }
         }
     }
 
-    /**
-     * Updates the infusion details in the repository if the input is valid.
-     */
-    suspend fun update() {
-        if (validateInput())
-            infusionRepository.updateItem(uiState.infusionDetails.toEntity())
-    }
-
-    /**
-     * Updates the UI state based on the provided infusion details.
-     *
-     * @param infusionDetails Updated infusion details.
-     */
     fun updateUiState(infusionDetails: InfusionDetails) {
-        uiState = InfusionUiState(infusionDetails, validateInput(infusionDetails))
+        uiState = uiState.copy(
+            infusionDetails = infusionDetails,
+            isEntryValid = true
+        )
     }
 
-    /**
-     * Validates the input for infusion details.
-     *
-     * @param infusionDetails Infusion details to validate.
-     * @return True if the input is valid, false otherwise.
-     */
-    private fun validateInput(infusionDetails: InfusionDetails = uiState.infusionDetails): Boolean {
-        return with(infusionDetails) {
-            treatment.isNotBlank() &&
-                    infusionSite.isNotBlank() &&
-                    doseUnits.isNotBlank() &&
-                    lotNumber.isNotBlank() &&
-                    //date.isNotBlank() &&
-                    time.isNotBlank()
+    suspend fun update(): Boolean {
+        return try {
+            val validationErrors = validateInput()
+
+            uiState = uiState.copy(
+                isEntryValid = validationErrors.isEmpty(),
+                validationErrors = validationErrors,
+                hasAttemptedSave = true
+            )
+
+            if (validationErrors.isEmpty()) {
+                infusionRepository.updateItem(uiState.infusionDetails.toEntity())
+
+                CrashlyticsHelper.logCriticalAction(
+                    action = "infusion_event_update",
+                    success = true,
+                    details = "Infusion event updated successfully"
+                )
+
+                true
+            } else {
+                CrashlyticsHelper.logCriticalAction(
+                    action = "infusion_event_update",
+                    success = false,
+                    details = "Validation failed: ${validationErrors.size} errors"
+                )
+
+                false
+            }
+
+        } catch (e: Exception) {
+            CrashlyticsHelper.logCriticalAction(
+                action = "infusion_event_update",
+                success = false,
+                details = "Exception occurred: ${e.message}"
+            )
+
+            false
         }
+    }
+
+    private fun validateInput(infusionDetails: InfusionDetails = uiState.infusionDetails): Map<String, Int> {
+        val errors = mutableMapOf<String, Int>()
+
+        with(infusionDetails) {
+            if (reason.isBlank()) {
+                errors["reason"] = R.string.error_reason_required
+            }
+
+
+            if (drugName.isBlank()) {
+                errors["drugName"] =
+                    R.string.error_medication_type_required
+            }
+
+
+            if (dose.isBlank()) {
+                errors["dose"] = R.string.error_dose_required
+            } else {
+                val normalizedDose = dose.replace(",", ".")
+                try {
+                    val doseValue = normalizedDose.toDouble()
+                    if (doseValue <= 0) {
+                        errors["dose"] = R.string.error_dose_must_be_positive
+                    }
+                } catch (e: NumberFormatException) {
+                    errors["dose"] = R.string.error_dose_invalid_format
+                }
+            }
+
+
+            if (time.isBlank()) {
+                errors["time"] = R.string.error_time_required
+            }
+
+        }
+
+        return errors
     }
 }

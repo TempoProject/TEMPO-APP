@@ -68,4 +68,7 @@ interface InfusionEventDao : LogbookDao<InfusionEvent> {
         """
     )
     suspend fun getAll(isSent: Boolean): List<InfusionEvent>
+
+    @Query("SELECT * FROM infusion_event ORDER BY date DESC")
+    suspend fun getAllInfusionEvents(): List<InfusionEvent>
 }

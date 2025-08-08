@@ -1,9 +1,12 @@
 package com.tempo.tempoapp.data
 
-import android.content.Context import com.tempo.tempoapp.data.repository.AccelerometerRepository
+import android.content.Context
+import com.tempo.tempoapp.data.repository.AccelerometerRepository
 import com.tempo.tempoapp.data.repository.BleedingRepository
+import com.tempo.tempoapp.data.repository.ExportRepository
 import com.tempo.tempoapp.data.repository.InfusionRepository
 import com.tempo.tempoapp.data.repository.MovesenseRepository
+import com.tempo.tempoapp.data.repository.ProphylaxisResponseRepository
 import com.tempo.tempoapp.data.repository.ReminderRepository
 import com.tempo.tempoapp.data.repository.StepsRecordRepository
 import com.tempo.tempoapp.data.repository.UtilsRepository
@@ -22,6 +25,25 @@ interface AppContainer {
     val accelerometerRepository: AccelerometerRepository
     val reminderRepository: ReminderRepository
     val weatherForecastRepository: WeatherForecastRepository
+    val prophylaxisResponseRepository: ProphylaxisResponseRepository
+
+    val exportRepository: ExportRepository
+    /*val totalCaloriesBurnedRepository: TotalCaloriesBurnedRepository
+    val bloodGlucoseRepository: BloodGlucoseRepository
+    val bloodPressureRepository: BloodPressureRepository
+    val bodyFatRepository: BodyFatRepository
+    val bodyWaterMassRepository: BodyWaterMassRepository
+    val boneMassRepository: BoneMassRepository
+    val distanceRepository: DistanceRepository
+    val elevationGainedRepository: ElevationGainedRepository
+    val floorsClimbedRepository: FloorsClimbedRepository
+    val oxygenSaturationRepository: OxygenSaturationRepository
+    val respiratoryRateRepository: RespiratoryRateRepository
+    val sleepSessionRepository: SleepSessionRepository
+    val weightRepository: WeightRepository
+    val heartRateRepository: HeartRateRepository*/
+
+
 }
 
 /**
@@ -56,4 +78,48 @@ class AppDataContainer(private val context: Context) : AppContainer {
     override val weatherForecastRepository: WeatherForecastRepository by lazy {
         WeatherForecastRepository(TempoDatabase.getDatabase(context).weatherForecastDao())
     }
+    override val prophylaxisResponseRepository: ProphylaxisResponseRepository
+        get() = ProphylaxisResponseRepository(
+            TempoDatabase.getDatabase(context).prophylaxisResponseDao()
+        )
+
+    override val exportRepository: ExportRepository
+        get() = ExportRepository(
+            TempoDatabase.getDatabase(context).bleedingDao(),
+            TempoDatabase.getDatabase(context).infusionDao(),
+            TempoDatabase.getDatabase(context).prophylaxisResponseDao()
+        )
+    /*
+    override val totalCaloriesBurnedRepository: TotalCaloriesBurnedRepository
+        get() = TotalCaloriesBurnedRepository(
+            TempoDatabase.getDatabase(context).totalCaloriesBurnedDao()
+        )
+    override val bloodGlucoseRepository: BloodGlucoseRepository
+        get() = BloodGlucoseRepository(TempoDatabase.getDatabase(context).bloodGlucoseDao())
+    override val bloodPressureRepository: BloodPressureRepository
+        get() = BloodPressureRepository(TempoDatabase.getDatabase(context).bloodPressureDao())
+    override val bodyFatRepository: BodyFatRepository
+        get() = BodyFatRepository(TempoDatabase.getDatabase(context).bodyFatDao())
+    override val bodyWaterMassRepository: BodyWaterMassRepository
+        get() = BodyWaterMassRepository(TempoDatabase.getDatabase(context).bodyWaterMassDao())
+    override val boneMassRepository: BoneMassRepository
+        get() = BoneMassRepository(TempoDatabase.getDatabase(context).boneMassDao())
+    override val distanceRepository: DistanceRepository
+        get() = DistanceRepository(TempoDatabase.getDatabase(context).distanceDao())
+    override val elevationGainedRepository: ElevationGainedRepository
+        get() = ElevationGainedRepository(TempoDatabase.getDatabase(context).elevationGainedDao())
+    override val floorsClimbedRepository: FloorsClimbedRepository
+        get() = FloorsClimbedRepository(TempoDatabase.getDatabase(context).floorsClimbedDao())
+    override val oxygenSaturationRepository: OxygenSaturationRepository
+        get() = OxygenSaturationRepository(TempoDatabase.getDatabase(context).oxygenSaturationDao())
+    override val respiratoryRateRepository: RespiratoryRateRepository
+        get() = RespiratoryRateRepository(TempoDatabase.getDatabase(context).respiratoryRateDao())
+    override val sleepSessionRepository: SleepSessionRepository
+        get() = SleepSessionRepository(TempoDatabase.getDatabase(context).sleepSessionDao())
+    override val weightRepository: WeightRepository
+        get() = WeightRepository(TempoDatabase.getDatabase(context).weightDao())
+    override val heartRateRepository: HeartRateRepository
+        get() = HeartRateRepository(TempoDatabase.getDatabase(context).heartRateDao())
+*/
+
 }

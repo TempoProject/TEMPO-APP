@@ -2,6 +2,7 @@ package com.tempo.tempoapp.data.model
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import java.time.Instant
 import java.time.temporal.ChronoUnit
@@ -18,10 +19,13 @@ import java.time.temporal.ChronoUnit
  */
 
 typealias StepsRecordModel = StepsRecord
-@Entity(tableName = "steps")
+
+@Entity(tableName = "steps", indices = [Index(value = ["record_id"], unique = true)])
 data class StepsRecord(
-    @PrimaryKey(true)
+    @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
+    @ColumnInfo(name = "record_id")
+    val recordId: String,
     @ColumnInfo(name = "steps")
     val steps: Long,
     @ColumnInfo(name = "date")
@@ -33,32 +37,6 @@ data class StepsRecord(
     @ColumnInfo(name = "is_sent")
     val isSent: Boolean = false
 )
-
-/**
- * Data class representing the JSON structure of a steps record.
- *
- * @property id The unique identifier of the steps record.
- * @property steps The number of steps taken.
- * @property date The date of the record in milliseconds.
- * @property startTime The start time of the recorded steps in milliseconds.
- * @property endTime The end time of the recorded steps in milliseconds.
- */
-data class StepsRecordToJson(
-    val id: Int = 0,
-    val steps: Long,
-    val date: Long,
-    val startTime: Long,
-    val endTime: Long,
-)
-
-/**
- * Extension function to convert a [StepsRecord] object to a [StepsRecordToJson] object.
- *
- * @param id The unique identifier of the steps record, default is 0.
- * @return The [StepsRecordToJson] representation of the steps record.
- */
-fun StepsRecord.toStepsRecordToJson(id: Int = 0): StepsRecordToJson =
-    StepsRecordToJson(id, steps, date, startTime, endTime)
 
 /**
  * Extension function to convert an [Instant] to a timestamp in milliseconds, truncated to the specified [ChronoUnit].

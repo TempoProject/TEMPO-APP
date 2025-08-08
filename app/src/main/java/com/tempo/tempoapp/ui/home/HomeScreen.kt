@@ -1,38 +1,20 @@
 package com.tempo.tempoapp.ui.home
 
-import android.Manifest
-import android.app.Activity
-import android.app.AlarmManager
-import android.content.Context
-import android.content.Intent
-import android.content.pm.PackageManager
-import android.net.Uri
-import android.os.Build
-import android.provider.Settings
 import android.util.Log
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.List
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material3.Divider
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
-import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -45,45 +27,31 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.tempo.tempoapp.R
 import com.tempo.tempoapp.TempoAppBar
-import com.tempo.tempoapp.data.healthconnect.HealthConnectAvailability
 import com.tempo.tempoapp.ui.AppViewModelProvider
 import com.tempo.tempoapp.ui.HomeBody
-import com.tempo.tempoapp.ui.common.AlarManagerTextProvider
-import com.tempo.tempoapp.ui.common.LocationTextProvider
-import com.tempo.tempoapp.ui.common.NotificationTextProvider
-import com.tempo.tempoapp.ui.common.PermissionDialog
+import com.tempo.tempoapp.ui.bleeding.BleedingEntryDestination
+import com.tempo.tempoapp.ui.bleeding.BleedingEventDetailsDestination
+import com.tempo.tempoapp.ui.export.ExportDestination
+import com.tempo.tempoapp.ui.infusion.InfusionEntryDestination
 import com.tempo.tempoapp.ui.navigation.NavigationDestination
+import com.tempo.tempoapp.ui.prophylaxis.ProphylaxisDetailsScreenRoute
+import com.tempo.tempoapp.ui.prophylaxis.ProphylaxisScreen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -102,28 +70,18 @@ private const val TAG = "HomeScreen"
  * Composable function for rendering the Home screen.
  *
  * @param modifier Modifier for customizing the layout.
- * @param viewModel ViewModel instance for the Home screen.
- * @param availability Availability status of Health Connect.
- * @param onResumeAvailabilityCheck Lambda function to check availability on resume.
- * @param lifecycleOwner Lifecycle owner for observing lifecycle changes.
- * @param navigateToBleedingEntry Lambda function to navigate to the Bleeding Entry screen.
- * @param navigateToInfusionEntry Lambda function to navigate to the Infusion Entry screen.
- * @param navigateToBleedingUpdate Lambda function to navigate to the Bleeding Update screen with an ID parameter.
- * @param navigateToInfusionUpdate Lambda function to navigate to the Infusion Update screen with an ID parameter.
- * @param navigateToHistory Lambda function to navigate to the History screen.
- * @param navigateToAddReminder Lambda function to navigate to the Add Reminder screen.
- * @param navigateToReminderList Lambda function to navigate to the Reminder List screen.
- * @param navigateToScanDevices Lambda function to navigate to the Scan Devices screen.
- * @param navigateToMovesense Lambda function to navigate to the Movesense screen.
+
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
-    viewModel: HomeViewModel = viewModel(factory = AppViewModelProvider.Factory),
-    availability: HealthConnectAvailability,
-    onResumeAvailabilityCheck: () -> Unit,
-    lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
+    navController: NavController? = null,
+    //viewModel: HomeViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    //availability: HealthConnectAvailability,
+    //onResumeAvailabilityCheck: () -> Unit,
+    //lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
+    /*
     navigateToBleedingEntry: () -> Unit,
     navigateToInfusionEntry: () -> Unit,
     navigateToBleedingUpdate: (Int) -> Unit,
@@ -133,9 +91,12 @@ fun HomeScreen(
     navigateToReminderList: () -> Unit,
     navigateToScanDevices: () -> Unit,
     navigateToMovesense: () -> Unit,
+     */
 ) {
-    val context = LocalContext.current
-    val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+    //val context = LocalContext.current
+    val viewModel: HomeViewModel = viewModel(factory = AppViewModelProvider.Factory)
+
+    /*val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
     var canScheduleExactAlarms by remember {
         mutableStateOf(
@@ -245,14 +206,14 @@ fun HomeScreen(
 
     LaunchedEffect(Unit) {
         checkPermissions()
-    }
+    }*/
 
-    val currentOnAvailabilityCheck by rememberUpdatedState(onResumeAvailabilityCheck)
+    /*val currentOnAvailabilityCheck by rememberUpdatedState(onResumeAvailabilityCheck)
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
                 currentOnAvailabilityCheck()
-                checkPermissions()
+                // splash screen to check if permission are granted
             }
         }
         // Add the observer to the lifecycle
@@ -262,7 +223,7 @@ fun HomeScreen(
         onDispose {
             lifecycleOwner.lifecycle.removeObserver(observer)
         }
-    }
+    }*/
 
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val homeUiState by viewModel.homeUiState.collectAsState()
@@ -271,31 +232,47 @@ fun HomeScreen(
     var showBottomSheet by remember {
         mutableStateOf(false)
     }
-    var drawerIsEnabled by remember {
-        mutableStateOf(false)
-    }
 
     ModalNavigationDrawer(
-        gesturesEnabled = drawerIsEnabled,
         drawerState = drawerState, drawerContent = {
             ModalDrawerSheet {
                 Text(stringResource(id = R.string.app_name), modifier = Modifier.padding(16.dp))
-                Divider()
+                HorizontalDivider()
                 NavDrawerItem(
                     stringId = R.string.add_event,
                     icon = ImageVector.vectorResource(id = R.drawable.baseline_bloodtype_24),
                     scope = scope,
                     drawerState = drawerState,
-                    navigateToBleedingEntry
+                    {
+                        navController?.navigate(
+                            route = BleedingEntryDestination.route
+                        )
+                    }
                 )
                 NavDrawerItem(
                     stringId = R.string.add_infusion,
                     icon = ImageVector.vectorResource(id = R.drawable.baseline_medication_24),
                     scope = scope,
-                    drawerState = drawerState,
-                    navigateToInfusionEntry
-                )
+                    drawerState = drawerState
+                ) {
+
+                    navController?.navigate(
+                        route = InfusionEntryDestination.route
+                    )
+                }
                 NavDrawerItem(
+                    stringId = R.string.add_infusion,
+                    icon = ImageVector.vectorResource(id = R.drawable.baseline_medication_24),
+                    scope = scope,
+                    drawerState = drawerState
+                ) {
+
+                    navController?.navigate(
+                        route = ExportDestination.route
+                    )
+                }
+
+                /*NavDrawerItem(
                     stringId = R.string.add_reminder,
                     icon = Icons.Default.Notifications,
                     scope = scope,
@@ -306,28 +283,59 @@ fun HomeScreen(
                     stringId = R.string.history,
                     icon = Icons.Default.DateRange,
                     scope = scope,
-                    drawerState = drawerState,
-                    navigateToHistory
-                )
+                    drawerState = drawerState
+                ) {
+                    navController?.navigate(
+                        route = HistoryDestination.route
+                    )
+
+                }*/
                 NavDrawerItem(
-                    stringId = R.string.reminder,
-                    icon = Icons.Default.List,
+                    stringId = R.string.profylaxis_screen_title,
+                    icon = Icons.Default.DateRange,
                     scope = scope,
-                    drawerState = drawerState,
-                    navigateToReminderList
-                )
-                NavDrawerItem(
+                    drawerState = drawerState
+                ) {
+                    navController?.navigate(
+                        route = ProphylaxisScreen.route
+                    )
+                }
+                /*NavDrawerItem(
                     stringId = R.string.movesense,
                     icon = Icons.Default.Build,
                     scope = scope,
                     drawerState = drawerState,
                     navDestination = {
                         if (homeUiState.movesense != null) {
-                            navigateToMovesense()
+                            navController?.navigate(MovesenseDestination.route)
                         } else
-                            navigateToScanDevices()
+                            navController?.navigate(ScanDeviceDestination.route)
                     }
-                )
+
+                )*/
+                /* Exit button is commented out for now
+                NavDrawerItem(
+                    stringId = R.string.logout,
+                    icon = Icons.AutoMirrored.Filled.ExitToApp,
+                    scope = scope,
+                    drawerState = drawerState
+                ) {
+                    scope.launch {
+                        context.preferences.setLoggedIn(false)
+                        context.preferences.setUserId("")
+                        context.preferences.clearProphylaxisConfig()
+                        // TODO cancel all alarms and notifications
+                        // TODO cancel all work requests
+                        navController?.navigate(
+                            route = "splash_screen" // TODO Replace with your actual logout route
+                        ) {
+                            popUpTo(HomeDestination.route) {
+                                inclusive = true
+                            }
+
+                        }
+                    }
+                }*/
             }
         }) {
         Scaffold(
@@ -336,13 +344,12 @@ fun HomeScreen(
                     title = stringResource(id = HomeDestination.titleRes),
                     canNavigateBack = false,
                     navigateUp = {
-                        if (drawerIsEnabled)
-                            scope.launch {
-                                drawerState.apply {
-                                    Log.d(TAG, "Drawer state: $isOpen")
-                                    if (isClosed) open() else close()
-                                }
+                        scope.launch {
+                            drawerState.apply {
+                                Log.d(TAG, "Drawer state: $isOpen")
+                                if (isClosed) open() else close()
                             }
+                        }
                     }
                 )
             },
@@ -360,8 +367,58 @@ fun HomeScreen(
                 }
             },
         ) { innerPadding ->
-            Log.d(TAG, "Permissions granted: ${viewModel.permissionsGranted.value}")
-            if (!hasLocationPermission) {
+            if (showBottomSheet) {
+                ModalBottomSheet(
+                    onDismissRequest = {
+                        showBottomSheet = false
+                    },
+                    sheetState = sheetState,
+
+                    ) {
+                    // Sheet content
+                    OutlinedButton(
+                        onClick = {
+                            scope.launch {
+                                sheetState.hide()
+                            }.invokeOnCompletion {
+                                navController?.navigate(
+                                    route = BleedingEntryDestination.route
+                                )
+                                if (!sheetState.isVisible) {
+                                    showBottomSheet = false
+                                }
+                            }
+                        }, modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(4.dp)
+                    ) {
+                        Text(stringResource(R.string.add_event))
+                    }
+                    OutlinedButton(
+                        onClick = {
+                            scope.launch {
+                                sheetState.hide()
+                            }.invokeOnCompletion {
+                                navController?.navigate(
+                                    route = InfusionEntryDestination.route
+                                )
+                                if (!sheetState.isVisible) {
+                                    showBottomSheet = false
+                                }
+
+                            }
+                        }, modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(4.dp)
+                    ) {
+                        Text(stringResource(R.string.add_infusion))
+                    }
+
+                    Spacer(modifier = Modifier.height(32.dp))
+                }
+            }
+            //Log.d(TAG, "Permissions granted: ${viewModel.permissionsGranted.value}")
+            /*if (!hasLocationPermission) {
                 PermissionDialog(
                     showDialog = !hasLocationPermission,
                     permission = LocationTextProvider(),
@@ -423,8 +480,8 @@ fun HomeScreen(
                         settingsLauncher.launch(intent)
 
                     })
-            }
-            when (availability) {
+            }*/
+            /*when (availability) {
                 HealthConnectAvailability.INSTALLED, HealthConnectAvailability.NOT_SUPPORTED -> {
                     if (viewModel.permissionsGranted.value) {
                         drawerIsEnabled = true
@@ -487,18 +544,29 @@ fun HomeScreen(
                                     Text(stringResource(id = R.string.add_reminder))
                                 }
                             }
-                        }
-                        HomeBody(
-                            homeUiState.bleedingList,
-                            homeUiState.infusionList,
-                            homeUiState.stepsCount,
-                            modifier = modifier
-                                .padding(innerPadding)
-                                .fillMaxSize(),
-                            onInfusionItemClick = navigateToInfusionUpdate,
-                            onBleedingItemClick = navigateToBleedingUpdate
-                        )
-                    } else {
+                        }*/
+            HomeBody(
+                homeUiState.bleedingList,
+                homeUiState.infusionList,
+                homeUiState.stepsCount,
+                homeUiState.combinedEvents,
+                modifier = modifier
+                    .padding(innerPadding)
+                    .fillMaxSize(),
+                onInfusionItemClick = { id ->
+                    Log.d(TAG, "Infusion item clicked: $id")
+                    navController?.navigate("${InfusionEntryDestination.route}/${id}")
+                },
+                onBleedingItemClick = { id ->
+                    Log.d(TAG, "Bleeding item clicked: $id")
+                    navController?.navigate("${BleedingEventDetailsDestination.route}/${id}")
+                },
+                onProphylaxisItemClick = { id ->
+                    Log.d(TAG, "Prophylaxis item clicked: $id")
+                    navController?.navigate("${ProphylaxisDetailsScreenRoute.route}/${id}")
+                },
+            )
+        } /*else {
                         drawerIsEnabled = false
                         Column(
                             modifier
@@ -513,27 +581,29 @@ fun HomeScreen(
                                 )
                             }
                             ElevatedButton(onClick = {
-                                permissionsLauncher.launch(viewModel.permission)
+                                //permissionsLauncher.launch(viewModel.permission)
                             }) {
                                 Text(text = stringResource(id = R.string.authorize))
                             }
                         }
-                    }
-                }
-
-                HealthConnectAvailability.NOT_INSTALLED -> {
-                    Column(
-                        modifier
-                            .padding(innerPadding)
-                            .fillMaxSize()
-                    ) {
-                        NotInstalledMessage()
-                    }
-                }
-            }
-        }
+                    }*/
     }
 }
+
+/*
+HealthConnectAvailability.NOT_INSTALLED -> {
+    Column(
+        modifier
+            .padding(innerPadding)
+            .fillMaxSize()
+    ) {
+        NotInstalledMessage()
+    }
+}
+}
+}
+}
+}*/
 
 /**
  * Composable function for rendering a navigation drawer item.
@@ -570,6 +640,7 @@ private fun NavDrawerItem(
  * Composable function for displaying a message when Health Connect is not installed.
  * It provides a clickable link to install Health Connect.
  */
+/*
 @Composable
 private fun NotInstalledMessage() {
     // Build the URL to allow the user to install the Health Connect package
@@ -607,4 +678,4 @@ private fun NotInstalledMessage() {
                 )
             }
     }
-}
+}*/

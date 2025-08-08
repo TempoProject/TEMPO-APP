@@ -1,25 +1,35 @@
 package com.tempo.tempoapp
 
+import AppPreferencesManager
 import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.util.Log
 import androidx.work.Constraints
-import androidx.work.Data
 import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.ExistingWorkPolicy
 import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.google.firebase.Firebase
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.database
 import com.tempo.tempoapp.data.AppContainer
 import com.tempo.tempoapp.data.AppDataContainer
-import com.tempo.tempoapp.data.healthconnect.HealthConnectManager
-import com.tempo.tempoapp.workers.MovesenseWorker
+import com.tempo.tempoapp.workers.GetStepsRecord
 import com.tempo.tempoapp.workers.SaveBleedingRecords
 import com.tempo.tempoapp.workers.SaveInfusionRecords
 import com.tempo.tempoapp.workers.SaveStepsRecords
+import com.tempo.tempoapp.workers.SessionID
+import com.tempo.tempoapp.workers.WeatherCollectionWorker
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.concurrent.TimeUnit
 
 /**
@@ -27,9 +37,85 @@ import java.util.concurrent.TimeUnit
  */
 class TempoApplication : Application() {
     lateinit var container: AppContainer
-    lateinit var healthConnectManager: HealthConnectManager
+
+    val preferences: AppPreferencesManager by lazy {
+        AppPreferencesManager(this)
+    }
+
     private lateinit var workManager: WorkManager
     private lateinit var notificationManager: NotificationManager
+
+    companion object {
+
+        fun updateSessionID(context: Context) {
+            WorkManager.getInstance(context).beginUniqueWork(
+                uniqueWorkName = "sessionID",
+                existingWorkPolicy = ExistingWorkPolicy.REPLACE,
+                request = OneTimeWorkRequestBuilder<SessionID>()
+                    .setConstraints(
+                        Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()
+                    ).build()
+            ).enqueue()
+        }
+
+        fun startHealthConnectWorkManager(context: Context) {
+            Log.d("TempoApplication", "Starting GetStepsRecord WorkManager")
+            WorkManager.getInstance(context).enqueueUniquePeriodicWork(
+                "GetStepsRecord",
+                ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
+                PeriodicWorkRequestBuilder<GetStepsRecord>(15, TimeUnit.MINUTES).build()
+            )
+        }
+
+        fun startServerSyncWorkManagers(context: Context) {
+            Log.d("TempoApplication", "Starting Firebase sync WorkManagers")
+
+            val constraints = Constraints(
+                requiresBatteryNotLow = true,
+                requiredNetworkType = NetworkType.CONNECTED
+            )
+
+            val workManager = WorkManager.getInstance(context)
+
+            workManager.enqueueUniquePeriodicWork(
+                "StepsRecords",
+                ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
+                PeriodicWorkRequestBuilder<SaveStepsRecords>(30, TimeUnit.MINUTES)
+                    .setConstraints(constraints).build()
+            )
+
+            workManager.enqueueUniquePeriodicWork(
+                "BleedingRecords",
+                ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
+                PeriodicWorkRequestBuilder<SaveBleedingRecords>(30, TimeUnit.MINUTES)
+                    .setConstraints(constraints).build()
+            )
+
+            workManager.enqueueUniquePeriodicWork(
+                "InfusionRecords",
+                ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
+                PeriodicWorkRequestBuilder<SaveInfusionRecords>(30, TimeUnit.MINUTES)
+                    .setConstraints(constraints).build()
+            )
+
+            workManager.enqueueUniqueWork(
+                "WeatherForecast",
+                ExistingWorkPolicy.REPLACE,
+                OneTimeWorkRequestBuilder<WeatherCollectionWorker>()
+                    .setConstraints(constraints)
+                    .build()
+            )
+            /*
+            workManager.enqueueUniquePeriodicWork(
+                "AccelerometerRecords",
+                ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
+                PeriodicWorkRequestBuilder<MovesenseWorker>(30, TimeUnit.MINUTES)
+                    .setConstraints(constraints)
+                    .setInputData(Data.Builder().putInt("state", 6).build()).build()
+            )
+             */
+        }
+    }
 
     /**
      * Called when the application is starting.
@@ -37,8 +123,10 @@ class TempoApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         notificationManager =
-            getSystemService(Context.NOTIFICATION_SERVICE) as
+            getSystemService(NOTIFICATION_SERVICE) as
                     NotificationManager
+
+        initializeCrashlytics()
 
         /**
          * Create notification channels.
@@ -58,67 +146,160 @@ class TempoApplication : Application() {
             getString(R.string.movesense_notification_channel_name),
             NotificationManager.IMPORTANCE_DEFAULT
         )
+
+        val notificationChannelProphylaxis = NotificationChannel(
+            getString(R.string.prophylaxis_notification_channel_id),
+            getString(R.string.prophylaxis_notification_channel_name),
+            NotificationManager.IMPORTANCE_DEFAULT
+        )
         notificationManager.createNotificationChannels(
             listOf(
                 notificationChannelSendSteps,
                 notificationChannelReminder,
-                notificationChannelMovesense
+                notificationChannelMovesense,
+                notificationChannelProphylaxis
             )
         )
         container = AppDataContainer(this)
-        healthConnectManager = HealthConnectManager(this)
         workManager = WorkManager.getInstance(this)
 
-        /**
-         * Schedule periodic work for saving records.
-         */
-        val constraints =
-            Constraints(requiresBatteryNotLow = true, requiredNetworkType = NetworkType.CONNECTED)
-        val stepsRecords =
-            PeriodicWorkRequestBuilder<SaveStepsRecords>(30, TimeUnit.MINUTES).setConstraints(
-                constraints
-            ).build()
 
-        val bleedingRecords =
-            PeriodicWorkRequestBuilder<SaveBleedingRecords>(30, TimeUnit.MINUTES).setConstraints(
-                constraints
-            ).build()
+        CoroutineScope(Dispatchers.IO).launch {
+            val isFirstLaunch =
+                !preferences.isFirstLaunch.first() && !preferences.userId.first().isNullOrEmpty()
+            //preferences = AppPreferencesManager(this)
+            /**
+             * Schedule periodic work for saving records.
+             */
+            if (isFirstLaunch)
+                withContext(Dispatchers.Main) {
+                    updateSessionID(this@TempoApplication)
+                    startHealthConnectWorkManager(this@TempoApplication)
+                    startServerSyncWorkManagers(this@TempoApplication)
 
-        val infusionRecords =
-            PeriodicWorkRequestBuilder<SaveInfusionRecords>(30, TimeUnit.MINUTES).setConstraints(
-                constraints
-            ).build()
+                    /*val constraints =
+                        Constraints(
+                            requiresBatteryNotLow = true,
+                            requiredNetworkType = NetworkType.CONNECTED
+                        )
 
-        val saveAccelerometer =
-            PeriodicWorkRequestBuilder<MovesenseWorker>(30, TimeUnit.MINUTES).setConstraints(
-                constraints
-            ).setInputData(Data.Builder().putInt("state", 6).build()).build()
+                    val stepsRecords =
+                        PeriodicWorkRequestBuilder<SaveStepsRecords>(
+                            30,
+                            TimeUnit.MINUTES
+                        ).setConstraints(
+                            constraints
+                        ).build()
 
-        workManager.enqueueUniquePeriodicWork(
-            "StepsRecords",
-            ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
-            stepsRecords
-        )
+                     val saveAccelerometer =
+                        PeriodicWorkRequestBuilder<MovesenseWorker>(
+                            30,
+                            TimeUnit.MINUTES
+                        ).setConstraints(
+                            constraints
+                        ).setInputData(Data.Builder().putInt("state", 6).build()).build()
 
-        workManager.enqueueUniquePeriodicWork(
-            "BleedingRecords",
-            ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
-            bleedingRecords
-        )
+                    val bleedingRecords =
+                        PeriodicWorkRequestBuilder<SaveBleedingRecords>(
+                            30,
+                            TimeUnit.MINUTES
+                        ).setConstraints(
+                            constraints
+                        ).build()
 
-        workManager.enqueueUniquePeriodicWork(
-            "InfusionRecords",
-            ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
-            infusionRecords
-        )
+                    val infusionRecords =
+                        PeriodicWorkRequestBuilder<SaveInfusionRecords>(
+                            30,
+                            TimeUnit.MINUTES
+                        ).setConstraints(
+                            constraints
+                        ).build()
+    */
 
-        workManager.enqueueUniquePeriodicWork(
-            "AccelerometerRecords",
-            ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
-            saveAccelerometer
-        )
+                    /*
+                    workManager.enqueueUniquePeriodicWork(
+                        "GetStepsRecord",
+                        ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
+                        PeriodicWorkRequestBuilder<GetStepsRecord>(15, TimeUnit.MINUTES)
+                            .build()
+                    )
+
+
+
+                                workManager.enqueueUniquePeriodicWork(
+                                    "StepsRecords",
+                                    ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
+                                    stepsRecords
+                                )
+
+                                workManager.enqueueUniquePeriodicWork(
+                                    "BleedingRecords",
+                                    ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
+                                    bleedingRecords
+                                )
+
+                                workManager.enqueueUniquePeriodicWork(
+                                    "InfusionRecords",
+                                    ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
+                                    infusionRecords
+                                )
+
+                                workManager.enqueueUniquePeriodicWork(
+                                    "AccelerometerRecords",
+                                    ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
+                                    saveAccelerometer
+                                )
+
+                 */
+                }
+        }
+
+        configureUserIdIfLoggedIn()
     }
 
+    private fun configureUserIdIfLoggedIn() {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val isLoggedIn = preferences.isLoggedIn.first()
+                if (isLoggedIn) {
+                    val userId = preferences.userId.first()
+                    if (!userId.isNullOrEmpty()) {
+                        setCrashlyticsUserId(userId)
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("TempoApplication", "Failed to configure Crashlytics userId", e)
+            }
+        }
+    }
+
+    private fun initializeCrashlytics() {
+        try {
+            FirebaseCrashlytics.getInstance().isCrashlyticsCollectionEnabled = true
+
+            FirebaseCrashlytics.getInstance().setCustomKey("app_version", BuildConfig.VERSION_NAME)
+            FirebaseCrashlytics.getInstance()
+                .setCustomKey("app_version_code", BuildConfig.VERSION_CODE)
+            FirebaseCrashlytics.getInstance().setCustomKey("build_type", BuildConfig.BUILD_TYPE)
+
+            FirebaseCrashlytics.getInstance().log("Tempo App initialized successfully")
+
+        } catch (e: Exception) {
+            Log.e("TempoApplication", "Error initializing Crashlytics: ${e.message}")
+        }
+    }
+
+    fun setCrashlyticsUserId(userId: String) {
+        try {
+            FirebaseCrashlytics.getInstance().setUserId("tempo_user_$userId")
+            FirebaseCrashlytics.getInstance().setCustomKey("user_logged_in", true)
+            FirebaseCrashlytics.getInstance().log("User logged in with ID: $userId")
+
+            Log.d("TempoApplication", "Crashlytics user ID set: $userId")
+        } catch (e: Exception) {
+            Log.e("TempoApplication", "Failed to set Crashlytics user ID", e)
+        }
+    }
 }
 
 /**
@@ -129,3 +310,6 @@ object FirebaseRealtimeDatabase {
     val instance: DatabaseReference
         get() = Firebase.database(BuildConfig.FIREBASE_URL).reference
 }
+
+val Context.preferences: AppPreferencesManager
+    get() = (applicationContext as TempoApplication).preferences

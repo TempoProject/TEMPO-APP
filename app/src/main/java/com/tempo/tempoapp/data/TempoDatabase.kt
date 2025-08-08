@@ -8,6 +8,7 @@ import com.tempo.tempoapp.data.dao.AccelerometerDao
 import com.tempo.tempoapp.data.dao.BleedingEventDao
 import com.tempo.tempoapp.data.dao.InfusionEventDao
 import com.tempo.tempoapp.data.dao.MovesenseDao
+import com.tempo.tempoapp.data.dao.ProphylaxisResponseDao
 import com.tempo.tempoapp.data.dao.ReminderDao
 import com.tempo.tempoapp.data.dao.StepsRecordDao
 import com.tempo.tempoapp.data.dao.UtilsDao
@@ -16,8 +17,10 @@ import com.tempo.tempoapp.data.model.Accelerometer
 import com.tempo.tempoapp.data.model.BleedingEvent
 import com.tempo.tempoapp.data.model.InfusionEvent
 import com.tempo.tempoapp.data.model.Movesense
+import com.tempo.tempoapp.data.model.ProphylaxisResponse
 import com.tempo.tempoapp.data.model.ReminderEvent
 import com.tempo.tempoapp.data.model.StepsRecord
+import com.tempo.tempoapp.data.model.TotalCaloriesBurned
 import com.tempo.tempoapp.data.model.Utils
 import com.tempo.tempoapp.data.model.WeatherForecast
 
@@ -38,7 +41,23 @@ import com.tempo.tempoapp.data.model.WeatherForecast
         Movesense::class,
         Accelerometer::class,
         ReminderEvent::class,
-        WeatherForecast::class
+        WeatherForecast::class,
+        TotalCaloriesBurned::class,
+        ProphylaxisResponse::class
+        /*BloodGlucose::class,
+        BloodPressure::class,
+        HeartRate::class,
+        BodyFat::class,
+        BodyWaterMass::class,
+        BoneMass::class,
+        Distance::class,
+        ElevationGained::class,
+        FloorsClimbed::class,
+        OxygenSaturation::class,
+        RespiratoryRate::class,
+        SleepSession::class,
+        Weight::class,*/
+
     ),
     version = 1,
     exportSchema = true
@@ -52,6 +71,22 @@ abstract class TempoDatabase : RoomDatabase() {
     abstract fun accelerometerDao(): AccelerometerDao
     abstract fun reminderDao(): ReminderDao
     abstract fun weatherForecastDao(): WeatherForecastDao
+    abstract fun prophylaxisResponseDao(): ProphylaxisResponseDao
+    /*abstract fun totalCaloriesBurnedDao(): TotalCaloriesBurnedDao
+    abstract fun bloodGlucoseDao(): BloodGlucoseDao
+    abstract fun bloodPressureDao(): BloodPressureDao
+    abstract fun bodyFatDao(): BodyFatDao
+    abstract fun bodyWaterMassDao(): BodyWaterMassDao
+    abstract fun boneMassDao(): BoneMassDao
+    abstract fun distanceDao(): DistanceDao
+    abstract fun elevationGainedDao(): ElevationGainedDao
+    abstract fun floorsClimbedDao(): FloorsClimbedDao
+    abstract fun oxygenSaturationDao(): OxygenSaturationDao
+    abstract fun respiratoryRateDao(): RespiratoryRateDao
+    abstract fun sleepSessionDao(): SleepSessionDao
+    abstract fun weightDao(): WeightDao
+    abstract fun heartRateDao(): HeartRateDao*/
+
 
     companion object {
         @Volatile

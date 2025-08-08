@@ -1,15 +1,13 @@
 package com.tempo.tempoapp.workers
 
+import AppPreferencesManager
 import android.content.Context
 import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.google.firebase.installations.FirebaseInstallations
-import com.tempo.tempoapp.FirebaseRealtimeDatabase
 import com.tempo.tempoapp.TempoApplication
-import com.tempo.tempoapp.data.model.toStepsRecordToJson
-import com.tempo.tempoapp.data.model.toWeatherForecastToJson
-import kotlinx.coroutines.tasks.await
+import com.tempo.tempoapp.utils.StoreDataApi
+import kotlinx.coroutines.flow.first
 
 /**
  * SaveStepsRecords is a Worker class responsible for saving steps records to Firebase.
@@ -17,6 +15,7 @@ import kotlinx.coroutines.tasks.await
  * @param appContext The application context.
  * @param params The parameters to configure the worker.
  */
+
 class SaveStepsRecords(appContext: Context, params: WorkerParameters) :
     CoroutineWorker(appContext, params) {
 
@@ -25,18 +24,64 @@ class SaveStepsRecords(appContext: Context, params: WorkerParameters) :
         private val TAG = SaveStepsRecords::class.java.simpleName
     }
 
-    private val context = appContext
+    //private val context = appContext
+    private val preferences = AppPreferencesManager(appContext)
 
     // Steps record repository to access steps records
     private val stepsRecordRepository =
         (appContext.applicationContext as TempoApplication).container.stepsRecordRepository
-    private val weatherForecastRepository =
-        (appContext.applicationContext as TempoApplication).container.weatherForecastRepository
+    /*    private val weatherForecastRepository =
+            (appContext.applicationContext as TempoApplication).container.weatherForecastRepository
+
+        private val totalCaloriesBurnedRepository =
+            (this.applicationContext as TempoApplication).container.totalCaloriesBurnedRepository
+
+        private val bloodGlucoseRepository =
+            (this.applicationContext as TempoApplication).container.bloodGlucoseRepository
+
+        private val bloodPressureRepository =
+            (this.applicationContext as TempoApplication).container.bloodPressureRepository
+
+        private val heartRateRepository =
+            (this.applicationContext as TempoApplication).container.heartRateRepository
+
+        private val bodyFatRepository =
+            (this.applicationContext as TempoApplication).container.bodyFatRepository
+
+        private val bodyWaterMassRepository =
+            (this.applicationContext as TempoApplication).container.bodyWaterMassRepository
+
+        private val boneMassRepository =
+            (this.applicationContext as TempoApplication).container.boneMassRepository
+
+        private val distanceRepository =
+            (this.applicationContext as TempoApplication).container.distanceRepository
+
+        private val elevationGainedRepository =
+            (this.applicationContext as TempoApplication).container.elevationGainedRepository
+
+        private val floorsClimbedRepository =
+            (this.applicationContext as TempoApplication).container.floorsClimbedRepository
+
+        private val oxygenSaturationRepository =
+            (this.applicationContext as TempoApplication).container.oxygenSaturationRepository
+
+        private val respiratoryRateRepository =
+            (this.applicationContext as TempoApplication).container.respiratoryRateRepository
+
+        private val sleepSessionRepository =
+            (this.applicationContext as TempoApplication).container.sleepSessionRepository
+
+        private val weightRepository =
+            (this.applicationContext as TempoApplication).container.weightRepository
+
 
     // Firebase database reference
+
     private val databaseRef =
         FirebaseRealtimeDatabase.instance
 
+*/
 
     /*
         private val healthConnectManager =
@@ -62,91 +107,34 @@ class SaveStepsRecords(appContext: Context, params: WorkerParameters) :
     override suspend fun doWork(): Result {
 
 
-        /*        setForeground(createForegroundInfo(""))
-                if (healthConnectManager.hasAllPermissions(permission)) {
-
-                    val latestUpdate = utilsRepository.getLatestUpdate()
-                    Log.d(TAG, latestUpdate.toString())
-
-                    var instantStartTime = Instant.now().minusSeconds(1800)
-                    Log.d(TAG, "instant default: $instantStartTime")
-                    if (latestUpdate != null) {
-                        instantStartTime = Instant.ofEpochMilli(latestUpdate)
-                        Log.d(TAG, "instant update: $instantStartTime")
-                    }
-                    val instantNow = Instant.now()
-
-                    val list =
-                        healthConnectManager.readSteps(instantStartTime, instantNow)
-                            .toMutableList()
-                    Log.d(TAG, "full list: $list")
-                    /*try {
-                        if (list.last().startTime == instantThirtyMinutes)
-                            list.removeLast()
-                        Log.d(TAG, "list after removeLast(): $list")
-                    } catch (err: NoSuchElementException) {
-                        Log.e(TAG, err.message!!)
-                    }*/
-                    list.forEach {
-                        stepsRecordRepository.insertItem(
-                            com.tempo.tempoapp.data.model.StepsRecord(
-                                steps = it.count,
-                                date = it.startTime.toTimestamp(ChronoUnit.DAYS),
-                                startTime = it.startTime.toTimestamp(ChronoUnit.MILLIS),
-                                endTime = it.endTime.toTimestamp(ChronoUnit.MILLIS)
-                            )
-                        )
-                    }
-                    if (latestUpdate == null)
-                        utilsRepository.insertItem(
-                            Utils(
-                                latestUpdate = if (list.isNotEmpty())
-                                    list.last().endTime.toEpochMilli()
-                                else
-                                    instantStartTime.toEpochMilli()
-                            )
-                        )
-                    else {
-                        if (list.isNotEmpty())
-                            utilsRepository.updateItem(
-                                Utils(
-                                    id = 1,
-                                    latestUpdate = list.last().endTime.toEpochMilli()
-                                )
-                            )
-                    }
-
-                    return Result.success()
-                }
-
-         */
-
         // Get Firebase installation ID
-        val id = FirebaseInstallations.getInstance().id.await()
+        //val id = FirebaseInstallations.getInstance().id.await()
 
         // Get weather forecasts to be sent
-        val weatherForecasts = weatherForecastRepository.getAllUnsentWeatherForecasts()
-        Log.d(TAG, "Weather forecasts to be sent: ${weatherForecasts.size}")
+        //val weatherForecasts = weatherForecastRepository.getAllUnsentWeatherForecasts()
+        //Log.d(TAG, "Weather forecasts to be sent: ${weatherForecasts.size}")
 
         // Save weather forecasts to Firebase
-        weatherForecasts.forEach { forecast ->
-            /* try {
+        /*weatherForecasts.forEach { forecast ->
+             try {
                  val response = PostgresApi.retrofitService.postWeatherForecast(it.toWeatherForecastToJson(it.timestamp))
                  Log.d(TAG, response.toString())
              } catch (err: Exception) {
                  Log.e(TAG, err.message!!)
                  return Result.failure()
-             }*/
+             }
             databaseRef.child("weather_forecast").child(id).child(forecast.timestamp.toString())
                 .setValue(forecast.toWeatherForecastToJson(forecast.timestamp))
             weatherForecastRepository.updateItem(forecast.copy(isSent = true))
-        }
+        }*/
 
 
         // Get steps records to be sent
         val stepsRecords = stepsRecordRepository.getAllDaySteps(
             isSent = false
         )
+        val pid = preferences.userId.first() ?: return Result.failure()
+        val sessionId = preferences.sessionId.first() ?: return Result.failure()
 
         Log.d(TAG, "Steps records to be sent: ${stepsRecords.size}")
         // Save steps records to Firebase
@@ -158,10 +146,106 @@ class SaveStepsRecords(appContext: Context, params: WorkerParameters) :
                  Log.e(TAG, err.message!!)
                  return Result.failure()
              }*/
-            databaseRef.child("steps").child(id).child(record.id.toString())
-                .setValue(record.toStepsRecordToJson(record.id))
+            StoreDataApi.retrofitService.postLogs(
+                pid, sessionId,
+                mapOf(
+                    "type" to "StepsRecord",
+                    "id" to record.id.toString(),
+                    "recordId" to record.recordId,
+                    "steps" to record.steps.toString(),
+                    "startTime" to record.startTime,
+                    "endTime" to record.endTime,
+                    "date" to record.date
+                )
+            )
             stepsRecordRepository.updateItem(record.copy(isSent = true))
         }
+
+        /*
+        totalCaloriesBurnedRepository.getAllDayTotalCaloriesBurned(isSent = false)
+            .forEach { record ->
+                databaseRef.child("total_calories_burned").child(id).child(record.id.toString())
+                    .setValue(record.toTotalCaloriesBurnedToJson(record.id))
+                totalCaloriesBurnedRepository.updateItem(record.copy(isSent = true))
+            }
+
+        bloodGlucoseRepository.getAllDayBloodGlucose(isSent = false).forEach { record ->
+            databaseRef.child("blood_glucose").child(id).child(record.id.toString())
+                .setValue(record.toBloodGlucoseToJson(record.id))
+            bloodGlucoseRepository.updateItem(record.copy(isSent = true))
+        }
+
+        bloodPressureRepository.getAllDayBloodPressure(isSent = false).forEach { record ->
+            databaseRef.child("blood_pressure").child(id).child(record.id.toString())
+                .setValue(record.toBloodPressureToJson(record.id))
+            bloodPressureRepository.updateItem(record.copy(isSent = true))
+        }
+
+        bodyFatRepository.getAllDayBodyFat(isSent = false).forEach { record ->
+            databaseRef.child("body_fat").child(id).child(record.id.toString())
+                .setValue(record.toBodyFatToJson(record.id))
+            bodyFatRepository.updateItem(record.copy(isSent = true))
+        }
+
+        bodyWaterMassRepository.getAllDayBodyWaterMass(isSent = false).forEach { record ->
+            databaseRef.child("body_water_mass").child(id).child(record.id.toString())
+                .setValue(record.toBodyWaterMassToJson(record.id))
+            bodyWaterMassRepository.updateItem(record.copy(isSent = true))
+        }
+
+        boneMassRepository.getAllDayBoneMass(isSent = false).forEach { record ->
+            databaseRef.child("bone_mass").child(id).child(record.id.toString())
+                .setValue(record.toBoneMassToJson(record.id))
+            boneMassRepository.updateItem(record.copy(isSent = true))
+        }
+
+        distanceRepository.getAllDayDistance(isSent = false).forEach { record ->
+            databaseRef.child("distance").child(id).child(record.id.toString())
+                .setValue(record.toDistanceToJson(record.id))
+            distanceRepository.updateItem(record.copy(isSent = true))
+        }
+
+        elevationGainedRepository.getAllDayElevationGained(isSent = false).forEach { record ->
+            databaseRef.child("elevation_gained").child(id).child(record.id.toString())
+                .setValue(record.toElevationGainedToJson(record.id))
+            elevationGainedRepository.updateItem(record.copy(isSent = true))
+        }
+
+        floorsClimbedRepository.getAllDayFloorsClimbed(isSent = false).forEach { record ->
+            databaseRef.child("floors_climbed").child(id).child(record.id.toString())
+                .setValue(record.toFloorsClimbedToJson(record.id))
+            floorsClimbedRepository.updateItem(record.copy(isSent = true))
+        }
+
+        oxygenSaturationRepository.getAllDayOxygenSaturation(isSent = false).forEach { record ->
+            databaseRef.child("oxygen_saturation").child(id).child(record.id.toString())
+                .setValue(record.toOxygenSaturationToJson(record.id))
+            oxygenSaturationRepository.updateItem(record.copy(isSent = true))
+        }
+
+        respiratoryRateRepository.getAllDayRespiratoryRate(isSent = false).forEach { record ->
+            databaseRef.child("respiratory_rate").child(id).child(record.id.toString())
+                .setValue(record.toRespiratoryRateToJson(record.id))
+            respiratoryRateRepository.updateItem(record.copy(isSent = true))
+        }
+
+        sleepSessionRepository.getAllDaySleepSessions(isSent = false).forEach { record ->
+            databaseRef.child("sleep_session").child(id).child(record.id.toString())
+                .setValue(record.toSleepSessionToJson(record.id))
+            sleepSessionRepository.updateItem(record.copy(isSent = true))
+        }
+
+        weightRepository.getAllDayWeight(isSent = false).forEach { record ->
+            databaseRef.child("weight").child(id).child(record.id.toString())
+                .setValue(record.toWeightToJson(record.id))
+            weightRepository.updateItem(record.copy(isSent = true))
+        }
+
+        heartRateRepository.getAllDayHeartRate(isSent = false).forEach { record ->
+            databaseRef.child("heart_rate").child(id).child(record.id.toString())
+                .setValue(record.toHeartRateToJson(record.id))
+            heartRateRepository.updateItem(record.copy(isSent = true))
+        }*/
 
         return Result.success()
     }

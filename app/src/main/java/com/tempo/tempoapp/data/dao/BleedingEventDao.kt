@@ -68,4 +68,8 @@ interface BleedingEventDao : LogbookDao<BleedingEvent> {
         """
     )
     suspend fun getAll(isSent: Boolean): List<BleedingEvent>
+
+
+    @Query("SELECT * FROM bleeding_event ORDER BY date DESC")
+    suspend fun getAllBleedingEvents(): List<BleedingEvent>
 }

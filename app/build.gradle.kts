@@ -3,22 +3,24 @@ import java.util.Properties
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
-    id("com.google.devtools.ksp") version "1.9.20-1.0.14"
+    id("com.google.devtools.ksp") version "2.0.20-1.0.25"
     id("com.google.gms.google-services")
+    alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.firebase.crashlytics)
 }
 
 android {
     namespace = "com.tempo.tempoapp"
-    compileSdk = 34
+    compileSdk = 36
     // Allow buildConfig to load properties from local.properties file
-    buildFeatures{
+    buildFeatures {
         buildConfig = true
     }
 
     defaultConfig {
         applicationId = "com.tempo.tempoapp"
         minSdk = 26
-        targetSdk = 34
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
 
@@ -32,8 +34,15 @@ android {
         properties.load(project.rootProject.file("local.properties").inputStream())
         buildConfigField("String", "FIREBASE_URL", "\"${properties.getProperty("FIREBASE_URL")}\"")
         buildConfigField("String", "API_KEY", "\"${properties.getProperty("API_KEY")}\"")
-        buildConfigField("String", "OPEN_WEATHER_URL", "\"${properties.getProperty("OPEN_WEATHER_URL")}\"")
-
+        buildConfigField(
+            "String",
+            "OPEN_WEATHER_URL",
+            "\"${properties.getProperty("OPEN_WEATHER_URL")}\""
+        )
+        buildConfigField("String", "APP_EMAIL", "\"${properties.getProperty("API_EMAIL")}\"")
+        buildConfigField("String", "APP_PASSWORD", "\"${properties.getProperty("API_PASSWORD")}\"")
+        buildConfigField("String", "API_BASE_URL", "\"${properties.getProperty("API_BASE_URL")}\"")
+        buildConfigField("String", "REGISTRATION_URL", "\"${properties.getProperty("REGISTRATION_URL")}\"")
 
     }
 
@@ -49,6 +58,8 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
+
+        isCoreLibraryDesugaringEnabled = true
     }
     kotlinOptions {
         jvmTarget = "1.8"
@@ -56,22 +67,21 @@ android {
     buildFeatures {
         compose = true
     }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.1"
-    }
+    /*composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.5"
+    }*/
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
-    defaultConfig {
-        ksp {
-            arg("room.schemaLocation", "$projectDir/schemas")
-        }
-    }
+}
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
 }
 
 dependencies {
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -91,40 +101,43 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
 
     // Viewmodel compose
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.9.1")
 
     // Navigation
-    implementation("androidx.navigation:navigation-compose:2.7.7")
+    implementation("androidx.navigation:navigation-compose:2.9.0")
 
     //Room
     implementation("androidx.room:room-runtime:${rootProject.extra["room_version"]}")
-    implementation("androidx.core:core-ktx:1.12.0")
+    implementation("androidx.core:core-ktx:1.16.0")
     ksp("androidx.room:room-compiler:${rootProject.extra["room_version"]}")
     implementation("androidx.room:room-ktx:${rootProject.extra["room_version"]}")
 
     // Health Connect
-    implementation("androidx.health.connect:connect-client:1.1.0-alpha07")
+    implementation("androidx.health.connect:connect-client:1.1.0-rc03")
 
     // Coroutine
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.0")
-    implementation("androidx.work:work-runtime-ktx:2.9.0")
+    implementation("androidx.work:work-runtime-ktx:2.10.1")
 
     // Retrofit
-    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
     // Retrofit with Scalar Converter
     implementation("com.squareup.retrofit2:converter-scalars:2.9.0")
 
     implementation("com.squareup.retrofit2:converter-gson:2.11.0")
-    implementation("com.google.code.gson:gson:2.10.1")
+    implementation("com.google.code.gson:gson:2.11.0")
 
     // Firebase
-    implementation(platform("com.google.firebase:firebase-bom:32.8.1"))
+    implementation(platform("com.google.firebase:firebase-bom:34.0.0"))
     implementation("com.google.firebase:firebase-database")
-    implementation("com.google.firebase:firebase-installations:17.2.0")
+    implementation("com.google.firebase:firebase-installations:19.0.0")
+    implementation("com.google.firebase:firebase-crashlytics")
 
     // RxAndroidBle (movesense)
     implementation(files("libs/mdslib-3.15.0(1)-release.aar"))
     implementation("com.polidea.rxandroidble2:rxandroidble:1.10.2")
     implementation("io.reactivex.rxjava2:rxandroid:2.1.1")
     implementation("io.reactivex.rxjava2:rxjava:2.2.8")
+
+    implementation("androidx.datastore:datastore-preferences:1.1.7")
 }

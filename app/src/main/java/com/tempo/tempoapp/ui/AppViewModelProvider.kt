@@ -10,6 +10,7 @@ import com.tempo.tempoapp.movesense.AndroidBluetoothController
 import com.tempo.tempoapp.ui.bleeding.BleedingDetailsViewModel
 import com.tempo.tempoapp.ui.bleeding.BleedingEditViewModel
 import com.tempo.tempoapp.ui.bleeding.BleedingEntryViewModel
+import com.tempo.tempoapp.ui.export.ExportViewModel
 import com.tempo.tempoapp.ui.history.HistoryViewModel
 import com.tempo.tempoapp.ui.home.HomeViewModel
 import com.tempo.tempoapp.ui.infusion.InfusionDetailsViewModel
@@ -17,8 +18,13 @@ import com.tempo.tempoapp.ui.infusion.InfusionEditViewModel
 import com.tempo.tempoapp.ui.infusion.InfusionEntryViewModel
 import com.tempo.tempoapp.ui.movesense.MovesenseViewModel
 import com.tempo.tempoapp.ui.movesense.ScanDevicesViewModel
+import com.tempo.tempoapp.ui.onboarding.LoginViewModel
+import com.tempo.tempoapp.ui.prophylaxis.ProphylaxisDetailViewModel
+import com.tempo.tempoapp.ui.prophylaxis.ProphylaxisEditViewModel
+import com.tempo.tempoapp.ui.prophylaxis.ProphylaxisViewModel
 import com.tempo.tempoapp.ui.reminders.ReminderListViewModel
 import com.tempo.tempoapp.ui.reminders.ReminderViewModel
+import com.tempo.tempoapp.utils.CsvExportService
 
 /**
  * AppViewModelProvider is an object responsible for providing ViewModel instances using Jetpack ViewModelProvider.
@@ -38,10 +44,10 @@ object AppViewModelProvider {
                 tempoApplication().container.bleedingRepository,
                 tempoApplication().container.infusionRepository,
                 tempoApplication().container.stepsRecordRepository,
+                tempoApplication().container.prophylaxisResponseRepository,
                 tempoApplication().container.movesenseRepository,
-                tempoApplication().healthConnectManager,
-                tempoApplication()
-            )
+
+                )
         }
         initializer {
             BleedingDetailsViewModel(
@@ -78,7 +84,8 @@ object AppViewModelProvider {
             HistoryViewModel(
                 tempoApplication().container.bleedingRepository,
                 tempoApplication().container.infusionRepository,
-                tempoApplication().container.stepsRecordRepository
+                tempoApplication().container.stepsRecordRepository,
+                tempoApplication().container.prophylaxisResponseRepository,
             )
         }
         initializer {
@@ -103,6 +110,35 @@ object AppViewModelProvider {
         initializer {
             MovesenseViewModel(
                 tempoApplication().container.movesenseRepository
+            )
+        }
+
+        initializer {
+            LoginViewModel(tempoApplication().preferences)
+        }
+
+        initializer {
+            ProphylaxisViewModel(tempoApplication().preferences)
+        }
+
+        initializer {
+            ProphylaxisDetailViewModel(
+                this.createSavedStateHandle(),
+                tempoApplication().container.prophylaxisResponseRepository
+            )
+        }
+
+        initializer {
+            ProphylaxisEditViewModel(
+                this.createSavedStateHandle(),
+                tempoApplication().container.prophylaxisResponseRepository
+            )
+        }
+
+        initializer {
+            ExportViewModel(
+                tempoApplication().container.exportRepository,
+                csvExportService = CsvExportService(tempoApplication().applicationContext)
             )
         }
     }

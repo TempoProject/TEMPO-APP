@@ -20,6 +20,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import java.time.Duration
+import java.time.Instant
 
 /**
  * MovesenseWorker is a Worker class responsible for handling background tasks related to Movesense device.
@@ -116,6 +118,7 @@ class MovesenseWorker(appContext: Context, params: WorkerParameters) :
             }
 
             4 -> {
+                var instant = Instant.now()
                 Log.d(TAG, "Saving data...")
                 mds.get(
                     "suunto://${
@@ -148,6 +151,38 @@ class MovesenseWorker(appContext: Context, params: WorkerParameters) :
                                                 .getAsJsonObject("Meas")
                                                 .getAsJsonArray("Acc")
 
+
+                                            val movesenseRecord = mutableListOf<Accelerometer>()
+                                            val duration =
+                                                Duration.ofNanos(((1.0 / 13) * 1_000_000_000).toLong())
+
+                                            for (acc in accArray.reversed()) {
+                                                val accObject = acc.asJsonObject
+                                                val arrayAcc = accObject.getAsJsonArray("ArrayAcc")
+
+                                                for (arrayAccElement in arrayAcc.reversed()) {
+                                                    val arrayAccObject =
+                                                        arrayAccElement.asJsonObject
+                                                    movesenseRecord.add(
+                                                        Accelerometer(
+                                                            0,
+                                                            arrayAccObject.get("x").asFloat.toString(),
+                                                            arrayAccObject.get("y").asFloat.toString(),
+                                                            arrayAccObject.get("z").asFloat.toString(),
+                                                            instant.toEpochMilli()
+                                                        )
+                                                    )
+                                                    instant = instant.minus(duration)
+                                                }
+                                            }
+
+                                            movesenseRecord.reversed().forEach {
+                                                CoroutineScope(Dispatchers.IO).launch {
+                                                    accelerometerRepository.insertItem(it)
+                                                }
+                                            }
+
+                                            /*
                                             val xList = mutableListOf<Float>()
                                             val yList = mutableListOf<Float>()
                                             val zList = mutableListOf<Float>()
@@ -162,7 +197,6 @@ class MovesenseWorker(appContext: Context, params: WorkerParameters) :
                                                     yList.add(arrayAccObject.get("y").asFloat)
                                                     zList.add(arrayAccObject.get("z").asFloat)
 
-
                                                 }
                                             }
                                             println("x: $xList, y: $yList, z: $zList")
@@ -176,7 +210,7 @@ class MovesenseWorker(appContext: Context, params: WorkerParameters) :
                                                         System.currentTimeMillis()
                                                     )
                                                 )
-                                            }
+                                            }*/
                                         }
 
                                         override fun onError(p0: MdsException?) {

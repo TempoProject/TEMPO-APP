@@ -1,11 +1,11 @@
 package com.tempo.tempoapp.ui.bleeding
 
-import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -14,6 +14,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -22,19 +23,27 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.tempo.tempoapp.R
 import com.tempo.tempoapp.TempoAppBar
 import com.tempo.tempoapp.ui.AppViewModelProvider
+import com.tempo.tempoapp.ui.InformationDialog
 import com.tempo.tempoapp.ui.Loading
 import com.tempo.tempoapp.ui.navigation.NavigationDestination
+import com.tempo.tempoapp.ui.theme.customColors
 import com.tempo.tempoapp.ui.toStringDate
 import kotlinx.coroutines.launch
 
@@ -57,19 +66,20 @@ object BleedingEventDetailsDestination : NavigationDestination {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BleedingDetailsScreen(
-    onNavigateUp: () -> Unit,
-    navigateToBleedingEdit: (Int) -> Unit,
-    viewModel: BleedingDetailsViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    navController: NavController? = null,
 ) {
+    val viewModel: BleedingDetailsViewModel = viewModel(factory = AppViewModelProvider.Factory)
     val uiState = viewModel.uiState.collectAsState()
     val coroutineScope = rememberCoroutineScope()
+
+    var showCancelDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
             TempoAppBar(
                 title = stringResource(id = BleedingEventDetailsDestination.titleRes),
                 canNavigateBack = true,
-                navigateUp = onNavigateUp
+                navigateUp = { navController?.navigateUp() }
             )
         },
         floatingActionButton = {
@@ -80,27 +90,35 @@ fun BleedingDetailsScreen(
                 )
             ) {
                 FloatingActionButton(
-                    onClick = { navigateToBleedingEdit(uiState.value.id) },
+                    onClick = {
+                        navController?.navigate(
+                            BleedingEventEditDestination.routeWithArgs.replace(
+                                "{${BleedingEventEditDestination.itemIdArg}}",
+                                uiState.value.bleedingDetails.id.toString()
+                            )
+                        )
+                    },
                     shape = MaterialTheme.shapes.medium,
                 ) {
                     Icon(
                         imageVector = Icons.Default.Edit,
-                        contentDescription = null//stringResource(R.string.item_entry_title)
+                        contentDescription = stringResource(R.string.edit_event)
                     )
                 }
                 Spacer(modifier = Modifier.padding(4.dp))
                 FloatingActionButton(
                     onClick = {
-                        coroutineScope.launch {
+                        showCancelDialog = true
+                        /*coroutineScope.launch {
                             viewModel.deleteItem()
-                            onNavigateUp()
-                        }
+                            navController?.navigateUp()
+                        }*/
                     },
                     shape = MaterialTheme.shapes.medium,
                 ) {
                     Icon(
                         imageVector = Icons.Default.Delete,
-                        contentDescription = null//stringResource(R.string.item_entry_title)
+                        contentDescription = stringResource(R.string.delete_event)
                     )
                 }
             }
@@ -114,10 +132,27 @@ fun BleedingDetailsScreen(
         )
     }
 
+    if (showCancelDialog) {
+        InformationDialog(
+            title = R.string.delete_event,
+            message = R.string.delete_event_confirmation,
+            confirm = R.string.confirm,
+            cancel = R.string.cancel_action,
+            onDismiss = { showCancelDialog = false },
+            onConfirm = {
+                showCancelDialog = false
+                coroutineScope.launch {
+                    viewModel.deleteItem()
+                }.invokeOnCompletion {
+                    navController?.navigateUp()
+                }
+            }
+        )
+    }
 }
 
 /**
- * Composable function for displaying the body of a bleeding event's details.
+ * Composable function for displaying details of a single bleeding event item.
  */
 @Composable
 fun BleedingDetailsBody(uiState: BleedingDetailsUiState, modifier: Modifier = Modifier) {
@@ -127,84 +162,156 @@ fun BleedingDetailsBody(uiState: BleedingDetailsUiState, modifier: Modifier = Mo
     ) {
         if (uiState.isLoading) {
             Loading()
-        } else
+        } else {
             BleedingItemDetails(
                 uiState.bleedingDetails,
                 modifier = Modifier.fillMaxWidth()
             )
+        }
     }
 }
 
-/**
- * Composable function for displaying details of a single bleeding event item.
- */
 @Composable
 fun BleedingItemDetails(details: BleedingDetails, modifier: Modifier) {
-    Card(
-        modifier = modifier, colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
-            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-        )
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_medium))
     ) {
-        ItemDetailsRow(
-            labelResID = R.string.site_string_label,
-            itemDetail = details.site,
-            modifier = Modifier.padding(
-                horizontal = dimensionResource(
-                    id = R.dimen
-                        .padding_medium
-                )
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.customColors.bleeding,
+                //contentColor = MaterialTheme.colorScheme.onPrimaryContainer
             )
-        )
-        ItemDetailsRow(
-            labelResID = R.string.cause_string_label,
-            itemDetail = details.cause,
-            modifier = Modifier.padding(
-                horizontal = dimensionResource(
-                    id = R.dimen
-                        .padding_medium
+        ) {
+            Column(
+                modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_medium)),
+                verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_small))
+            ) {
+                Text(
+                    text = stringResource(R.string.event_details),
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
                 )
-            )
-        )
-        ItemDetailsRow(
-            labelResID = R.string.bleeding,
-            itemDetail = details.isABleedingEpisode,
-            modifier = Modifier.padding(
-                horizontal = dimensionResource(
-                    id = R.dimen
-                        .padding_medium
-                )
-            )
-        )
-        ItemDetailsRow(
-            labelResID = R.string.pain_scale_string_label,
-            itemDetail = details.painScale + " / 10",
-            modifier = Modifier.padding(
-                horizontal = dimensionResource(
-                    id = R.dimen
-                        .padding_medium
-                )
-            )
-        )
-        ItemDetailsRow(
-            labelResID = R.string.date,
-            itemDetail = details.date.toStringDate(),
-            modifier = Modifier.padding(
-                horizontal = dimensionResource(
-                    id = R.dimen
-                        .padding_medium
-                )
-            )
-        )
-        ItemDetailsRow(
-            labelResID = R.string.time, itemDetail = details.time, modifier = Modifier.padding(
-                horizontal = dimensionResource(
-                    id = R.dimen
-                        .padding_medium
-                )
-            )
-        )
 
+                Divider()
+
+                ItemDetailsRow(
+                    label = stringResource(R.string.event),
+                    itemDetail = details.eventType.ifBlank { stringResource(R.string.not_specified) }
+                )
+
+                ItemDetailsRow(
+                    label = stringResource(R.string.site_string_label),
+                    itemDetail = details.site.ifBlank { stringResource(R.string.not_specified) }
+                )
+
+                ItemDetailsRow(
+                    label = stringResource(R.string.cause_string_label),
+                    itemDetail = details.cause.ifBlank { stringResource(R.string.not_specified) }
+                )
+
+                ItemDetailsRow(
+                    label = stringResource(R.string.pain_scale_string_label),
+                    itemDetail = "${details.painScale} / 10"
+                )
+
+                ItemDetailsRow(
+                    label = stringResource(R.string.date),
+                    itemDetail = details.date.toStringDate()
+                )
+
+                ItemDetailsRow(
+                    label = stringResource(R.string.time),
+                    itemDetail = details.time
+                )
+            }
+        }
+
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.customColors.infusion,
+                //contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+            )
+        ) {
+            Column(
+                modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_medium)),
+                verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_small))
+            ) {
+                Text(
+                    text = stringResource(R.string.treatment),
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Divider()
+
+                ItemDetailsRow(
+                    label = stringResource(R.string.did_you_treat_yself),
+                    itemDetail = details.treatment.ifBlank { stringResource(R.string.not_specified) }
+                )
+
+                if (details.treatment == "Sì") {
+                    Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.padding_small)))
+
+                    Text(
+                        text = stringResource(R.string.details),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
+
+                    if (details.medicationType.isNotBlank()) {
+                        ItemDetailsRow(
+                            label = stringResource(R.string.drug_name),
+                            itemDetail = details.medicationType
+                        )
+                    }
+
+                    if (details.dose.isNotBlank()) {
+                        ItemDetailsRow(
+                            label = stringResource(R.string.dose_units),
+                            itemDetail = details.dose
+                        )
+                    }
+
+                    if (details.lotNumber.isNotBlank()) {
+                        ItemDetailsRow(
+                            label = stringResource(R.string.lot_number),
+                            itemDetail = details.lotNumber
+                        )
+                    }
+                }
+            }
+        }
+
+        if (!details.note.isNullOrBlank()) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onTertiaryContainer
+                )
+            ) {
+                Column(
+                    modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_medium))
+                ) {
+                    Text(
+                        text = "Note",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Divider()
+
+                    Text(
+                        text = details.note,
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.padding(top = dimensionResource(id = R.dimen.padding_small))
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -213,11 +320,26 @@ fun BleedingItemDetails(details: BleedingDetails, modifier: Modifier) {
  */
 @Composable
 internal fun ItemDetailsRow(
-    @StringRes labelResID: Int, itemDetail: String, modifier: Modifier = Modifier
+    label: String,
+    itemDetail: String,
+    modifier: Modifier = Modifier
 ) {
-    Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
-        Text(text = stringResource(labelResID), style = MaterialTheme.typography.titleLarge)
-        Spacer(Modifier.weight(1f))
-        Text(text = itemDetail, style = MaterialTheme.typography.bodyLarge,fontWeight = FontWeight.Bold)
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.weight(1f)
+        )
+        Text(
+            text = itemDetail,
+            style = MaterialTheme.typography.bodyLarge,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.End,
+            modifier = Modifier.weight(1f)
+        )
     }
 }

@@ -1,22 +1,8 @@
 package com.tempo.tempoapp.utils
 
-import android.app.NotificationManager
-import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.util.Log
-import androidx.core.app.NotificationCompat
-import com.tempo.tempoapp.MainActivity
-import com.tempo.tempoapp.R
-import com.tempo.tempoapp.TempoApplication
-import com.tempo.tempoapp.data.model.ReminderEvent
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers.IO
-import kotlinx.coroutines.launch
-import java.time.Instant
-import java.time.temporal.ChronoUnit
-import kotlin.random.Random
 
 /**
  * AlarmReceiver is a BroadcastReceiver responsible for handling alarm events triggered by reminders.
@@ -25,6 +11,10 @@ import kotlin.random.Random
  *
  * @property alarmManager The AlarmManager instance used to schedule alarms.
  * @property reminderRepository The repository for managing reminder data.
+ */
+
+/* TODO remove the AlarmManager from here, it is not used
+ *  remove also AlarmManagerHelper and Reminder
  */
 class AlarmReceiver : BroadcastReceiver() {
 
@@ -39,6 +29,7 @@ class AlarmReceiver : BroadcastReceiver() {
      * @param intent The Intent being received.
      */
     override fun onReceive(context: Context?, intent: Intent?) {
+        /*
         val reminderRepository =
             (context?.applicationContext as TempoApplication).container.reminderRepository
         val notificationManager =
@@ -92,6 +83,8 @@ class AlarmReceiver : BroadcastReceiver() {
             Log.d(TAG, "Rescheduling alarm for ${newEvent.timestamp}")
             AlarmManagerHelper(context).scheduleReminderService(newEvent)
         }
+
+         */
     }
 }
 
