@@ -201,7 +201,15 @@ fun LoginScreen(navController: NavController?) {
                         .align(Alignment.Start)
                         .padding(16.dp)
                         .clickable {
-                            // TODO: Navigate to password recovery
+                            try {
+                                val intent = Intent(
+                                    Intent.ACTION_VIEW,
+                                    BuildConfig.REGISTRATION_URL.toUri()
+                                )
+                                context.startActivity(intent)
+                            } catch (e: Exception) {
+                                Log.d("LoginScreen", "Error opening URL: ${e.message}")
+                            }
                         }
                 )
             }
