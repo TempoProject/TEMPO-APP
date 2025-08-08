@@ -44,13 +44,9 @@
     <uses-permission android:name="android.permission.health.READ_STEPS" />
     <uses-permission android:name="android.permission.health.WRITE_STEPS" />
     <uses-permission android:name="android.permission.health.READ_HEALTH_DATA_IN_BACKGROUND" />
+
     <!--<uses-permission android:name="android.permission.READ_CALENDAR" />
     <uses-permission android:name="android.permission.WRITE_CALENDAR" />-->
-    <!-- TODO change allowBackup to true:
-            https://stackoverflow.com/questions/60649376/room-cannot-verify-the-data-integrity-looks-like-youve-changed-schema-but-forg
-            https://developer.android.com/guide/topics/data/autobackup
-    -->
-    <!-- TODO in production, set usesCleartextTraffic to false -->
     <application
         android:name=".TempoApplication"
         android:allowBackup="false"
@@ -61,7 +57,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.TempoApp"
-        android:usesCleartextTraffic="true"
+        android:usesCleartextTraffic="false"
         tools:targetApi="31">
         <!--<service
             android:name=".utils.StepsService"
@@ -72,13 +68,13 @@
         <receiver
             android:name=".utils.StepsReceiver"
             android:enabled="true" />-->
-        <service
+        <!--<service
             android:name=".utils.MovesenseService"
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="connectedDevice" />
 
-        <!--<receiver
+        <receiver
             android:name=".utils.AlarmReceiver"
             android:enabled="true" />-->
 
@@ -121,7 +117,15 @@
                 <category android:name="android.intent.category.HEALTH_PERMISSIONS" />
             </intent-filter>
         </activity>
-
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.tempo.tempoapp.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
         <activity
             android:name=".PermissionsRationaleActivity"
             android:exported="true">
@@ -130,10 +134,10 @@
             </intent-filter>
         </activity>
 
-        <service
+        <!--<service
             android:name="androidx.work.impl.foreground.SystemForegroundService"
             android:exported="false"
-            android:foregroundServiceType="dataSync" />
+            android:foregroundServiceType="dataSync" />-->
     </application>
 
     <!-- declare Health Connect visibility -->
