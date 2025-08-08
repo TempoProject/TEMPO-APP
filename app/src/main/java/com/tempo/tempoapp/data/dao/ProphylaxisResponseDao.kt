@@ -47,4 +47,7 @@ interface ProphylaxisResponseDao : LogbookDao<ProphylaxisResponse> {
     @Query("UPDATE prophylaxis_responses SET postponedAlarmId = :alarmId WHERE id = :responseId")
     suspend fun updatePostponedAlarmId(responseId: Long, alarmId: Int)
 
+
+    @Query("SELECT * FROM prophylaxis_responses ORDER BY date DESC")
+    suspend fun getAllProphylaxisResponses(): List<ProphylaxisResponse>
 }
